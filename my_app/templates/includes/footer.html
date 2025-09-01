@@ -3,12 +3,12 @@
     <div class="row align-items-center justify-content-lg-between">
     <div class="col-lg-6 mb-lg-0 mb-4">
         <div class="copyright text-center text-sm text-muted text-lg-start">
+            <span id="year"></span>
         © <script>
-            document.write(new Date().getFullYear())
+            document.getElementById("year").textContent = new Date().getFullYear();
         </script>,
         made with <i class="fa fa-heart"></i> by
-        <a href="https://www.creative-tim.com" class="font-weight-bold" target="_blank">Creative Tim</a>
-        for a better web.
+        <a href="http://www.membrmate.com" class="font-weight-bold" target="_blank">Member Mate</a>
         </div>
     </div>
     <div class="col-lg-6">

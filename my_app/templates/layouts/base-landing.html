@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+
+<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Favicon -->
+        <link rel="apple-touch-icon" sizes="76x76" href="{% static 'img/apple-icon.png' %}">
+        <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+
+    <title>
+        {% block title %}{% endblock %}
+    </title>
+    
+        <!-- Fonts and Icons -->
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+
+    <!-- Nucleo Icons -->
+    <link href="{% static 'css/nucleo-icons.css'%}" rel="stylesheet" />
+    <link href="{% static 'css/nucleo-svg.css'%}" rel="stylesheet" />
+    <!-- Font Awesome Icons -->
+    <link href="{% static 'css/nucleo-svg.css'%}" rel="stylesheet" />
+    <!-- CSS Files -->
+    <link id="pagestyle" href="{% static 'css/argon-dashboard.css' %}" rel="stylesheet" />
+    <!-- Team Style for errors from Back-End -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"> 
+        {% block stylesheets %}{% endblock stylesheets %}
+    </head>
+
+    <body class="g-sidenav-show">
+        <div class="container position-sticky z-index-sticky top-0">
+            <div class="row">
+                <div class="col-12">
+                    <!-- Navbar -->
+                    <!-- Navbar -->
+                            {% include 'includes/navigation_landing.html' %}
+                    <!-- End Navbar -->
+                </div>
+            </div>
+        </div>
+            
+            <div class="container-fluid py-4">
+
+                {% block content %}{% endblock content %}
+
+                
+            </div>
+            
+        </main>
+        <!-- footer -->
+            {% include 'includes/footer.html' %}
+        <!-- end footer -->
+        <!--   Core JS Files   -->
+        {% include 'includes/scripts-landing.html' %}
+        <!-- Specific Page JS goes HERE -->
+        {% block javascripts %}{% endblock javascripts %}
+
+</body>
+</html>

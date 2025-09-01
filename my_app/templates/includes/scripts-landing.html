@@ -1,0 +1,31 @@
+<!--   Core JS Files   -->
+{% load static %}
+<script src="{% static 'js/core/popper.min.js' %}"></script>
+<script src="{% static 'js/core/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/plugins/smooth-scrollbar.min.js' %}"></script>
+<script>
+var win = navigator.platform.indexOf('Win') > -1;
+if (win && document.querySelector('#sidenav-scrollbar')) {
+    var options = {
+    damping: '0.5'
+    }
+    Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+}
+</script>
+<!-- Github buttons -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+<!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
+
+<!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
+<!-- <script src="{% static 'js/plugins/argon-dashboard.min.js' %}"></script> -->
+<!-- <script src="{% static 'js/plugins/chartjs.min.js' %}"></script>
+<script src="{% static 'js/plugins/Chart.extension.js' %}"></script> -->
+
+<!-- Core -->
+<!-- <script src="{% static 'js/core/popper.min.js' %}"></script>
+<script src="{% static 'js/core/bootstrap.min.js' %}"></script> -->
+
+
+<!-- Theme JS -->
+
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
