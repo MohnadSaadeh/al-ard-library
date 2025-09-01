@@ -1,48 +1,42 @@
-<!--
-=========================================================
-* Argon Dashboard 2 - v2.0.4
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-dashboard
-* Copyright 2022 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://www.creative-tim.com/license)
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
--->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+{% load static %}
 <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'img/apple-icon.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
   <title>
     Employee Dashboard 
   </title>
-  {% load static %}
-  <!--     Fonts and icons     -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+  
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+
   <!-- Nucleo Icons -->
   <link href="{% static 'css/nucleo-icons.css'%}" rel="stylesheet" />
   <link href="{% static 'css/nucleo-svg.css'%}" rel="stylesheet" />
   <!-- Font Awesome Icons -->
-  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
   <link href="{% static 'css/nucleo-svg.css'%}" rel="stylesheet" />
   <!-- CSS Files -->
-  <link id="pagestyle" href="{% static 'css/argon-dashboard.css?v=2.0.4' %}" rel="stylesheet" />
+  <link id="pagestyle" href="{% static 'css/argon-dashboard.css' %}" rel="stylesheet" />
   <nonscript><link rel="stylesheet" href="{% static 'css/argon-dashboard.css' %}"></nonscript>
   <!-- Team Style for errors from Back-End -->
   <link rel="stylesheet" href="{% static 'css/style.css' %}"> 
   <!-- -------------Ajax------------------- -->
   <script src="{% static 'js/scripts.js' %}" defer></script>
   <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/carousel/">
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-<!-- -------------Alax------------------- -->
+  <!-- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script> -->
+  <script
+  src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+  crossorigin="anonymous"></script>
+
+  <!-- -------------Alax------------------- -->
 </head>
 
 <body class="g-sidenav-show   bg-gray-100">
@@ -126,7 +120,7 @@
           </a>
         </li> 
         <li class="nav-item">
-          <a class="nav-link " href="/logout">
+          <a class="nav-link " href="/emp_logout">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-collection text-info text-sm opacity-10"></i>
             </div>
@@ -273,50 +267,52 @@
             <div class="card-header pb-0">
                 
               <form action="/add_order_to_sale" method="post" id="add-form">
-                    {% csrf_token %}
-                    <div class="d-flex align-items-center">
-                      <p class="mb-0 ">New Sale Order</p>
-                      
-                      <button type="submit" class="btn btn-primary btn-sm ms-auto">Add product</button>
+                {% csrf_token %}
+                <div class="d-flex align-items-center">
+                  <p class="mb-0 ">New Sale Invoice</p>
+                  
+                  <button class="btn btn-primary btn-sm ms-auto">Add product</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <p class="text-uppercase text-sm"></p>
+                <div class="row">
+                  <div class="col-md-6">
+                    <label for="example-text-input" class="form-control-label">Product Name</label>
                     </div>
-                  </div>
-                  <div class="card-body">
-                    <p class="text-uppercase text-sm"></p>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <label for="example-text-input" class="form-control-label">Product Name</label>
-                        
-                        </div>
-                        <div class="btn-group ">
-                          <div class="col-md-3">
-                            <div class="form-group">
-                            
-                              <select id="results-box"   class="form-control" name="product_name">
-                                <option value="-Select Product-" >- Select Product -</option>
-                                {% for product in products %}
-                                <option>{{product.product_name}}</option>
-                                {% endfor %}
-                                </select>
-                              
-                            </div>
-                          </div>
-                          
-                          <div class="w-15 text-center ">
-                            <div id="search-form"   outocomplete = "off">
-                                <input id="search-input" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                            </div>
-                          </div>
-                          
-                          
-                        </div>
-                        
-                      <div class="col-md-5">
+                    <div class="btn-group ">
+                      <div class="col-md-4">
                         <div class="form-group">
-                          <label for="example-text-input" class="form-control-label">Quantity</label>
-                          <input class="form-control" type="text" name="quantity" >
+                      
+                          <select id="results-box"   class="form-control" name="product_name">
+                            <option value="- Select Product -">- Select Product -</option>
+                            {% for product in products %}
+                            <option>{{product.product_name}}</option>
+                            {% endfor %}
+                            </select>
+    
                         </div>
                       </div>
-                </form>
+                      <div class="w-15 text-center">
+                        <div id="search-form"   outocomplete = "off">
+                            <input id="search-input" class="form-control me-2" type="search" placeholder="Search " aria-label="Search">
+                        </div>
+                      </div>
+                    </div>
+                    
+
+                    
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label for="example-text-input" class="form-control-label">Quantity</label>
+                      <input class="form-control" type="number" name="quantity" >
+                    </div>
+                  </div>
+                  
+                    
+                  
+              </form>
 
                 <form action="/submet_sale_order" method="post">
                   {% csrf_token %}
@@ -339,7 +335,7 @@
                   </table>
                   
                 <button type="submit" class="btn btn-primary btn-sm ms-auto mt-4">Submit order</button>
-                <a href="/clear_sales_list"><button class="btn btn-primary btn-sm ms-auto mt-4">Clear order</button></a>
+                <a href="/clear_sales_list" class="btn btn-primary btn-sm ms-auto mt-4">Clear order</a>
 
                 </div>
                 
@@ -347,10 +343,9 @@
                 <ul class="messages">    
                   {% for message in messages %}    
                       {% if message.extra_tags == 'sold_product' %}
-                      
                       <p class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>    
                       {% else %}
-                      <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li> 
+                      <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p> 
                       {% endif %}
                     {% endfor %}
                 </ul>
@@ -597,11 +592,11 @@
   <!-- Github buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-  <script src="{% static 'js/argon-dashboard.min.js?v=2.0.4' %}"></script>
+  <script src="{% static 'js/argon-dashboard.min.js' %}"></script>
   <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-  <script src="{% static 'js/plugins/argon-dashboard.min.js?v=2.0.4' %}"></script>
-  <script src="{% static 'js/plugins/chartjs.min.js' %}"></script>
-  <script src="{% static 'js/plugins/Chart.extension.js' %}"></script>
+  <!-- <script src="{% static 'js/plugins/argon-dashboard.min.js' %}"></script> -->
+  <!-- <script src="{% static 'js/plugins/chartjs.min.js' %}"></script>
+  <script src="{% static 'js/plugins/Chart.extension.js' %}"></script> -->
   
   <!-- Core -->
   <script src="{% static 'js/core/popper.min.js' %}"></script>
@@ -609,7 +604,6 @@
 
 
 <!-- Theme JS -->
-<script src="{% static 'js/plugins/argon-dashboard.min.js' %}"></script>
 
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 

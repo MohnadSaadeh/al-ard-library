@@ -20849,14 +20849,12 @@ fieldset:disabled .btn {
 }
 
 .card .card-header {
-  padding: 0.5rem;
+  padding: 1.5rem;
 }
 
 .card .card-body {
   font-family: "Open Sans", sans-serif;
   padding: 1.5rem;
-  margin-top: 120px;
-
 }
 
 .card.card-plain {

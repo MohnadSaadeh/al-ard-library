@@ -37,11 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise',
     'django.contrib.staticfiles',
 ]
 
 MIDDLEWARE = [
+    
+    
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -50,7 +54,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'StockSync.urls'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
+# ROOT_URLCONF = 'StockSync.urls'
+ROOT_URLCONF = 'al-ard.urls'
 
 TEMPLATES = [
     {
@@ -68,7 +75,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'StockSync.wsgi.application'
+# WSGI_APPLICATION = 'StockSync.wsgi.application'
+WSGI_APPLICATION = 'al-ard.wsgi.application'
 
 
 # Database
@@ -77,7 +85,7 @@ WSGI_APPLICATION = 'StockSync.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR , 'db.sqlite3'),
     }
 }
 
@@ -118,7 +126,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR , "static")]
+STATIC_ROOT = os.path.join(BASE_DIR , "staticfiles")
+
 
 
 

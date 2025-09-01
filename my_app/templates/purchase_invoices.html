@@ -341,7 +341,7 @@
 
 
                   <button type="submit" class="btn btn-primary btn-sm ms-auto mt-4">Submit order</button>
-                  <a href="/clear_purchases_list"><button class="btn btn-primary btn-sm ms-auto mt-4">Clear order</button></a>
+                  <a href="/clear_purchases_list" class="btn btn-primary btn-sm ms-auto mt-4"> Clear order</a>
                 </div>
                 
                   {% if messages %}
@@ -350,7 +350,7 @@
                         {% if message.extra_tags == 'add_invoice' %}
                         <p class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>    
                         {% else %}
-                        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li> 
+                        <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p> 
                         {% endif %}
 
                         

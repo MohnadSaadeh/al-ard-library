@@ -62,14 +62,22 @@ searchInput.addEventListener('keyup', e=> {
 })
 
 
-// Get the <p> tag and input field
-const changeValueP = document.getElementById('');
-const inputField = document.getElementById('');
+// // Get the <p> tag and input field
+// const changeValueP = document.getElementById('');
+// const inputField = document.getElementById('');
 
-// Add click event listener to the <p> tag
-changeValueP.addEventListener('click', () => {
-    // Change the value of the input field
-    inputField.value = changeValueP.value ;
+// // Add click event listener to the <p> tag
+// changeValueP.addEventListener('click', () => {
+//     // Change the value of the input field
+//     inputField.value = changeValueP.value ;
+//     });
+const changeValueP = document.getElementById('change-value-p');  // example ID
+const inputField = document.getElementById('search-input');      // your existing input
+
+if (changeValueP && inputField) {
+    changeValueP.addEventListener('click', () => {
+        inputField.value = changeValueP.textContent; // textContent instead of value
     });
+}
 
 
