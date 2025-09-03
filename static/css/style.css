@@ -4,9 +4,9 @@
 }
 .message_success {
     width: min-content;
-    margin: 10px;
-    margin-left: 10%;
-    padding: 10px;
+    /* margin: 10px; */
+    /* margin-left: 10%; */
+    /* padding: 10px; */
     background-color: rgb(191, 236, 191);
     color: rgb(8, 24, 8);
     border: 2px solid rgb(191, 236, 191);

@@ -20,7 +20,7 @@ def display_homepage(request):
     return render(request, 'sign-in.html')
 
 def index(request):
-    if 'manager_id' in request.session:
+    if 'employee_id' in request.session:
         context = {           
             'sixmonthesproducts': models.get_six_monthes_products(), # MAI ******
             'near_expiry':models.get_six_monthes(),   # MAI ******        
@@ -28,6 +28,8 @@ def index(request):
             'count':models.count_out_stock(),
             'today_sale_order':models.today_sale_orders(), #MAI *******
             'today_purchases_order' : models.today_purchases(),
+            'employee': models.get_employee_by_id(request.session['employee_id']),
+
             # 'chart_data':models.chart_sales_orders()
             # 'saturday' : models.Sale_order.objects.filter(created_at__contains__week_day=7).count(),
             'monday' : models.Sale_order.objects.filter(created_at__week_day=2).count(),
@@ -143,7 +145,8 @@ def add_new_employee(request):
             messages.error(request, value)
         return redirect('/employees')
     else:
-        manager = request.session['manager_id']
+        # manager = request.session['manager_id']
+        manager = request.session['employee_id'] # or manager_id
         emp_f_name = request.POST['f_name']
         emp_l_name = request.POST['l_name']
         emp_emeil = request.POST['email']
@@ -160,11 +163,14 @@ def add_new_employee(request):
 
 def display_employees(request):
     # if the manad=egr not in the loged on
-    if 'manager_id' not in request.session:
+    # 'manager_id' or 'employee_id' in request.session:
+    if 'employee_id' not in request.session:
         return redirect('/index')
     else:
         context = {
-            'employees': models.get_all_employees()
+            'employees': models.get_all_employees(),
+            'employee': models.get_employee_by_id(request.session['employee_id']),
+
         }
         return render (request, 'profile.html', context )
 

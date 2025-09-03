@@ -8,8 +8,10 @@
 
             {% block page_name %} Emoloyees{% endblock %}
             {% block page_name2 %} {% endblock %}
+
+
+
 <!-- comtent -->
-    <div class="card shadow-lg mx-4 card-profile-bottom">
       <div class="card-body p-3">
         <div class="row gx-4">
           <!-- <div class="col-auto">
@@ -85,7 +87,7 @@
                   <div class="col-md-6">
                     <div class="form-group">
                       <label for="example-text-input" class="form-control-label">Email</label>
-                      <input class="form-control" type="email" name="email">
+                      <input class="form-control" type="email" name="email" autocomplete="email">
                     </div>
                   </div>
                   <div class="col-md-6">
@@ -97,13 +99,13 @@
                   <div class="col-md-6">
                     <div class="form-group">
                       <label for="example-text-input" class="form-control-label">Password</label>
-                      <input class="form-control" type="password" name="password">
+                      <input class="form-control" type="password" name="password"autocomplete="password">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
                       <label for="example-text-input" class="form-control-label">Confirm Password</label>
-                      <input class="form-control" type="password" name="c_password">
+                      <input class="form-control" type="password" name="c_password"autocomplete="c_password">
                     </div>
                   </div>
                 </div>
@@ -123,10 +125,11 @@
           </div>
         </div>
           <div class="col-md-6">
-            
+            <div class="card" >
               <div class="card card-profile">
                   <h5 class="ps-2 pt-2">Employees List</h5>
-                
+                <div class="card-body px-0 pt-0 pb-2" >
+                  <div class="table-responsive p-0" >
                   <table class="table">
                     <tr>
                       <th>Name</th>
@@ -138,16 +141,19 @@
                       <td> <b>{{emp.first_name}} {{emp.last_name}}</b> </td>
                       <td>{{emp.email}}</td>
                       <td>{{emp.created_at | date}}</td>
-                      
                     </tr>
                     {% endfor %}
                   </table>
-                      
                 </div>
+                </div>
+              </div>
+            </div>
           </div>
       </div> 
     </div>
-  </div>
+
+
+
 
 <!-- end comtent -->
 {% endblock content %}

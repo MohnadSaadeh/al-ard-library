@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+
+<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Favicon -->
+        <link rel="apple-touch-icon" sizes="76x76" href="{% static 'img/apple-icon.png' %}">
+        <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+
+    <title>
+        AL Ard {% block title %}{% endblock %}
+    </title>
+    
+        <!-- Fonts and Icons -->
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+
+    <!-- Nucleo Icons -->
+    <link href="{% static 'css/nucleo-icons.css'%}" rel="stylesheet" />
+    <link href="{% static 'css/nucleo-svg.css'%}" rel="stylesheet" />
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+    <link href="{% static 'css/nucleo-svg.css'%}" rel="stylesheet" />
+    <!-- CSS Files -->
+    <link id="pagestyle" href="{% static 'css/argon-dashboard.css' %}" rel="stylesheet" />
+    <nonscript><link rel="stylesheet" href="{% static 'css/argon-dashboard.css' %}"></nonscript>
+    <!-- Team Style for errors from Back-End -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"> 
+    <!-- -------------Ajax------------------- -->
+    <script src="{% static 'js/scripts.js' %}" defer></script>
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/carousel/">
+    <!-- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script> -->
+    <script
+    src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+    crossorigin="anonymous"></script>
+    <!-- -------------Alax------------------- -->
+        {% block stylesheets %}{% endblock stylesheets %}
+    </head>
+
+    <body class="g-sidenav-show   bg-gray-100">
+        <div class="position-absolute w-100 min-height-300 top-0" style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/profile-layout-header.jpg'); background-position-y: 50%;">
+            <span class="mask bg-primary opacity-6"></span>
+        </div>
+        <!-- <div class="min-height-300 bg-primary position-absolute w-100"></div> -->
+        <!-- aside -->
+        {% include 'includes/aside-manager.html' %}
+        <!-- end aside -->
+        <main class="main-content position-relative border-radius-lg ">
+            <!-- Navbar -->
+            <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
+                <div class="container-fluid py-1 px-3">
+                    <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+                        <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white" href="javascript:;">Pages</a></li>
+                        <li class="breadcrumb-item text-sm text-white active" aria-current="page"> {% block page_name %}{% endblock %}</li>
+                    </ol>
+                    <h6 class="font-weight-bolder text-white mb-0"> {% block page_name2 %}{% endblock %}</h6>
+                    </nav>
+                    <!-- nav_content -->
+                        <!-- Navbar -->
+                        {% include 'includes/navigation_main.html' %}
+                        <!-- End Navbar -->
+                </div>
+            </nav>
+            
+            <div class="container-fluid py-4">
+
+                {% block content %}{% endblock content %}
+
+                <!-- footer -->
+                {% include 'includes/footer.html' %}
+                <!-- end footer -->
+            </div>
+            
+        </main>
+        <!-- fixed-plugin -->
+        {% include 'includes/fixed-plugin.html' %}
+        <!-- end fixed-plugin -->
+        
+        <!--   Core JS Files   -->
+        {% include 'includes/scripts.html' %}
+        <!-- Specific Page JS goes HERE -->
+        {% block javascripts %}{% endblock javascripts %}
+
+</body>
+</html>

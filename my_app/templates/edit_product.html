@@ -9,77 +9,73 @@
             {% block page_name %}Edit Product{% endblock %}
             {% block page_name2 %}Edit Product {% endblock %}
 <!-- comtent -->
-<div class="col-6 ms-12 mt-12">
-        <div class="card mb-4">
-          <div class="card-header pb-0">
-            <form action="/update_product/{{product.id}}" method="post">
-              {% csrf_token %}
-              <div class="d-flex align-items-center">
-                <p class="mb-0 ">Edit Product</p>
-                
-                <button class="btn btn-primary btn-sm ms-auto">Save Changes</button>
-              </div>
-            </div>
-            <div class="card-body">
-              <p class="text-uppercase text-sm">Product Information</p>
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Product Name</label>
-                    <input class="form-control" type="text" name="product_name" placeholder="{{product.product_name}}" >
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Quantity</label>
-                    <input class="form-control" type="text" name="quantity" placeholder="{{product.quantity}}" >
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Purchasing Price</label>
-                    <input class="form-control" type="text" name="purchasing_price" placeholder="{{product.purchasing_price}}">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Expiry Date</label>
-                    <input class="form-control" type="date" name="expiry_date" value="{{product.expiry_date|date:'Y-m-d'}}">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                    <label for="example-text-input" class="form-control-label">Supplier</label>
-                  <select  class="form-control" name="supplier" id="example-text-input">
-                    <option selected> {{product.supplier}} </option>
-                    {% for product in products %}
-                    <option>{{product.supplier}}</option>
-                    {% endfor %}
-                  </select>
-                  <!-- <div class="form-group">
-                    <label for="example-text-input" class="form-control-label">Supplier</label>
-                    <input class="form-control" type="text" name="supplier">
-                  </div> -->
-                </div>
-                
-              </div>
-              {% if messages %}
-              <ul class="messages">    
-                {% for message in messages %}    
-                    {% if message.extra_tags == 'add_product' %}
-                    
-                    <li class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>    
-                    {% else %}
-                    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li> 
-                    {% endif %}
-                  {% endfor %}
-              </ul>
-              {% endif %}
-            </form>
-        </div>
+<div class="card mb-4">
+  <div class="card-header pb-0">
+    <form action="/update_product/{{product.id}}" method="post">
+      {% csrf_token %}
+      <div class="d-flex align-items-center">
+        <p class="mb-0 ">Edit Product</p>
+        
+        <button class="btn btn-primary btn-sm ms-auto">Save Changes</button>
       </div>
       
-    </div>
-
+      <div class="card-body">
+        <p class="text-uppercase text-sm">Product Information</p>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="example-text-input" class="form-control-label">Product Name</label>
+              <input class="form-control" type="text" name="product_name" placeholder="{{product.product_name}}" >
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="example-text-input" class="form-control-label">Quantity</label>
+              <input class="form-control" type="text" name="quantity" placeholder="{{product.quantity}}" >
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="example-text-input" class="form-control-label">Purchasing Price</label>
+              <input class="form-control" type="text" name="purchasing_price" placeholder="{{product.purchasing_price}}">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="example-text-input" class="form-control-label">Expiry Date</label>
+              <input class="form-control" type="date" name="expiry_date" value="{{product.expiry_date|date:'Y-m-d'}}">
+            </div>
+          </div>
+          <div class="col-md-6">
+              <label for="example-text-input" class="form-control-label">Supplier</label>
+              <select  class="form-control" name="supplier" id="example-text-input">
+                <option selected> {{product.supplier}} </option>
+                {% for product in products %}
+                <option>{{product.supplier}}</option>
+                {% endfor %}
+              </select>
+            <!-- <div class="form-group">
+              <label for="example-text-input" class="form-control-label">Supplier</label>
+              <input class="form-control" type="text" name="supplier">
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </form>
+      {% if messages %}
+        <ul class="messages">    
+          {% for message in messages %}    
+              {% if message.extra_tags == 'add_product' %}
+              
+              <li class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>    
+              {% else %}
+              <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li> 
+              {% endif %}
+            {% endfor %}
+        </ul>
+        {% endif %}
+  </div>
+</div>
 
 <!-- end comtent -->
 {% endblock content %}

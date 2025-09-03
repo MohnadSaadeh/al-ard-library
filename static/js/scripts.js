@@ -3,8 +3,24 @@ const url = window.location.href
 const searchForm = document.getElementById('search-form')
 const searchInput = document.getElementById('search-input')
 const resultsBox = document.getElementById('results-box')
-const csrf = document.getElementsByName('csrfmiddlewaretoken')[0].value
+// const csrf = document.getElementsByName('csrfmiddlewaretoken')[0].value
 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrf = getCookie('csrftoken');
 
 const sendSearchData = (searchValue) => {
     $.ajax({
@@ -50,16 +66,29 @@ const sendSearchData = (searchValue) => {
 
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById('search-input');
+    const resultsBox = document.getElementById('results-box');
+
+    if (searchInput) {
+        searchInput.addEventListener('keyup', e => {
+            if (resultsBox.classList.contains('not-visible')) {
+                resultsBox.classList.remove('not-visible');
+            }
+            sendSearchData(e.target.value);
+        });
+    }
+});
 
 // by this any this tou type will be visible live
-searchInput.addEventListener('keyup', e=> {
-    // console.log(e.target.value)
+// searchInput.addEventListener('keyup', e=> {
+//     // console.log(e.target.value)
 
-    if (resultsBox.classList.contains('not-visible')){
-        resultsBox.classList.remove('not-visible')
-    }
-    sendSearchData(e.target.value)
-})
+//     if (resultsBox.classList.contains('not-visible')){
+//         resultsBox.classList.remove('not-visible')
+//     }
+//     sendSearchData(e.target.value)
+// })
 
 
 // // Get the <p> tag and input field
