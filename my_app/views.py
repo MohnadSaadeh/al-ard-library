@@ -7,6 +7,7 @@ import datetime
 from django.db.models import Sum
 from django.db.models.functions import ExtractWeekDay
 from django.http import JsonResponse
+from . import validations
 
 
 # to display the sign-in page
@@ -21,7 +22,8 @@ def display_homepage(request):
 
 def index(request):
     if 'employee_id' in request.session:
-        context = {           
+        context = {   
+            'segment': index,        
             'sixmonthesproducts': models.get_six_monthes_products(), # MAI ******
             'near_expiry':models.get_six_monthes(),   # MAI ******        
             'out_stock':models.out_of_stock(),
@@ -75,7 +77,7 @@ def sign_in(request):
                         employee.is_active = True
                         employee.save()
                         #---------------is Active -----------------------
-                        return redirect('/employye_dashboard')
+                        return redirect('/index')
                     else:
                         messages.error(request, "Incorrect Password")
                         # messages.error(request, value , extra_tags = 'admin_login' )
@@ -413,3 +415,75 @@ def search_results(request):
 def get_active_users(request):
     active_users = models.Employee.objects.filter(is_active=True).values('first_name' , 'last_name')
     return JsonResponse({'active_users': list(active_users)})
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Product, ProductAttribute
+from .forms import ProductForm, ProductAttributeFormSet
+
+def product_create(request):
+    """
+    إنشاء منتج جديد مع خصائصه (Attributes) باستخدام formset
+    """
+    # جلب معرف الموظف من السيشن (إذا موجود)
+    employee_id = request.session.get('employee_id')
+
+    if request.method == "POST":
+        form = ProductForm(request.POST)
+        formset = ProductAttributeFormSet(request.POST, queryset=ProductAttribute.objects.none())
+        
+        if form.is_valid() and formset.is_valid():
+            # حفظ المنتج وربطه بالموظف
+            product = form.save(commit=False)
+            if employee_id:
+                product.employee_id = employee_id
+            product.save()
+
+            # حفظ الخصائص وربطها بالمنتج
+            formset.instance = product
+            formset.save()
+
+            return redirect('product_list')  # تأكد أن لديك URL اسمه product_list
+    else:
+        form = ProductForm()
+        formset = ProductAttributeFormSet(queryset=ProductAttribute.objects.none())
+
+    return render(request, 'products/product_form.html', {
+        'form': form,
+        'formset': formset
+    })
+
+
+def product_list(request):
+    """
+    عرض قائمة المنتجات مع خصائصها
+    """
+    products = Product.objects.all().prefetch_related('attributes')
+    return render(request, 'products/product_list.html', {'products': products})
+
+
+
+
+def product_update(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        form = ProductForm(request.POST, instance=product)
+        formset = ProductAttributeFormSet(request.POST, instance=product)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect('product_list')
+    else:
+        form = ProductForm(instance=product)
+        formset = ProductAttributeFormSet(instance=product)
+    return render(request, 'products/product_form.html', {'form': form, 'formset': formset})
+
+
+def product_delete(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        product.delete()
+        return redirect('product_list')
+    return render(request, 'products/product_confirm_delete.html', {'product': product})

@@ -1,0 +1,82 @@
+{% extends "layouts/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>إضافة منتج جديد</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- تفاصيل المنتج -->
+        <div class="card mb-4">
+            <div class="card-header">تفاصيل المنتج</div>
+            <div class="card-body">
+                {{ form|crispy }}
+            </div>
+        </div>
+
+        <!-- خصائص المنتج -->
+        <div class="card mb-4">
+            <div class="card-header">خصائص المنتج</div>
+            <div class="card-body">
+                {{ formset.management_form }}
+
+                <div id="formset-area">
+                    {% for subform in formset %}
+                        <div class="border rounded p-3 mb-3 formset-form">
+                            {{ subform|crispy }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- زر إضافة خاصية -->
+                <button type="button" class="btn btn-sm btn-secondary" id="add-attribute">
+                    + إضافة خاصية
+                </button>
+            </div>
+        </div>
+
+        <!-- أزرار التحكم -->
+        <button type="submit" class="btn btn-primary">💾 حفظ المنتج</button>
+        <a href="{% url 'product_list' %}" class="btn btn-secondary">إلغاء</a>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const formsetArea = document.getElementById("formset-area");
+    const totalForms = document.getElementById("id_attributes-TOTAL_FORMS");
+
+    // function لتغيير نوع input بناءً على select
+    function updateInputType(select) {
+        const input = select.closest(".formset-form").querySelector("input[name$='attribute_value']");
+        if (!input) return;
+        if (select.value === "number") input.type = "number";
+        else if (select.value === "date") input.type = "date";
+        else input.type = "text";
+    }
+
+    // تتبع التغيير لأي select داخل formsetArea
+    formsetArea.addEventListener("change", function(e) {
+        if (e.target && e.target.tagName === "SELECT" && e.target.name.includes("value_type")) {
+            updateInputType(e.target);
+        }
+    });
+
+    // فورم فارغ لإضافة خصائص جديدة
+    const emptyFormHtml = `{{ formset.empty_form|crispy|escapejs }}`;
+
+    document.getElementById("add-attribute").addEventListener("click", function(e) {
+        e.preventDefault();
+        let formNum = parseInt(totalForms.value);
+        let newForm = emptyFormHtml.replace(/__prefix__/g, formNum);
+        formsetArea.insertAdjacentHTML("beforeend", newForm);
+        totalForms.value = formNum + 1;
+    });
+
+    // تحديث النوع لجميع الفورمز الحالية عند التحميل
+    formsetArea.querySelectorAll("select[name$='value_type']").forEach(updateInputType);
+});
+</script>
+
+{% endblock content %}

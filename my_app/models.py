@@ -1,39 +1,43 @@
 from django.db import models
 from django.db.models import F, ExpressionWrapper, FloatField ,DecimalField, IntegerField
 import re
-
 from datetime import datetime , timedelta
 import datetime
-from . import views
+from .validations import EmployeeManager , ManagerManager , ProductManager , Purchasing_invoiceManager , Sale_orderManager
 
+
+class Supplier(models.Model):
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20 , null=True )
+    email = models.EmailField(max_length=255, null=True )
+    contact_info = models.TextField(null=True) # address, notes, etc.
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    # products
+    def __str__(self):
+        return self.name
+
+class Customer(models.Model):
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20, null=True)
+    email = models.EmailField(max_length=255 , null=True)
+    contact_info = models.TextField() # address, notes, etc.
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.name
+
+# class ProductAttribute(models.Model):
+#     attribute_name = models.CharField(max_length=255)
+#     attribute_value = models.CharField(max_length=255)
+#     product = models.ForeignKey('Product', related_name='attributes', on_delete=models.CASCADE)
+
+#     def __str__(self):
+#         return f"{self.product.product_name }{self.attribute_name}: {self.attribute_value}"
 
 #--------------------------------------------------------------------MANAGER-----------------------
-class ManagerManager(models.Manager):
-    def manager_validator(self, postData):
-        errors = {}
-        EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
-        if len(postData['admin_first_name']) < 2:
-            errors['admin_first_name'] = "First name should be at least 2 characters"
-        if len(postData['admin_last_name']) < 2:
-            errors['admin_last_name'] = "Last name should be at least 2 characters"
-        if not EMAIL_REGEX.match(postData['admin_email']):
-            errors['admin_email'] = "Invalid email address!"
-        if len(postData['admin_phone']) < 10:
-            errors['admin_phone'] = "Phone number should be at least 10 characters"
-        if len(postData['admin_password']) < 8:
-            errors['admin_password'] = "Password should be at least 8 characters"
-        if postData['admin_repete_password'] != postData['admin_password']:
-            errors['admin_repete_password'] = "Passwords do not match"
-        return errors
-    
-    def login_manager_validator(self, postData):
-        errors = {}
-        EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
-        if not EMAIL_REGEX.match(postData['email']):
-            errors['email'] = "Invalid email address!"
-        if len(postData['password']) < 8:
-            errors['password'] = "Password should be at least 8 characters"
-        return errors
+
 
 # Create your models here.
 # the manager teble
@@ -54,36 +58,7 @@ def get_manager(id):#--------------------------------------------Mai
     return Manager.objects.get(id=id)
     
 #--------------------------------------------------------------------EMPLOYEE-----------------------
-class EmployeeManager(models.Manager):
-    def employee_validator(self, postData):
-        dob_val = views.get_date_time()
-        errors = {}
-        EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
-        if len(postData['f_name']) < 2:
-            errors['f_name'] = "First name should be at least 2 characters"
-        if len(postData['l_name']) < 2:
-            errors['l_name'] = "Last name should be at least 2 characters"
-        if not EMAIL_REGEX.match(postData['email']):
-            errors['email'] = "Invalid email address!"
-        if postData['DOB'] == "":
-            errors['DOB'] = "Please enter a date"
-        
-        if postData['DOB'] > str(dob_val):
-            errors['DOB'] = "Date should be in the past"
-        if len(postData['password']) < 8:
-            errors['password'] = "Password should be at least 8 characters"
-        if postData['c_password'] != postData['password']:
-            errors['c_password'] = "Passwords not match"
-        return errors
-    
-    def login_employee_validator(self, postData):
-        errors = {}
-        EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
-        if not EMAIL_REGEX.match(postData['email']):
-            errors['email'] = "Invalid email address!"
-        if len(postData['password']) < 8:
-            errors['c_password'] = "Password should be at least 8 characters"
-        return errors
+
 
 # EMP adds many Products
 # EMP can make many purchasing invoices
@@ -119,40 +94,61 @@ def get_employee_by_id(id):
 
 
 #--------------------------------------------------------------------PRODUCT-----------------------
-class ProductManager(models.Manager):
-    def product_validator(self, postData):
-        errors = {}
-        if len(postData['product_name']) < 2:
-            errors['product_name'] = "Product name should be at least 2 characters"
-        if postData['quantity'] == "":
-            errors['quantity'] = "Please enter a quantity"
-        # if postData['quantity'] < 0:
-        #     errors['quantity'] = "Insufficient stock"
-        if postData['purchasing_price'] == "":
-            errors['purchasing_price'] = "Please enter a purchasing price"
-        if postData['product_name'] == "":
-            errors['product_name'] = "Please enter a product name"
-        if postData['expiry_date'] == "":
-            errors['expiry_date'] = "Please enter an expiry date"
-        if postData['expiry_date'] < str(datetime.date.today()):
-            errors['expiry_date'] = "Expiry date should be in the future"
-        if postData['supplier'] == "":
-            errors['supplier'] = "Please enter a supplier"
-        return errors
+
 
 class Product(models.Model):
     product_name = models.CharField(max_length=255)
-    quantity = models.IntegerField()
+    quantity = models.IntegerField() #stock_quantity
     purchasing_price = models.DecimalField(max_digits=6, decimal_places=2) # 999999.99
+    sale_price = models.DecimalField(max_digits=6, decimal_places=2, null=True , blank=True) # 999999.99
+    category = models.CharField(max_length=100, blank=True, null=True)
     expiry_date  = models.DateField()
     supplier = models.CharField(max_length=255)  # Supplier NAME
 
-    employee = models.ForeignKey(Employee , related_name="products", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
+    employee = models.ForeignKey(Employee , related_name="products", on_delete=models.CASCADE , null=True, blank=True) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = ProductManager()
     # purchasing_invoices
     # sale_orders
+    # attributes
+    def __str__(self):
+        return self.product_name , self.employee.first_name
+        
+class ProductAttribute(models.Model):
+    VALUE_TYPE_CHOICES = [
+        ('text', 'Text'),
+        ('number', 'Number'),
+        ('date', 'Date'),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="attributes")
+    attribute_name = models.CharField(max_length=100)
+    value_type = models.CharField(max_length=10, choices=VALUE_TYPE_CHOICES, default='text')
+    attribute_value = models.CharField(max_length=255)
+
+    def get_typed_value(self):
+        """إرجاع القيمة بالنوع المناسب"""
+        if self.value_type == 'number':
+            try:
+                return float(self.attribute_value)
+            except ValueError:
+                return None
+        elif self.value_type == 'date':
+            from datetime import datetime
+            try:
+                return datetime.strptime(self.attribute_value, "%Y-%m-%d").date()
+            except ValueError:
+                return None
+        return self.attribute_value  # نص عادي
+
+    def __str__(self):
+        return f"{self.attribute_name}: {self.attribute_value}"
+
+
+
+
+
 
 def get_all_products():
     return Product.objects.all()
@@ -211,19 +207,14 @@ def get_six_monthes_products():
 
 
 
-
+    # البحث عن كل المنتجات التي لها تاريخ انتهاء صلاحية قبل 2025-01-01
+    # expired_products = Product.objects.filter( 
+    #     attributes__attribute_name="expiry_date",
+    #     attributes__attribute_value__lt="2025-01-01"
+    #     )
 
 #--------------------------------------------------------------------PUECHASING-----------------------
-class Purchasing_invoiceManager(models.Manager):
-    def invoice_validator(self, postData):
-        errors = {}
-        if (postData['product_name']) == "- Select Product -":
-            errors['product_name'] = "Choose a Product Please"
-        if (postData['quantity'] == "") or (postData['quantity'] == "0" ):
-            errors['quantity'] = "Please enter a quantity"
-        # if postData['supplier'] == "":
-        #     errors['supplier'] = "Please enter a supplier"
-        return errors
+
 
 # P.Inv contains many products
 # P.Inv is made by one EMP
@@ -234,6 +225,7 @@ class Purchasing_invoice(models.Model):
 
     employee = models.ForeignKey(Employee , related_name="purchasing_invoices", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
     products = models.ManyToManyField(Product, related_name="purchasing_invoices")
+    # supplier = models.foreignKey(Supplier , related_name="purchasing_invoices", on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = Purchasing_invoiceManager()
@@ -252,25 +244,7 @@ def get_all_invoices():
     return Purchasing_invoice.objects.all().order_by('-created_at')
 
 #--------------------------------------------------------------------SALE_ORDER-----------------------
-class Sale_orderManager(models.Manager):
-    def invoice_sale_validator(self, postData):
-        errors = {}
-        if postData['product_name'] == "- Select Product -":
-            errors['product_name'] = "Choose a Product Please"
-            return errors
-        else:
-            if (postData['quantity'] == "") or (postData['quantity'] == "0" ):
-                errors['quantity'] = "Please enter a quantity"
-                return errors
-            else:
-                if Product.objects.get(product_name=postData['product_name']).quantity < int(postData['quantity']):
-                    errors['quantity'] = "Insufficient stock"
-                    return errors
-                else:
-                    if (Product.objects.get(product_name=postData['product_name']).quantity == 0) :
-                        errors['quantity'] = "Out of Stock"
-                        return errors
-        return errors
+
 
 # S.Order contains many products
 # S.Order is made by one EMP
