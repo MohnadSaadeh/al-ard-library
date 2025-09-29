@@ -140,15 +140,16 @@ def display_stock_for_manager(request):
     return render(request, 'stock_manager.html',context)
 
 
+
 def add_new_employee(request):
     errors = models.Employee.objects.employee_validator(request.POST)
     if len(errors) > 0:
         for key, value in errors.items():
             messages.error(request, value)
-        return redirect('/employees')
+        return redirect('/signup')
     else:
         # manager = request.session['manager_id']
-        manager = request.session['employee_id'] # or manager_id
+        # manager = request.session['employee_id'] # or manager_id
         emp_f_name = request.POST['f_name']
         emp_l_name = request.POST['l_name']
         emp_emeil = request.POST['email']
@@ -159,9 +160,9 @@ def add_new_employee(request):
         pw_hash = bcrypt.hashpw(emp_password.encode(), bcrypt.gensalt()).decode()
         pw_hash_confirm = bcrypt.hashpw(emp_conf_password.encode(), bcrypt.gensalt()).decode()
         #hash-----Passwords-------
-        models.add_employee(emp_f_name, emp_l_name, emp_emeil, emp_DOB, pw_hash, pw_hash_confirm , manager )
+        models.add_employee(emp_f_name, emp_l_name, emp_emeil, emp_DOB, pw_hash, pw_hash_confirm  )
         messages.success(request, "Successfully added an employee!" , extra_tags = 'add_employee')
-        return redirect('/employees')
+        return redirect('/signup')
 
 def display_employees(request):
     # if the manad=egr not in the loged on
@@ -260,7 +261,7 @@ def submet_sale_order(request):
             product_id = key.get('product_id')
             quantity = key.get('quantity')
             #make invoice                                        
-            models.add_sale_relation(product_id)#---------GET the product-----AMD------ADD the product------- 4
+            # models.add_sale_relation(product_id)#---------GET the product-----AMD------ADD the product------- 4
             ###############################
             models.add_item_to_invoice(product_id, quantity)#new
             ##############################
@@ -275,7 +276,7 @@ def submet_sale_order(request):
 purchases_order = []
 #____________________________________PURCHASE___________________________________
 def add_product_to_purchase(request):
-    errors = models.Purchasing_invoice.objects.invoice_validator(request.POST)
+    errors = models.Purchase.objects.invoice_validator(request.POST)
     if len(errors) > 0:
         for key, value in errors.items():
             messages.error(request, value)
@@ -299,7 +300,7 @@ def submet_purchase_order(request):
             product_id = key.get('product_id')
             quantity = key.get('quantity')
             
-            models.add_purchase_relation(product_id)#---------GET the product-----AMD------ADD the product------- 4
+            # models.add_purchase_relation(product_id)#---------GET the product-----AMD------ADD the product------- 4
             #################################
             models.add_item_to_purchase_invoice(product_id, quantity)
             #################################
@@ -349,8 +350,8 @@ def view_sale_order(request, id):#--------------------------------------------Ma
 
 def view_purchase_invoice(request,id):
     context={
-        'order': models.get_sale_order(id),
-        'invoice': models.get_purchase_invoice(id),
+        # 'order': models.get_sale_order(id),
+        'invoice': models.get_purchases(id),
         'purchase_products':models.purchase_invoices_products(id),#MAI*****
     }
     return render(request, 'view_purchase_invoice.html',context)

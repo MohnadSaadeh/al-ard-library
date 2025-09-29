@@ -1,11 +1,13 @@
-from django.db import models
+from django.db import models 
 import datetime 
 from django.utils import timezone 
-import re
+import re 
+# from . import views
 
 class EmployeeManager(models.Manager):
     def employee_validator(self, postData):
-        dob_val = views.get_date_time()
+        # dob_val = views.get_date_time()
+        dob_val = datetime.date.today()
         errors = {}
         EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
         if len(postData['f_name']) < 2:
@@ -74,15 +76,15 @@ class ProductManager(models.Manager):
             errors['purchasing_price'] = "Please enter a purchasing price"
         if postData['product_name'] == "":
             errors['product_name'] = "Please enter a product name"
-        if postData['expiry_date'] == "":
-            errors['expiry_date'] = "Please enter an expiry date"
-        if postData['expiry_date'] < str(datetime.date.today()):
-            errors['expiry_date'] = "Expiry date should be in the future"
+        # if postData['expiry_date'] == "":
+        #     errors['expiry_date'] = "Please enter an expiry date"
+        # if postData['expiry_date'] < str(datetime.date.today()):
+        #     errors['expiry_date'] = "Expiry date should be in the future"
         if postData['supplier'] == "":
             errors['supplier'] = "Please enter a supplier"
         return errors
 
-class Purchasing_invoiceManager(models.Manager):
+class PurchaseManager(models.Manager):
     def invoice_validator(self, postData):
         errors = {}
         if (postData['product_name']) == "- Select Product -":
@@ -93,25 +95,36 @@ class Purchasing_invoiceManager(models.Manager):
         #     errors['supplier'] = "Please enter a supplier"
         return errors
 
+from django.db import models
+
 class Sale_orderManager(models.Manager):
     def invoice_sale_validator(self, postData):
+        # Import here to avoid circular import
+        from .models import Product  
+
+        product = Product.objects.filter(product_name=postData.get('product_name')).first()
         errors = {}
-        if postData['product_name'] == "- Select Product -":
-            errors['product_name'] = "Choose a Product Please"
+
+        if not product:
+            errors['product_name'] = "⚠️ Product not found."
             return errors
-        else:
-            if (postData['quantity'] == "") or (postData['quantity'] == "0" ):
-                errors['quantity'] = "Please enter a quantity"
-                return errors
-            else:
-                if Product.objects.get(product_name=postData['product_name']).quantity < int(postData['quantity']):
-                    errors['quantity'] = "Insufficient stock"
-                    return errors
-                else:
-                    if (Product.objects.get(product_name=postData['product_name']).quantity == 0) :
-                        errors['quantity'] = "Out of Stock"
-                        return errors
+
+        try:
+            quantity = int(postData.get('quantity', 0))
+        except ValueError:
+            errors['quantity'] = "⚠️ Quantity must be a number."
+            return errors
+
+        if quantity <= 0:
+            errors['quantity'] = "⚠️ Quantity must be greater than zero."
+        elif product.quantity == 0:
+            errors['quantity'] = "⚠️ Out of stock."
+        elif product.quantity < quantity:
+            errors['quantity'] = f"⚠️ Only {product.quantity} left in stock."
+
         return errors
+
+
 
 
 

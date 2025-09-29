@@ -3,7 +3,7 @@ from django.db.models import F, ExpressionWrapper, FloatField ,DecimalField, Int
 import re
 from datetime import datetime , timedelta
 import datetime
-from .validations import EmployeeManager , ManagerManager , ProductManager , Purchasing_invoiceManager , Sale_orderManager
+from .validations import EmployeeManager , ManagerManager , ProductManager , PurchaseManager , Sale_orderManager
 
 
 class Supplier(models.Model):
@@ -70,18 +70,18 @@ class Employee(models.Model):
     DOB = models.DateField()
     password = models.CharField(max_length=255)
     confirm_password = models.CharField(max_length=255)
-    manager = models.ForeignKey(Manager , related_name="employees", on_delete=models.CASCADE) 
+    # manager = models.ForeignKey(Manager , related_name="employees", on_delete=models.CASCADE) 
     is_active = models.BooleanField(default=False) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = EmployeeManager()
     # products
-    # purchasing_invoice
+    # purchases
     # sale_orders
 
-def add_employee(f_name, l_name, email, DOB, password, confirm_password ,manager_id ):
-    manager = Manager.objects.get(id=manager_id)
-    Employee.objects.create(first_name=f_name, last_name=l_name, email=email, DOB=DOB, password=password, confirm_password=confirm_password , manager = manager )
+def add_employee(f_name, l_name, email, DOB, password, confirm_password ):
+    # manager = Manager.objects.get(id=manager_id)
+    Employee.objects.create(first_name=f_name, last_name=l_name, email=email, DOB=DOB, password=password, confirm_password=confirm_password  )
 def get_all_employees():
     return Employee.objects.all()
 
@@ -98,18 +98,17 @@ def get_employee_by_id(id):
 
 class Product(models.Model):
     product_name = models.CharField(max_length=255)
-    quantity = models.IntegerField() #stock_quantity
+    quantity = models.IntegerField( default = 0  ) #stock_quantity
     purchasing_price = models.DecimalField(max_digits=6, decimal_places=2) # 999999.99
     sale_price = models.DecimalField(max_digits=6, decimal_places=2, null=True , blank=True) # 999999.99
     category = models.CharField(max_length=100, blank=True, null=True)
-    expiry_date  = models.DateField()
-    supplier = models.CharField(max_length=255)  # Supplier NAME
-
+    expiry_date  = models.DateField(blank=True, null=True)
+    supplier = models.CharField(max_length=255,blank=True, null=True)  # Supplier NAME
     employee = models.ForeignKey(Employee , related_name="products", on_delete=models.CASCADE , null=True, blank=True) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = ProductManager()
-    # purchasing_invoices
+    # purchases
     # sale_orders
     # attributes
     def __str__(self):
@@ -216,43 +215,54 @@ def get_six_monthes_products():
 #--------------------------------------------------------------------PUECHASING-----------------------
 
 
+
+
+
 # P.Inv contains many products
 # P.Inv is made by one EMP
-class Purchasing_invoice(models.Model):
-
-    # product_name = models.CharField(max_length=255)
-    # quantity = models.IntegerField()
-
-    employee = models.ForeignKey(Employee , related_name="purchasing_invoices", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
-    products = models.ManyToManyField(Product, related_name="purchasing_invoices")
+# (المشتريات من الموردين)
+# (فاتورة)
+class Purchase(models.Model): #i changed from Purchasing_invoice to Purchase >
+    pay_choices = [
+        ('cash', 'Cash'),
+        ('debts','Debts'),
+    ]
     # supplier = models.foreignKey(Supplier , related_name="purchasing_invoices", on_delete=models.CASCADE, null=True)
+    employee = models.ForeignKey(Employee , related_name="Purchases", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
+    # إجمالي قيمة الفاتورة
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # the total amount of the invoice
+    payment_method = models.CharField(max_length=10, choices=pay_choices, default='cash')
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    objects = Purchasing_invoiceManager()
+    objects = PurchaseManager()
     # products
     # purchase_items
 
 # the P.Item table to link the invoice with the product and the quantity of each product in the invoice
-class Purchase_item(models.Model):
-    purchasing_invoice = models.ForeignKey(Purchasing_invoice, related_name="purchase_items", on_delete=models.CASCADE)
+class Purchase_item(models.Model): # i changed PK name from Purchasing_invoice to Purchase_id >
+    purchase_id = models.ForeignKey(Purchase, related_name="purchase_items", on_delete=models.CASCADE)
     product = models.ForeignKey(Product, related_name="purchase_items", on_delete=models.CASCADE)
     quantity = models.IntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # equal purchasing_price in Product table
+    # ماذا اشترينا، وبأي كمية، وبأي سعر
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
 def get_all_invoices():
-    return Purchasing_invoice.objects.all().order_by('-created_at')
+    return Purchase.objects.all().order_by('-created_at')
 
 #--------------------------------------------------------------------SALE_ORDER-----------------------
 
 
 # S.Order contains many products
 # S.Order is made by one EMP
+# (فاتورة)
 class Sale_order(models.Model):
     # customer_name = models.CharField(max_length=255) 
     employee = models.ForeignKey(Employee , related_name="sale_orders", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
-    products = models.ManyToManyField(Product, related_name="sale_orders")
-    # quantity = models.IntegerField()
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) #means the total amount of the order
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = Sale_orderManager()
@@ -264,17 +274,19 @@ class Sale_item(models.Model):
     sale_order = models.ForeignKey(Sale_order, related_name="sale_items", on_delete=models.CASCADE)
     product = models.ForeignKey(Product, related_name="sale_items", on_delete=models.CASCADE)
     quantity = models.IntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # equal sale_price in Product table
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 #---------------------Sale--------------------
+
 def create_sale_order(employee_id):
     employee = Employee.objects.get(id=employee_id)
     return Sale_order.objects.create(employee = employee ) # create the invoice
 
-def add_sale_relation(product_id):#------------------------ add the product to the invoice
-    product = Product.objects.get(id=product_id)
-    sale_order = Sale_order.objects.last()
-    return sale_order.products.add(product)
+# def add_sale_relation(product_id):#------------------------ add the product to the invoice
+#     product = Product.objects.get(id=product_id)
+#     sale_order = Sale_order.objects.last()
+#     return sale_order.products.add(product)
     ################################
 def add_item_to_invoice(product_id, quantity):# add the product to the invoice
     product = Product.objects.get(id=product_id)
@@ -290,7 +302,7 @@ def add_product_to_sale( product_id, quantity ): #--------- minimize the quantit
 def today_sale_orders():#MAI******
     return Sale_order.objects.filter(created_at__contains=datetime.date.today()).count()
 def today_purchases():#MAI******
-    return Purchasing_invoice.objects.filter(created_at__contains=datetime.date.today()).count()
+    return Purchase.objects.filter(created_at__contains=datetime.date.today()).count()
 
 #--------------------Sale------------------------
 
@@ -300,17 +312,17 @@ def today_purchases():#MAI******
 #--------------------purchase--------------------
 def create_purchase_order(employee_id):
     employee = Employee.objects.get(id=employee_id)
-    return Purchasing_invoice.objects.create(employee = employee) # craete the invoice
+    return Purchase.objects.create(employee = employee) # craete the invoice
 
-def add_purchase_relation(product_id): #--------------------------- add the product to the invoice
-    product = Product.objects.get(id=product_id)
-    purchase_invoice = Purchasing_invoice.objects.last()
-    return purchase_invoice.products.add(product)
+# def add_purchase_relation(product_id): #--------------------------- add the product to the invoice
+#     product = Product.objects.get(id=product_id)
+#     purchase = Purchase.objects.last()
+#     return purchase.products.add(product)
 #################################
 def add_item_to_purchase_invoice(product_id, quantity): # add the product to the invoice
     product = Product.objects.get(id=product_id)
-    purchase_invoice = Purchasing_invoice.objects.last()
-    return Purchase_item.objects.create(purchasing_invoice=purchase_invoice, product=product, quantity=quantity)
+    purchase = Purchase.objects.last()
+    return Purchase_item.objects.create(purchase_id=purchase, product=product, quantity=quantity)
 #################################
 def add_product_to_purchase(product_id, quantity): #--------------- maximize the quantity of the product
     product = Product.objects.get(id=product_id)
@@ -332,11 +344,11 @@ def sale_orders_products(id):
 ###############################
 
 
-def get_purchase_invoice(id):
-    return Purchasing_invoice.objects.get(id=id)
+def get_purchases(id): #changed from get_purchase_invoice to get_purchases
+    return Purchase.objects.get(id=id)
 
 ###############################
 def purchase_invoices_products(id):
-    purchase_invoice= Purchasing_invoice.objects.get(id=id)
+    purchase_invoice= Purchase.objects.get(id=id)
     return purchase_invoice.purchase_items.all()
 ###############################

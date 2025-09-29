@@ -1,4 +1,4 @@
-{% extends 'layouts/base.html' %}
+{% extends 'layouts/base-landing.html' %}
 
 {% block title %}Sign Up{% endblock %}
 
@@ -6,17 +6,17 @@
 
 {% block content %}
 
-            {% block page_name %} {% endblock %}
-            {% block page_name2 %}Sign Up {% endblock %}
 <!-- comtent -->
-<div class="container">
-      <div class="row mt-lg-n10 mt-md-n11 mt-n10 justify-content-center">
+
+
+<div class="container" >
+      <div class="row mt-lg-n10 mt-md-n11 mt-n10 justify-content-center" >
         <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
-          <div class="card z-index-0">
+          <div class="card mb-4 mt-12 ms-4 me-4 z-index-10">
             <div class="card-header text-center pt-4">
               <h5>Register with</h5>
             </div>
-            <div class="row px-xl-5 px-sm-4 px-3">
+            <!-- <div class="row px-xl-5 px-sm-4 px-3">
               <div class="col-3 ms-auto px-1">
                 <a class="btn btn-outline-light w-100" href="javascript:;">
                   <svg width="24px" height="32px" viewBox="0 0 64 64" version="1.1">
@@ -59,9 +59,69 @@
                   or
                 </p>
               </div>
-            </div>
-            <div class="card-body">
-              <form role="form">
+            </div> -->
+            <!-- <div class="card-body"> -->
+              <form action="/add_employee" method="post">
+                {% csrf_token %}
+                
+              </div>
+              <div class="card-body">
+                <p class="text-uppercase text-sm">Employee Information</p>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="example-text-input" class="form-control-label">First Name</label>
+                      <input class="form-control" type="text" name="f_name" >
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="example-text-input" class="form-control-label">Last Name</label>
+                      <input class="form-control" type="text" name="l_name">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="example-text-input" class="form-control-label">Email</label>
+                      <input class="form-control" type="email" name="email" autocomplete="email">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="example-text-input" class="form-control-label">Date of birth</label>
+                      <input class="form-control" type="date" name="DOB">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="example-text-input" class="form-control-label">Password</label>
+                      <input class="form-control" type="password" name="password"autocomplete="password">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="example-text-input" class="form-control-label">Confirm Password</label>
+                      <input class="form-control" type="password" name="c_password"autocomplete="c_password">
+                    </div>
+                  </div>
+                  <div class="text-center">
+                  <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">Sign up</button>
+                  </div>
+                </div>
+                {% if messages %}
+                <ul class="messages">    
+                  {% for message in messages %}    
+                      {% if message.extra_tags == 'add_employee' %}
+                      <li class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>    
+                      {% else %}
+                      <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li> 
+                      {% endif %}
+                    {% endfor %}
+                </ul>
+                {% endif %}
+              </form>
+              
+              <!-- <form role="form">
                 <div class="mb-3">
                   <input type="text" class="form-control" placeholder="Name" aria-label="Name">
                 </div>
@@ -80,8 +140,8 @@
                 <div class="text-center">
                   <button type="button" class="btn bg-gradient-dark w-100 my-4 mb-2">Sign up</button>
                 </div>
-                <p class="text-sm mt-3 mb-0">Already have an account? <a href="javascript:;" class="text-dark font-weight-bolder">Sign in</a></p>
-              </form>
+                <p class="text-sm mt-3 mb-0">Already have an account? <a href="/" class="text-dark font-weight-bolder">Sign in</a></p>
+              </form> -->
             </div>
           </div>
         </div>

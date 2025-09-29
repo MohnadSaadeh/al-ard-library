@@ -5,7 +5,7 @@ from .models import Product , ProductAttribute
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['product_name', 'quantity', 'purchasing_price', 'expiry_date', 'supplier']
+        fields = ['product_name', 'quantity', 'purchasing_price', 'sale_price', 'supplier']
 
 
 ProductAttributeFormSet = forms.inlineformset_factory(
@@ -33,4 +33,38 @@ ProductAttributeFormSet = forms.inlineformset_factory(
 #             raise forms.ValidationError("يرجى إدخال قيمة رقمية.")
 #         if value_type == 'date' and not cleaned_data.get('attribute_value_date'):
 #             raise forms.ValidationError("يرجى إدخال تاريخ.")
+#         return cleaned_data
+
+# from .models import Employee
+
+# class EmployeeForm(forms.ModelForm):
+#     confirm_password = forms.CharField(
+#         widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}),
+#         label="Confirm Password"
+#     )
+
+#     class Meta:
+#         model = Employee
+#         fields = [
+#             'first_name',
+#             'last_name',
+#             'email',
+#             'DOB',
+#             'password',
+#             'confirm_password',
+#             'manager',
+#             'is_active',
+#         ]
+#         widgets = {
+#             'DOB': forms.DateInput(attrs={'type': 'date'}),
+#             'password': forms.PasswordInput(attrs={'placeholder': 'Password'}),
+#         }
+
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         password = cleaned_data.get("password")
+#         confirm_password = cleaned_data.get("confirm_password")
+
+#         if password and confirm_password and password != confirm_password:
+#             self.add_error('confirm_password', "Passwords do not match.")
 #         return cleaned_data
