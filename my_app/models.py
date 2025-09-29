@@ -232,7 +232,8 @@ class Purchase(models.Model): #i changed from Purchasing_invoice to Purchase >
     # إجمالي قيمة الفاتورة
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # the total amount of the invoice
     payment_method = models.CharField(max_length=10, choices=pay_choices, default='cash')
-    
+
+    grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = PurchaseManager()
@@ -245,6 +246,7 @@ class Purchase_item(models.Model): # i changed PK name from Purchasing_invoice t
     product = models.ForeignKey(Product, related_name="purchase_items", on_delete=models.CASCADE)
     quantity = models.IntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # equal purchasing_price in Product table
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     # ماذا اشترينا، وبأي كمية، وبأي سعر
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -270,11 +272,13 @@ class Sale_order(models.Model):
     # sale_items
 
 # the S.Item table to link the invoice with the product and the quantity of each product in the invoice
+# (تفاصيل الفاتورة)
 class Sale_item(models.Model):
     sale_order = models.ForeignKey(Sale_order, related_name="sale_items", on_delete=models.CASCADE)
     product = models.ForeignKey(Product, related_name="sale_items", on_delete=models.CASCADE)
     quantity = models.IntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # equal sale_price in Product table
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # equal sale_price * quantity
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 #---------------------Sale--------------------
@@ -319,10 +323,10 @@ def create_purchase_order(employee_id):
 #     purchase = Purchase.objects.last()
 #     return purchase.products.add(product)
 #################################
-def add_item_to_purchase_invoice(product_id, quantity): # add the product to the invoice
+def add_item_to_purchase_invoice(product_id, quantity ,purchase_price ,total_price ): # add the product to the invoice
     product = Product.objects.get(id=product_id)
     purchase = Purchase.objects.last()
-    return Purchase_item.objects.create(purchase_id=purchase, product=product, quantity=quantity)
+    return Purchase_item.objects.create(purchase_id=purchase, product=product, quantity=quantity , unit_price=purchase_price , total_price=total_price )
 #################################
 def add_product_to_purchase(product_id, quantity): #--------------- maximize the quantity of the product
     product = Product.objects.get(id=product_id)

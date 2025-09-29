@@ -220,11 +220,14 @@ def display_sales(request):
     return render(request , 'sale_orders.html', context )
 
 def display_purchases(request):
+    # calculate grand total
+    grand_total = sum(item['total_price'] for item in purchases_order)
     context = {
             'purchases_order': purchases_order,
             'products': models.get_all_products(),#--------------------------------------------Mai
             'invoices' : models.get_all_invoices(),
             'employee': models.get_employee_by_id(request.session['employee_id']),#--------------------------------------------Mai
+            'grand_total': grand_total,
         }
     return render(request , 'purchase_invoices.html' ,context)
 
@@ -285,7 +288,15 @@ def add_product_to_purchase(request):
         product_name = request.POST['product_name']
         quantity = request.POST['quantity']
         product_id = models.Product.objects.get(product_name=product_name).id
-        purchases_order.append ( {'product_name': product_name, 'product_id': product_id , 'quantity': quantity} )
+        purchase_price = models.Product.objects.get(product_name=product_name).purchasing_price
+        total_price = int(quantity) * float(purchase_price)
+        purchases_order.append ( {
+            'product_name': product_name,
+            'product_id': product_id ,
+            'quantity': quantity,
+            'purchase_price': purchase_price,
+            'total_price': total_price,
+            } )
         return redirect('/purchases')
     
 def submet_purchase_order(request):
@@ -299,10 +310,13 @@ def submet_purchase_order(request):
             product_name = key.get('product_name')
             product_id = key.get('product_id')
             quantity = key.get('quantity')
+            purchase_price = key.get('purchase_price')
+            total_price = key.get('total_price')
+            #make invoice
             
             # models.add_purchase_relation(product_id)#---------GET the product-----AMD------ADD the product------- 4
             #################################
-            models.add_item_to_purchase_invoice(product_id, quantity)
+            models.add_item_to_purchase_invoice(product_id, quantity , purchase_price, total_price )#new
             #################################
             models.add_product_to_purchase(product_id, quantity)
         purchases_order.clear()
