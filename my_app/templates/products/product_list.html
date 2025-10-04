@@ -1,4 +1,4 @@
-{% extends "layouts/base.html" %}
+{% extends 'layouts/base.html' %}
 {% load crispy_forms_tags %}
 
 {% block title %}products{% endblock %}
@@ -6,6 +6,9 @@
 {% block stylesheets %} {% endblock stylesheets %}
 
 {% block content %}
+
+{% block page_name %}Products{% endblock %}
+{% block page_name2 %}Add / View products{% endblock %}
 <div class="row" >
     <div class="container mt-5">
         <h2>قائمة المنتجات</h2>
@@ -67,3 +70,4 @@
     </div>
 </div>
 {% endblock content %}
+{% block javascripts %} {% endblock javascripts %}
