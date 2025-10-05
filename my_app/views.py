@@ -335,6 +335,111 @@ def clear_purchases_list(request):
 
     return purchases_order.clear()
 
+
+# -------------------- RETURN PURCHASES (Products returned) --------------------
+returns_order = []
+
+def display_returns(request):
+    # calculate grand total for current return order
+    grand_total = sum(item['total_price'] for item in returns_order)
+    context = {
+        'returns_order': returns_order,
+        'products': models.get_all_products(),
+        'return_invoices': models.get_all_return_invoices(),
+        'employee': models.get_employee_by_id(request.session['employee_id']),
+        'grand_total': grand_total,
+    }
+    return render(request, 'return_purchases.html', context)
+
+
+def add_product_to_return(request):
+    errors = models.Purchase.objects.invoice_validator(request.POST)
+    if len(errors) > 0:
+        for key, value in errors.items():
+            messages.error(request, value)
+        return redirect('/return_purchases')
+    else:
+        product_name = request.POST['product_name']
+        quantity = request.POST['quantity']
+        product = models.Product.objects.get(product_name=product_name)
+        product_id = product.id
+        unit_price = product.purchasing_price
+        total_price = int(quantity) * float(unit_price)
+        returns_order.append({
+            'product_name': product_name,
+            'product_id': product_id,
+            'quantity': quantity,
+            'unit_price': unit_price,
+            'total_price': total_price,
+        })
+        # immediately subtract quantity from product stock in memory via model helper
+        models.add_product_to_return(product_id, quantity)
+        return redirect('/return_purchases')
+
+
+def submet_return_order(request):
+    if returns_order == []:
+        messages.error(request, "Please add at least one product to return!")
+        return redirect('/return_purchases')
+    else:
+        employee_id = request.session['employee_id']
+        models.create_return_order(employee_id)
+        for key in returns_order:
+            product_id = key.get('product_id')
+            quantity = key.get('quantity')
+            unit_price = key.get('unit_price')
+            total_price = key.get('total_price')
+            models.add_item_to_return_invoice(product_id, quantity, unit_price, total_price)
+            # Already subtracted when adding to cart, so no need to call again
+
+        # compute grand_total from the items we've just added
+        try:
+            grand = sum(float(item.get('total_price')) for item in returns_order)
+        except Exception:
+            grand = 0.0
+        # update grand_total on the created return invoice
+        last_return = models.Return.objects.last()
+        if last_return:
+            last_return.grand_total = grand
+            last_return.total_amount = grand
+            last_return.save()
+
+        returns_order.clear()
+        messages.success(request, "Return Recorded Successfully!", extra_tags='add_return')
+        return redirect('/return_purchases')
+
+
+def clear_returns_list(request):
+    if returns_order == []:
+        messages.error(request, "already empty!")
+        return redirect('/return_purchases')
+    else:
+        # If user clears the list, we should restore quantities back to stock
+        for item in returns_order:
+            try:
+                models.add_product_to_purchase(item.get('product_id'), item.get('quantity'))
+            except Exception:
+                pass
+        returns_order.clear()
+        return redirect('/return_purchases')
+
+
+def view_return_invoice(request, id):
+    context = {
+        'invoice': models.get_return_invoice(id),
+        'return_products': models.return_invoices_products(id),
+    }
+    return render(request, 'view_return_invoice.html', context)
+
+
+def print_return_invoice(request, id):
+    # standalone printable page for the return invoice
+    context = {
+        'invoice': models.get_return_invoice(id),
+        'return_products': models.return_invoices_products(id),
+    }
+    return render(request, 'print_return_invoice.html', context)
+
 def clear_sales_list(request) :
     if sale_order == []:
         messages.error(request, "already empty!")

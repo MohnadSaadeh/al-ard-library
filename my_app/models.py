@@ -356,3 +356,55 @@ def purchase_invoices_products(id):
     purchase_invoice= Purchase.objects.get(id=id)
     return purchase_invoice.purchase_items.all()
 ###############################
+
+
+# ------------------- Returns (Products returned to supplier) -----------------
+class Return(models.Model):
+    employee = models.ForeignKey(Employee, related_name="returns", on_delete=models.CASCADE)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class Return_item(models.Model):
+    return_invoice = models.ForeignKey(Return, related_name="return_items", on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name="return_items", on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+def create_return_order(employee_id):
+    employee = Employee.objects.get(id=employee_id)
+    return Return.objects.create(employee=employee)
+
+
+def add_item_to_return_invoice(product_id, quantity, unit_price, total_price):
+    product = Product.objects.get(id=product_id)
+    return_invoice = Return.objects.last()
+    return Return_item.objects.create(return_invoice=return_invoice, product=product, quantity=quantity, unit_price=unit_price, total_price=total_price)
+
+
+def add_product_to_return(product_id, quantity):
+    # subtract returned quantity from product stock
+    product = Product.objects.get(id=product_id)
+    product.quantity -= int(quantity)
+    if product.quantity < 0:
+        product.quantity = 0
+    return product.save()
+
+
+def get_all_return_invoices():
+    return Return.objects.all().order_by('-created_at')
+
+
+def get_return_invoice(id):
+    return Return.objects.get(id=id)
+
+
+def return_invoices_products(id):
+    return_invoice = Return.objects.get(id=id)
+    return return_invoice.return_items.all()

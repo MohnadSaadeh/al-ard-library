@@ -1,0 +1,146 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Return Purchases{% endblock %}
+
+{% block content %}
+
+      {% block page_name %}Return Purchases{% endblock %}
+      {% block page_name2 %}Return Purchases{% endblock %}
+
+<div class="row">
+    <div class="col-8">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <form action="/add_order_to_return" method="post" id="add-form">
+            {% csrf_token %}
+            <div class="d-flex align-items-center">
+              <p class="mb-0 ">New Return Invoice</p>
+              
+              <button class="btn btn-danger btn-sm ms-auto">Add product</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="text-uppercase text-sm"></p>
+            <div class="row">
+              <div class="col-md-6">
+                <label for="example-text-input" class="form-control-label">Product Name</label>
+                </div>
+                <div class="btn-group ">
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <select id="results-box"   class="form-control" name="product_name">
+                        <option value="- Select Product -">- Select Product -</option>
+                        {% for product in products %}
+                        <option>{{product.product_name}}</option>
+                        {% endfor %}
+                        </select>
+
+                    </div>
+                  </div>
+                  <div class="w-15 text-center">
+                    <div id="search-form"   outocomplete = "off">
+                        <input id="search-input" class="form-control me-2" type="search" placeholder="Search " aria-label="Search">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="example-text-input" class="form-control-label">Quantity</label>
+                  <input class="form-control" type="number" name="quantity" >
+                </div>
+              </div>
+               
+            
+          </form>
+
+          <form action="/submet_return_order" method="post">
+              {% csrf_token %}
+              <p>Return Summery</p>
+              <table class="table">
+                <tr >
+                  <th class="ps-3">id</th>
+                  <th class="ps-3">Product</th>
+                  <th>Quantity</th>
+                  <th class="ps-3">Unit Price</th>
+                  <th class="ps-3">Total Price</th>
+                </tr>
+                {% for order in returns_order %}
+                <tr>
+                  <td class="ps-3"> {{order.product_id}} </td>
+                  <td class="ps-3"> {{order.product_name}} </td>
+                  <td>{{order.quantity}}</td>
+                  <td class="ps-3"> {{order.unit_price}} </td>
+                  <td class="ps-3"> {{order.total_price}} </td>
+                </tr>
+                {% endfor %}
+                <tr class="table-secondary fw-bold">
+                  <td colspan="4" class="text-end">Grand Total</td>
+                  <td class="ps-3">{{ grand_total }}</td>
+                </tr>
+              </table>
+                 
+
+              <button type="submit" class="btn btn-danger btn-sm ms-auto mt-4">Submit return</button>
+              <a href="/clear_returns_list" class="btn btn-danger btn-sm ms-auto mt-4"> Clear return</a>
+            </div>
+
+              {% if messages %}
+              <ul class="messages">    
+                {% for message in messages %}    
+                    {% if message.extra_tags == 'add_return' %}
+                    <p class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>    
+                    {% else %}
+                    <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p> 
+                    {% endif %}
+                  {% endfor %}
+              </ul>
+              {% endif %}
+          </form>
+        
+      </div>
+    </div> 
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-4">
+        <div class="card-header pb-0">
+          <h6>Recent Returned Invoices</h6>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-0">
+            <table class="table align-items-center justify-content-center mb-0">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Return No.</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">Added by</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">Added at</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for invoice in return_invoices %}
+                <tr>
+                  <td>
+                    <p class="text-sm mb-0 font-weight-bold mb-0"> {{invoice.id}} </p>
+                  </td>
+                  <td>
+                    <p class="text-sm mb-0 font-weight-bold mb-0"> {{invoice.employee.first_name}} {{invoice.employee.last_name}} </p>
+                  </td>
+                  <td>
+                    <span class="text-sm mb-0 font-weight-bold">{{invoice.created_at}}</span>
+                  </td>
+                  <td>
+                    <span class="text-sm  mb-0 font-weight-bold"><a href="/view_return_invoice/{{invoice.id}}">View</a></span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
