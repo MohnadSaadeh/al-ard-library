@@ -334,6 +334,16 @@ def submet_purchase_order(request):
             models.add_item_to_purchase_invoice(product_id, quantity , purchase_price, total_price )#new
             #################################
             models.add_product_to_purchase(product_id, quantity)
+        # update the created Purchase total (grand_total and total_amount)
+        try:
+            last_purchase = models.Purchase.objects.last()
+            total_sum = models.Purchase_item.objects.filter(purchase_id=last_purchase).aggregate(total=Sum('total_price'))['total'] or 0
+            last_purchase.grand_total = total_sum
+            last_purchase.total_amount = total_sum
+            last_purchase.save()
+        except Exception:
+            pass
+
         purchases_order.clear()
         messages.success(request, "Purchased Successfully!", extra_tags = 'add_invoice')
 
@@ -462,6 +472,14 @@ def print_sale_invoice(request, id):
         'sale_products': models.sale_orders_products(id),
     }
     return render(request, 'print_sale_invoice.html', context)
+
+
+def print_purchase_invoice(request, id):
+    context = {
+        'invoice': models.get_purchases(id),
+        'purchase_products': models.purchase_invoices_products(id),
+    }
+    return render(request, 'print_purchase_invoice.html', context)
 
 def clear_sales_list(request) :
     if sale_order == []:

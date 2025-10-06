@@ -11,23 +11,30 @@
       .container{ max-width:900px; margin:0 auto; }
       .text-center{ text-align:center; }
       .text-end{ text-align:right; }
-      .table{ width:100%; border-collapse:collapse; }
-      .table th, .table td{ border:1px solid #dee2e6; padding:.5rem; }
+      .invoice-box{ border:1px solid #dee2e6; border-radius:6px; background:#fff; }
+      .invoice-header{ border-bottom:1px solid #dee2e6; padding:12px; }
+      .invoice-footer{ border-top:1px solid #dee2e6; padding:12px; }
+      .table{ width:100%; border-collapse:collapse; border:1px solid #dee2e6; border-spacing:0; }
+      .table th, .table td, table th, table td{ border:1px solid #dee2e6 !important; padding:.5rem; }
+      .table tbody tr:last-child td{ border-bottom:1px solid #dee2e6 !important; }
+      .table tbody tr:only-child td{ border-top:1px solid #dee2e6 !important; border-bottom:1px solid #dee2e6 !important; }
+      .table tfoot td{ border-top:2px solid #dee2e6; }
       .small{ font-size:0.9rem; color:#6c757d; }
       @media print{ body{ margin:0; } }
     </style>
   </head>
   <body>
-    <div class="container p-4">
-      <div class="text-center mb-3">
-        <img src="{% static 'img/al-ard-profile-Banner.png' %}" alt="Al Ard" style="max-height:120px; display:block; margin:0 auto;" />
-      </div>
+    <div class="container">
+      <div class="invoice-box p-4">
+        <div class="text-center mb-3 invoice-header">
+          <img src="{% static 'img/al-ard-profile-Banner.png' %}" alt="Al Ard" style="max-height:120px; display:block; margin:0 auto;" />
+        </div>
 
-      <h2 class="text-center">Sales Invoice</h2>
-      <div class="text-center small text-muted mb-2">Invoice No: <strong>#{{ order.id }}</strong> &nbsp; | &nbsp; Date: <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong></div>
+        <h2 class="text-center">Sales Invoice</h2>
+        <div class="text-center small text-muted mb-2">Invoice No: <strong>#{{ order.id }}</strong> &nbsp; | &nbsp; Date: <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong></div>
 
-      <div class="table-responsive">
-        <table class="table table-sm table-bordered">
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered">
           <thead>
             <tr>
               <th>#</th>
@@ -62,7 +69,7 @@
         </table>
       </div>
 
-      <div class="mt-4 d-flex justify-content-between">
+      <div class="mt-4 d-flex justify-content-between invoice-footer">
         <div class="small text-muted">
           <div><strong>VAT / Tax No:</strong> 12345678</div>
           <div><strong>Payment Terms:</strong> As agreed</div>
@@ -71,6 +78,7 @@
           <div style="margin-bottom:40px;">_____________________________<br/>Authorized Signature</div>
           <div>_____________________________<br/>Received by (Customer)</div>
         </div>
+      </div>
       </div>
     </div>
 

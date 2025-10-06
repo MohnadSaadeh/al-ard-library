@@ -21,6 +21,7 @@ urlpatterns = [
     path('view_return_invoice/<int:id>', views.view_return_invoice),
     path('print_return_invoice/<int:id>', views.print_return_invoice),
     path('print_sale_invoice/<int:id>', views.print_sale_invoice),
+    path('print_purchase_invoice/<int:id>', views.print_purchase_invoice),
     path('delete_product', views.delete_product),
     
     path('add_order_to_sale', views.add_product_to_sale),
