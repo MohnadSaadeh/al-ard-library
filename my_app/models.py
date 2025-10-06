@@ -414,3 +414,60 @@ def get_return_invoice(id):
 def return_invoices_products(id):
     return_invoice = Return.objects.get(id=id)
     return return_invoice.return_items.all()
+
+
+# -------------------- Sale Returns (customer returns) -----------------
+class SaleReturn(models.Model):
+    # optional link to original sale order if available
+    sale_order = models.ForeignKey(Sale_order, related_name='sale_returns', on_delete=models.SET_NULL, null=True, blank=True)
+    employee = models.ForeignKey(Employee, related_name="sale_returns", on_delete=models.CASCADE)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class SaleReturnItem(models.Model):
+    sale_return = models.ForeignKey(SaleReturn, related_name="items", on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name="sale_return_items", on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+def create_sale_return(employee_id, sale_order_id=None):
+    employee = Employee.objects.get(id=employee_id)
+    sale_order = None
+    if sale_order_id:
+        try:
+            sale_order = Sale_order.objects.get(id=sale_order_id)
+        except Exception:
+            sale_order = None
+    return SaleReturn.objects.create(employee=employee, sale_order=sale_order)
+
+
+def add_item_to_sale_return(product_id, quantity, unit_price, total_price):
+    product = Product.objects.get(id=product_id)
+    sale_return = SaleReturn.objects.last()
+    return SaleReturnItem.objects.create(sale_return=sale_return, product=product, quantity=quantity, unit_price=unit_price, total_price=total_price)
+
+
+def add_product_back_on_return(product_id, quantity):
+    product = Product.objects.get(id=product_id)
+    product.quantity += int(quantity)
+    return product.save()
+
+
+def get_all_sale_returns():
+    return SaleReturn.objects.all().order_by('-created_at')
+
+
+def get_sale_return(id):
+    return SaleReturn.objects.get(id=id)
+
+
+def sale_return_products(id):
+    sr = SaleReturn.objects.get(id=id)
+    return sr.items.all()

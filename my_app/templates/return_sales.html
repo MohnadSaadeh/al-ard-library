@@ -1,0 +1,109 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}Return Sales{% endblock %}
+
+{% block content %}
+
+{% block page_name %}Return Sales{% endblock %}
+{% block page_name2 %}Return Sales{% endblock %}
+
+<div class="row">
+  <div class="col-8">
+    <div class="card mb-4">
+      <div class="card-header pb-0">
+        <form action="/add_order_to_sale_return" method="post">
+          {% csrf_token %}
+          <div class="d-flex align-items-center">
+            <p class="mb-0">New Sale Return</p>
+            <button class="btn btn-primary btn-sm ms-auto">Add product</button>
+          </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <label class="form-control-label">Product Name</label>
+            <select class="form-control" name="product_name">
+              <option>- Select Product -</option>
+              {% for product in products %}
+              <option>{{ product.product_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-control-label">Quantity</label>
+            <input class="form-control" type="number" name="quantity">
+          </div>
+        </div>
+        </form>
+
+        <form action="/submit_sale_return" method="post">
+        {% csrf_token %}
+        <p>Return Summary</p>
+        <table class="table">
+          <tr>
+            <th>id</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total Price</th>
+          </tr>
+          {% for order in sale_returns_cart %}
+          <tr>
+            <td>{{ order.product_id }}</td>
+            <td>{{ order.product_name }}</td>
+            <td>{{ order.quantity }}</td>
+            <td>{{ order.unit_price }}</td>
+            <td>{{ order.total_price }}</td>
+          </tr>
+          {% endfor %}
+          <tr class="table-secondary fw-bold">
+            <td colspan="4" class="text-end">Grand Total</td>
+            <td>{{ grand_total }}</td>
+          </tr>
+        </table>
+
+        <button type="submit" class="btn btn-primary btn-sm">Submit return</button>
+        <a href="/clear_sale_returns_cart" class="btn btn-secondary btn-sm">Clear</a>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card mb-4">
+      <div class="card-header pb-0">
+        <h6>Recent Sale Returns</h6>
+      </div>
+      <div class="card-body px-0 pt-0 pb-2">
+        <div class="table-responsive p-0">
+          <table class="table align-items-center mb-0">
+            <thead>
+              <tr>
+                <th>Return No.</th>
+                <th>Added by</th>
+                <th>Added at</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in sale_returns %}
+              <tr>
+                <td>{{ r.id }}</td>
+                <td>{{ r.employee.first_name }} {{ r.employee.last_name }}</td>
+                <td>{{ r.created_at }}</td>
+                <td><a href="/view_return_sale/{{ r.id }}">View</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

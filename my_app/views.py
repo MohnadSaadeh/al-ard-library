@@ -457,6 +457,125 @@ def view_return_invoice(request, id):
     return render(request, 'view_return_invoice.html', context)
 
 
+# ---------- Sale Returns (customer returns) session-backed cart
+
+def _get_sale_returns_cart(request):
+    return request.session.get('sale_returns_cart', [])
+
+
+def _save_sale_returns_cart(request, cart):
+    request.session['sale_returns_cart'] = cart
+    request.session.modified = True
+
+
+def display_sale_returns(request):
+    cart = _get_sale_returns_cart(request)
+    # ensure numeric floats for display
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+    context = {
+        'sale_returns_cart': cart,
+        'products': models.get_all_products(),
+        'sale_returns': models.get_all_sale_returns(),
+        'employee': models.get_employee_by_id(request.session['employee_id']),
+        'grand_total': grand_total,
+    }
+    return render(request, 'return_sales.html', context)
+
+
+def add_product_to_sale_return(request):
+    errors = models.Purchase.objects.invoice_validator(request.POST)
+    if len(errors) > 0:
+        for key, value in errors.items():
+            messages.error(request, value)
+        return redirect('/return_sales')
+    else:
+        product_name = request.POST['product_name']
+        quantity = int(request.POST['quantity'])
+        product = models.Product.objects.get(product_name=product_name)
+        product_id = product.id
+        unit_price = float(product.sale_price) if product.sale_price is not None else 0.0
+        total_price = quantity * float(unit_price)
+
+        cart = _get_sale_returns_cart(request)
+        cart.append({
+            'product_name': product_name,
+            'product_id': product_id,
+            'quantity': quantity,
+            'unit_price': float(unit_price),
+            'total_price': float(total_price),
+        })
+        _save_sale_returns_cart(request, cart)
+
+        # restock the product immediately
+        models.add_product_back_on_return(product_id, quantity)
+        return redirect('/return_sales')
+
+
+def submit_sale_return(request):
+    cart = _get_sale_returns_cart(request)
+    if not cart:
+        messages.error(request, "Please add at least one product to return!")
+        return redirect('/return_sales')
+    else:
+        employee_id = request.session['employee_id']
+        sale_order_id = request.POST.get('sale_order_id') if request.method == 'POST' else None
+        models.create_sale_return(employee_id, sale_order_id)
+        for key in cart:
+            product_id = key.get('product_id')
+            quantity = int(key.get('quantity'))
+            unit_price = float(key.get('unit_price'))
+            total_price = float(key.get('total_price'))
+            models.add_item_to_sale_return(product_id, quantity, unit_price, total_price)
+
+        # compute grand total and save to sale return record
+        try:
+            grand = sum(float(item.get('total_price')) for item in cart)
+        except Exception:
+            grand = 0.0
+        last_sr = models.SaleReturn.objects.last()
+        if last_sr:
+            last_sr.grand_total = grand
+            last_sr.total_amount = grand
+            last_sr.save()
+
+        # clear session cart
+        _save_sale_returns_cart(request, [])
+        messages.success(request, "Sale return recorded!", extra_tags='sale_return')
+        return redirect('/return_sales')
+
+
+def clear_sale_returns_cart(request):
+    cart = _get_sale_returns_cart(request)
+    if not cart:
+        messages.error(request, "already empty!")
+        return redirect('/return_sales')
+    else:
+        # if clearing, reverse the earlier restock
+        for item in cart:
+            try:
+                models.add_product_to_sale(item.get('product_id'), int(item.get('quantity')))
+            except Exception:
+                pass
+        _save_sale_returns_cart(request, [])
+        return redirect('/return_sales')
+
+
+def view_sale_return(request, id):
+    context = {
+        'invoice': models.get_sale_return(id),
+        'return_products': models.sale_return_products(id),
+    }
+    return render(request, 'view_return_sale.html', context)
+
+
+def print_sale_return(request, id):
+    context = {
+        'invoice': models.get_sale_return(id),
+        'return_products': models.sale_return_products(id),
+    }
+    return render(request, 'print_return_sale.html', context)
+
+
 def print_return_invoice(request, id):
     # standalone printable page for the return invoice
     context = {

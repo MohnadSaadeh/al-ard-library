@@ -1,0 +1,64 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}View Sale Return{% endblock %}
+
+{% block content %}
+
+{% block page_name %}View Sale Return{% endblock %}
+{% block page_name2 %}View Sale Return{% endblock %}
+
+<div class="row">
+  <div class="col-12">
+    <div class="card mb-4">
+      <div class="card-header d-flex align-items-center justify-content-between pb-0">
+        <div>
+          <h6 class="mb-0">Return Invoice #{{ invoice.id }}</h6>
+          <small class="text-muted">Added by: {{ invoice.employee.first_name }} {{ invoice.employee.last_name }} &nbsp; | &nbsp; Date: {{ invoice.created_at }}</small>
+        </div>
+        <div>
+          <a class="btn btn-sm btn-outline-primary" href="/print_return_sale/{{ invoice.id }}" target="_blank">Print Invoice</a>
+        </div>
+      </div>
+      <div class="card-body px-0 pt-0 pb-2">
+        <div class="table-responsive p-0">
+          <table class="table table-sm table-striped">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Product</th>
+                <th class="text-center">Qty</th>
+                <th class="text-end">Unit Price</th>
+                <th class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if return_products %}
+                {% for item in return_products %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ item.product.product_name }}</td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                  <td class="text-end">{{ item.unit_price }}</td>
+                  <td class="text-end">{{ item.total_price }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr><td colspan="5" class="text-center">No products for this return.</td></tr>
+              {% endif %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3"></td>
+                <td class="text-end fw-bold">Grand Total</td>
+                <td class="text-end fw-bold">{{ invoice.grand_total }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
