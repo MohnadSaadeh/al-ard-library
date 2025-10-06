@@ -67,19 +67,26 @@
             <p>Order Summery</p>
             
             <table class="table">
-                
                 <tr >
-                    <th class="ps-3">Product</th>
                     <th class="ps-3">id</th>
+                    <th class="ps-3">Product</th>
                     <th>Quantity</th>
+                    <th class="ps-3">Sale Price</th>
+                    <th class="ps-3">Total Price</th>
                 </tr>
                 {% for order in sale_order %}
                 <tr>
-                    <td class="ps-3"> {{order.product_name}} </td>
                     <td class="ps-3"> {{order.product_id}} </td>
+                    <td class="ps-3"> {{order.product_name}} </td>
                     <td>{{order.quantity}}</td>
+                    <td class="ps-3"> {{order.sale_price}} </td>
+                    <td class="ps-3"> {{order.total_price}} </td>
                 </tr>
                 {% endfor %}
+                <tr class="table-secondary fw-bold">
+                  <td colspan="4" class="text-end">Grand Total</td>
+                  <td class="ps-3">{{ grand_total }}</td>
+                </tr>
             </table>
             
             <button type="submit" class="btn btn-primary btn-sm ms-auto mt-4">Submit order</button>

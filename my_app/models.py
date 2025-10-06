@@ -295,7 +295,13 @@ def create_sale_order(employee_id):
 def add_item_to_invoice(product_id, quantity):# add the product to the invoice
     product = Product.objects.get(id=product_id)
     sale_order = Sale_order.objects.last()
-    return Sale_item.objects.create(sale_order=sale_order, product=product, quantity=quantity)
+    # ensure we record the unit price and total price at time of invoicing
+    unit_price = product.sale_price if product.sale_price is not None else 0
+    try:
+        total_price = int(quantity) * float(unit_price)
+    except Exception:
+        total_price = 0
+    return Sale_item.objects.create(sale_order=sale_order, product=product, quantity=quantity, unit_price=unit_price, total_price=total_price)
     #################################
 # this is to sale a product
 def add_product_to_sale( product_id, quantity ): #--------- minimize the quantity of the product

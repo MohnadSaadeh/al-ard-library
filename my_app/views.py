@@ -211,11 +211,14 @@ def add_new_product(request):
 
 
 def display_sales(request):
+    # calculate grand total for current sale order
+    grand_total = sum(item.get('total_price', 0) for item in sale_order)
     context = {
             'sale_order': sale_order,
             'products': models.get_all_products(),
             'orders' : models.get_all_sales_orders(),
-            'employee': models.get_employee_by_id(request.session['employee_id'])
+            'employee': models.get_employee_by_id(request.session['employee_id']),
+            'grand_total': grand_total,
         }
     return render(request , 'sale_orders.html', context )
 
@@ -247,8 +250,11 @@ def add_product_to_sale(request):
     else:
         product_name = request.POST['product_name']
         quantity = request.POST['quantity']
-        product_id = models.Product.objects.get(product_name=product_name).id
-        sale_order.append ( {'product_name': product_name , 'product_id': product_id , 'quantity': quantity } )
+        product = models.Product.objects.get(product_name=product_name)
+        product_id = product.id
+        sale_price = product.sale_price if product.sale_price is not None else 0
+        total_price = int(quantity) * float(sale_price)
+        sale_order.append ( {'product_name': product_name , 'product_id': product_id , 'quantity': quantity, 'sale_price': sale_price, 'total_price': total_price } )
         return redirect('/sales')
     
 def submet_sale_order(request):
@@ -269,7 +275,16 @@ def submet_sale_order(request):
             models.add_item_to_invoice(product_id, quantity)#new
             ##############################
             models.add_product_to_sale( product_id, quantity )
-            
+        # update the created Sale_order total_amount by summing sale items
+        try:
+            last_sale = models.Sale_order.objects.last()
+            total_sum = models.Sale_item.objects.filter(sale_order=last_sale).aggregate(total=Sum('total_price'))['total'] or 0
+            last_sale.total_amount = total_sum
+            last_sale.save()
+        except Exception:
+            # if something goes wrong, don't block the flow; leave total as default
+            pass
+
         sale_order.clear()
         messages.success(request, "Successfully Sold!", extra_tags = 'sold_product')
 
@@ -440,6 +455,14 @@ def print_return_invoice(request, id):
     }
     return render(request, 'print_return_invoice.html', context)
 
+
+def print_sale_invoice(request, id):
+    context = {
+        'order': models.get_sale_order(id),
+        'sale_products': models.sale_orders_products(id),
+    }
+    return render(request, 'print_sale_invoice.html', context)
+
 def clear_sales_list(request) :
     if sale_order == []:
         messages.error(request, "already empty!")
@@ -458,12 +481,11 @@ def display_employee_reports(request):
     return render (request, 'employee_reports.html', context)
 
 def view_sale_order(request, id):#--------------------------------------------Mai
+    sale_qs = models.sale_orders_products(id)
     context={
         'order': models.get_sale_order(id),
-        ###############################
-        'sale_products':models.sale_orders_products(id),#MAI*****
-        ###############################
-        
+        'sale_products': sale_qs,
+        'sale_products_count': sale_qs.count(),
     }
     return render(request, 'view_sale_order.html',context)
 

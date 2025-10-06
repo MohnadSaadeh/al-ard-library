@@ -1,169 +1,197 @@
+
 {% extends 'layouts/base.html' %}
+{% load static %}
 
-{% block title %}Sales Orders{% endblock %}
-
-{% block stylesheets %} {% endblock stylesheets %}
+{% block title %}View Sale Invoice{% endblock %}
 
 {% block content %}
 
-            {% block page_name %} {% endblock %}
-            {% block page_name2 %} {% endblock %}
-<!-- comtent -->
-      <div class="row mt-12">
-        <div class="col-8 ms-10">
-          <div class="card mb-4" id="printableTable2">
-            <div class="card-header pb-0">
-              <h2 style="color: blueviolet; ">StockSync</h2>
-              <!-- <div>
-                <div><img src="static/img/stocklogo.PNG" alt="logo" style="position: absolute; top: 12%; left: 16%;"></div>
-              </div> -->
-              
-                <b>Sale Order No. </b>{{order.id}}<br>
-                <b>Added by:</b> {{order.employee.first_name}} {{order.employee.last_name}}<br>
-                <b>Date:</b> {{order.created_at | date}}
-                <!-- <h6>StockSync / Daily Report</h6>
-                <p>Date: {{today}}</p> -->
-            </div>
-            <div class="card-body px-0 pt-0 pb-2 ">
-              <div class="table table-responsive p-0 ">
-                <table class="table align-items-center justify-content-center mb-0">
-                  <thead>
-                    <tr>
-                      <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Product </th>
-                      <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Quantity</th>
-                      <!-- <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Purchasing Price</th>
-                      <th class="text-uppercase text-secondary text-xs font-weight-bolder  opacity-7 ps-2">Expiry Date</th>
-                      <th class="text-uppercase text-secondary text-xs font-weight-bolder  opacity-7 ps-2">Supplier</th> -->
-                      <th class="text-uppercase text-secondary text-xs font-weight-bolder  opacity-7 ps-2"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for order in sale_products %}
-                    <tr>
-                      <td>
-                        
-                        <div class="d-flex px-2">
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm ms-2"> {{order.product.product_name}} </h6>
-                          </div>
-                        </div>
-                        
-                      </td>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm ms-2"> {{order.quantity }} </h6>
-                          </div>
-                        </div>
-                      </td>
-                      </tr>
-                      
-                      {% endfor %}
-                      <!-- <td>
-                        <p class="text-sm font-weight-bold mb-0"> {{product.quantity}} </p>
-                      </td>
-                      <td>
-                        <span class="text-sm font-weight-bold">{{product.purchasing_price}}</span>
-                      </td>
-                      
-                      
-                      
-                      <td>
-                        <span class="text-sm font-weight-bold">{{product.supplier}}</span>
-                      </td>
-                    </tr>
-                    
-                       <td >
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td> -->
-                      
-                    <!-- <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="../assets/img/small-logos/logo-invision.svg" class="avatar avatar-sm rounded-circle me-2" alt="invision">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Invision</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$5,000</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">done</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">20%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    
-                    
-                    
+{% block page_name %}View Sale Invoice{% endblock %}
+{% block page_name2 %}View Sale Invoice{% endblock %}
 
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2">
-                          <div>
-                            <img src="{#{% static 'img/small-logos/logo-xd.svg' %}#}" class="avatar avatar-sm rounded-circle me-2" alt="xd">
-                          </div>
-                          <div class="my-auto">
-                            <h6 class="mb-0 text-sm">Adobe XD</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <p class="text-sm font-weight-bold mb-0">$2,300</p>
-                      </td>
-                      <td>
-                        <span class="text-xs font-weight-bold">done</span>
-                      </td>
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">100%</span>
-                          <div>
-                            <div class="progress">
-                              <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                          <i class="fa fa-ellipsis-v text-xs"></i>
-                        </button>
-                      </td>
-                    </tr> -->
-                  </tbody>
-                </table>
+<div class="row">
+  <div class="col-12">
+    <div class="card mb-4">
+      <div class="p-2">
+        <small class="text-muted">Products in invoice: {{ sale_products_count }}</small>
+      </div>
+      <div class="card-header d-flex align-items-center justify-content-between pb-0">
+        <div>
+          <h6 class="mb-0">Sales Invoice #{{ order.id }}</h6>
+          <small class="text-muted">Added by: {{ order.employee.first_name }} {{ order.employee.last_name }} &nbsp; | &nbsp; Date: {{ order.created_at|date:'Y-m-d H:i' }}</small>
+        </div>
+        <div>
+          <a class="btn btn-sm btn-outline-primary" href="/print_sale_invoice/{{ order.id }}" target="_blank">Print Invoice</a>
+        </div>
+      </div>
+      <div class="card-body px-0 pt-0 pb-2">
+        <!-- Printable invoice area -->
+        <div id="printable-invoice" class="p-4">
+          <!-- Top logo centered -->
+          <div class="text-center mb-3">
+            <img src="{% static 'img/al-ard-profile-Banner.png' %}" alt="Al Ard company logo banner" class="invoice-top-logo" />
+          </div>
+
+          <!-- Title and metadata -->
+          <div class="text-center mb-3">
+            <h2 class="mb-0">Sales Invoice</h2>
+            <div class="small text-muted">Invoice No: <strong>#{{ order.id }}</strong> &nbsp; | &nbsp; Date: <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong></div>
+            <div class="small text-muted">Added by: <strong>{{ order.employee.first_name }} {{ order.employee.last_name }}</strong></div>
+          </div>
+
+          <!-- Company contact (left) and invoice meta (right) for screen view -->
+          <div class="d-flex justify-content-between mb-3">
+            <div class="small text-muted">
+              <div><strong>الأرض للنشر والتوزيع</strong></div>
+              <div>Address: البالوع , رام الله , فلسطين</div>
+              <div>Phone: +972-599-966535</div>
+              <div>Email: info@al-ard.com</div>
+            </div>
+            <div class="text-end small text-muted">
+              <div>Invoice No: <strong>#{{ order.id }}</strong></div>
+              <div>Date: <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong></div>
+              <div>Issued by: <strong>{{ order.employee.first_name }} {{ order.employee.last_name }}</strong></div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Product</th>
+                  <th class="text-center">Qty</th>
+                  <th class="text-end">Unit Price</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if sale_products %}
+                  {% for item in sale_products %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.product.product_name }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end">{{ item.unit_price }}</td>
+                    <td class="text-end">{{ item.total_price }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted">No products for this sale.</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3"></td>
+                  <td class="text-end fw-bold">Grand Total</td>
+                  <td class="text-end fw-bold">{{ order.total_amount }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="invoice-notes mt-4">
+            <p class="small text-muted">This sales invoice documents products sold. Keep this invoice for your records.</p>
+          </div>
+
+          <!-- Financial footer: VAT and signatures -->
+          <div class="invoice-footer mt-4 d-flex justify-content-between align-items-start">
+            <div class="vat-info small text-muted">
+              <div><strong>VAT / Tax No:</strong> 12345678</div>
+              <div><strong>Payment Terms:</strong> As agreed</div>
+            </div>
+            <div class="signatures text-end" style="min-width:300px;">
+              <div class="signature-block" style="margin-bottom:40px;">
+                <div class="small text-muted">_____________________________</div>
+                <div class="small">Authorized Signature</div>
+              </div>
+              <div class="signature-block">
+                <div class="small text-muted">_____________________________</div>
+                <div class="small">Received by (Customer)</div>
               </div>
             </div>
           </div>
         </div>
+        <!-- end printable area -->
       </div>
-      <button class="no-print btn btn-primary btn-sm ms-10" onclick="printTable()">Print</button>
+    </div>
+  </div>
+</div>
 
+{% block stylesheets %}
+<style>
+  /* Print-specific styles */
+  @media print {
+    body * { visibility: hidden; }
+    #printable-invoice, #printable-invoice * { visibility: visible; }
+    #printable-invoice { position: absolute; left: 0; top: 0; width: 100%; }
+    /* Avoid table row breaks */
+    table { page-break-inside: avoid; }
+  }
 
-<!-- end comtent -->
+  /* Styling for the invoice header */
+  .invoice-header img{ max-height: 80px; }
+  .invoice-title h3{ font-weight:700; }
+  .table tfoot td{ border-top: 2px solid #dee2e6; }
+  .invoice-logo img{ max-height:80px; }
+</style>
+{% endblock stylesheets %}
+
+{% block javascripts %}
+<script>
+  function printInvoice(){
+    var container = document.getElementById('printable-invoice');
+    if(!container){
+      alert('Printable content not found');
+      return;
+    }
+    var content = container.outerHTML;
+    var invoiceId = "{{ order.id }}";
+    // include main CSS files so the invoice renders correctly in the new window
+    var cssLinks = [
+      '/static/css/argon-dashboard.min.css',
+      '/static/css/nucleo-icons.css'
+    ];
+
+    var styles = `
+      <style>
+        body{ font-family: Arial, Helvetica, sans-serif; padding:20px; color:#212529; }
+        .invoice-top-logo{ max-height:120px; display:block; margin:0 auto 10px; }
+        table{ width:100%; border-collapse:collapse; }
+        table th, table td{ border: 1px solid #dee2e6; padding:8px; }
+        .text-end{ text-align: right; }
+        .text-center{ text-align: center; }
+        .fw-bold{ font-weight:700; }
+        .small{ font-size:0.9rem; color:#6c757d; }
+        .signature-block{ margin-top:30px; }
+      </style>
+    `;
+
+    var headHtml = '<meta charset="utf-8"><title>Sales Invoice #' + invoiceId + '</title>' + styles;
+    cssLinks.forEach(function(href){ headHtml += '<link rel="stylesheet" href="' + href + '">'; });
+
+    var html = '<!doctype html><html><head>' + headHtml + '</head><body>' + content + '</body></html>';
+
+    var myWindow = window.open('', '_blank');
+    if(!myWindow){
+      alert('Please allow popups for this site to print the invoice.');
+      return;
+    }
+    myWindow.document.open();
+    myWindow.document.write(html);
+    myWindow.document.close();
+    myWindow.focus();
+    // Allow the new window to render images/styles then print
+    setTimeout(function(){
+      myWindow.print();
+    }, 500);
+  }
+</script>
+{% endblock javascripts %}
+
 {% endblock content %}
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %} {% endblock javascripts %}
 
 
 
