@@ -1,4 +1,5 @@
 {% extends 'layouts/base-landing.html' %}
+{% load static %}
 {% block title %}main page{% endblock %}
 
 {% block stylesheets %} {% endblock stylesheets %}
@@ -27,8 +28,8 @@
                   
                     <div class="card-header pb-0 text-start">
                       <!-- user img -->
-                      <!-- <img src="static/img/stocklogo.PNG" alt="logo"  style="width: 250px; height: auto;padding-top: 1.5rem;"> -->
-                      <img src="static/img/al-ard-profile-Banner.png" alt="logo"  style="width: 300px; height: auto;padding-top: 1.5rem;">
+                      <!-- <img src="{% static 'img/stocklogo.PNG' %}" alt="logo"  style="width: 250px; height: auto;padding-top: 1.5rem;"> -->
+                      <img src="{% static 'img/al-ard-profile-Banner.png' %}" alt="logo"  style="width: 300px; height: auto;padding-top: 1.5rem;">
 
                       <!-- user img -->
                       <h4 class="font-weight-bolder">Sign In</h4>
@@ -80,7 +81,7 @@
             </div>
             <div class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
               <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden"
-                style="background-image: url('static/img/al-ard.png');
+                style="background-image: url('{% static 'img/al-ard.png' %}');
                       background-size: cover;">
                 <span class="mask bg-gradient-primary opacity-6"></span>
                 <h4 class="mt-5 text-white font-weight-bolder position-relative">"The way to manage your stock, STOCKSYNC"</h4>

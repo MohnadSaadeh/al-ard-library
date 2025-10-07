@@ -19,6 +19,8 @@
         </div>
         <div>
           <a class="btn btn-sm btn-outline-primary" href="/print_purchase_invoice/{{ invoice.id }}" target="_blank">Print Invoice</a>
+          &nbsp;
+          <a class="btn btn-sm btn-outline-danger return-link" href="{% url 'purchase_return_create' invoice.id %}" data-return-label="Purchase #{{ invoice.id }}">Return</a>
         </div>
       </div>
       <div class="card-body px-0 pt-0 pb-2">

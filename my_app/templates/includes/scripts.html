@@ -19,8 +19,38 @@ function printTable(){
 
 <!-- Github buttons -->
 <script async defer src="https://buttons.github.io/buttons.js"></script>
+<script src="{% static 'js/perfect-scrollbar-guard.js' %}"></script>
 <script src="{% static 'js/argon-dashboard.min.js' %}"></script>
 <script src="{% static 'js/plugins/chartjs.min.js' %}"></script>
 <!-- <script src="{% static 'js/plugins/Chart.extension.js' %}"></script> -->
 
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+// Generic handler for Return links. Links should include data-return-url and data-return-label
+document.addEventListener('DOMContentLoaded', function(){
+    var returnModal = document.getElementById('returnConfirmModal');
+    if(!returnModal) return;
+    var bsModal = new bootstrap.Modal(returnModal);
+    var confirmBtn = document.getElementById('returnConfirmBtn');
+    var targetUrl = null;
+
+    document.body.addEventListener('click', function(e){
+        var el = e.target.closest && e.target.closest('.return-link');
+        if(!el) return;
+        e.preventDefault();
+        targetUrl = el.getAttribute('href') || el.dataset.returnUrl;
+        var label = el.dataset.returnLabel || 'this return form';
+        var textEl = document.getElementById('returnConfirmText');
+        if(textEl) textEl.textContent = 'Open return form for ' + label + '?';
+        bsModal.show();
+    });
+
+    if(confirmBtn){
+        confirmBtn.addEventListener('click', function(){
+            if(targetUrl){
+                window.location.href = targetUrl;
+            }
+        });
+    }
+});
+</script>

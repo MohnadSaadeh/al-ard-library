@@ -376,6 +376,8 @@ class Return(models.Model):
 class Return_item(models.Model):
     return_invoice = models.ForeignKey(Return, related_name="return_items", on_delete=models.CASCADE)
     product = models.ForeignKey(Product, related_name="return_items", on_delete=models.CASCADE)
+    # optional link to the original purchase_item row when returning a specific purchase line
+    original_item = models.ForeignKey('Purchase_item', null=True, blank=True, on_delete=models.SET_NULL)
     quantity = models.IntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -387,11 +389,23 @@ def create_return_order(employee_id):
     employee = Employee.objects.get(id=employee_id)
     return Return.objects.create(employee=employee)
 
-
-def add_item_to_return_invoice(product_id, quantity, unit_price, total_price):
+def add_item_to_return_invoice(product_id, quantity, unit_price, total_price, original_item_id=None):
     product = Product.objects.get(id=product_id)
     return_invoice = Return.objects.last()
-    return Return_item.objects.create(return_invoice=return_invoice, product=product, quantity=quantity, unit_price=unit_price, total_price=total_price)
+    kwargs = {
+        'return_invoice': return_invoice,
+        'product': product,
+        'quantity': quantity,
+        'unit_price': unit_price,
+        'total_price': total_price,
+    }
+    if original_item_id:
+        try:
+            orig = Purchase_item.objects.get(id=original_item_id)
+            kwargs['original_item'] = orig
+        except Exception:
+            pass
+    return Return_item.objects.create(**kwargs)
 
 
 def add_product_to_return(product_id, quantity):
@@ -430,6 +444,8 @@ class SaleReturn(models.Model):
 class SaleReturnItem(models.Model):
     sale_return = models.ForeignKey(SaleReturn, related_name="items", on_delete=models.CASCADE)
     product = models.ForeignKey(Product, related_name="sale_return_items", on_delete=models.CASCADE)
+    # link to the original sale_item row when returning a specific line
+    original_item = models.ForeignKey('Sale_item', null=True, blank=True, on_delete=models.SET_NULL)
     quantity = models.IntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -448,10 +464,23 @@ def create_sale_return(employee_id, sale_order_id=None):
     return SaleReturn.objects.create(employee=employee, sale_order=sale_order)
 
 
-def add_item_to_sale_return(product_id, quantity, unit_price, total_price):
+def add_item_to_sale_return(product_id, quantity, unit_price, total_price, original_item_id=None):
     product = Product.objects.get(id=product_id)
     sale_return = SaleReturn.objects.last()
-    return SaleReturnItem.objects.create(sale_return=sale_return, product=product, quantity=quantity, unit_price=unit_price, total_price=total_price)
+    kwargs = {
+        'sale_return': sale_return,
+        'product': product,
+        'quantity': quantity,
+        'unit_price': unit_price,
+        'total_price': total_price,
+    }
+    if original_item_id:
+        try:
+            orig = Sale_item.objects.get(id=original_item_id)
+            kwargs['original_item'] = orig
+        except Exception:
+            pass
+    return SaleReturnItem.objects.create(**kwargs)
 
 
 def add_product_back_on_return(product_id, quantity):

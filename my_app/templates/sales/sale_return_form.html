@@ -1,0 +1,38 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<br/> <br/> 
+<br/> 
+<br/> 
+<br/> 
+<br/> 
+
+<h2>Return for Sale #{{ sale_order.id }}</h2>
+<form method="post">
+  {% csrf_token %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Sold Quantity</th>
+        <th>Allowed to Return</th>
+        <th>Return Quantity</th>
+        <th>Unit Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in items %}
+      <tr>
+        <td>{{ row.product.product_name }}</td>
+        <td>{{ row.sold_quantity }}</td>
+        <td>{{ row.allowed_return_quantity }}</td>
+        <td>
+          <input type="number" name="return_qty_{{ row.sale_item.id }}" min="0" max="{{ row.allowed_return_quantity }}" value="0" />
+        </td>
+        <td>{{ row.unit_price }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="submit" class="btn btn-primary">Submit Return</button>
+</form>
+{% endblock %}

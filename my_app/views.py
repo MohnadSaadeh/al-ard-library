@@ -5,9 +5,11 @@ import bcrypt
 from datetime import datetime , timedelta
 import datetime
 from django.db.models import Sum
+from django.db import transaction
 from django.db.models.functions import ExtractWeekDay
 from django.http import JsonResponse
 from . import validations
+from django.core.paginator import Paginator
 
 
 # to display the sign-in page
@@ -213,24 +215,38 @@ def add_new_product(request):
 def display_sales(request):
     # calculate grand total for current sale order
     grand_total = sum(item.get('total_price', 0) for item in sale_order)
+    # paginate recent sales orders
+    orders_qs = models.get_all_sales_orders()
+    orders_page_number = request.GET.get('orders_page')
+    orders_paginator = Paginator(orders_qs, 10)  # 10 orders per page
+    orders_page = orders_paginator.get_page(orders_page_number)
+
     context = {
             'sale_order': sale_order,
             'products': models.get_all_products(),
-            'orders' : models.get_all_sales_orders(),
+            'orders' : orders_page,
             'employee': models.get_employee_by_id(request.session['employee_id']),
             'grand_total': grand_total,
+            'orders_paginator': orders_paginator,
         }
     return render(request , 'sale_orders.html', context )
 
 def display_purchases(request):
     # calculate grand total
     grand_total = sum(item['total_price'] for item in purchases_order)
+    # paginate recent purchase invoices
+    invoices_qs = models.get_all_invoices()
+    invoices_page_number = request.GET.get('invoices_page')
+    invoices_paginator = Paginator(invoices_qs, 10)  # 10 invoices per page
+    invoices_page = invoices_paginator.get_page(invoices_page_number)
+
     context = {
             'purchases_order': purchases_order,
             'products': models.get_all_products(),#--------------------------------------------Mai
-            'invoices' : models.get_all_invoices(),
+            'invoices' : invoices_page,
             'employee': models.get_employee_by_id(request.session['employee_id']),#--------------------------------------------Mai
             'grand_total': grand_total,
+            'invoices_paginator': invoices_paginator,
         }
     return render(request , 'purchase_invoices.html' ,context)
 
@@ -290,6 +306,199 @@ def submet_sale_order(request):
 
         return redirect('/sales')
 #____________________________________SALE___________________________________
+
+
+# -------------------- Sales Return (customer returns) --------------------
+def sale_return_create_view(request, sale_order_id):
+    # ensure employee logged in
+    if 'employee_id' not in request.session:
+        messages.error(request, 'Please sign in to create a return.')
+        return redirect('/')
+
+    try:
+        sale_order = models.Sale_order.objects.get(id=sale_order_id)
+    except models.Sale_order.DoesNotExist:
+        messages.error(request, 'Sale order not found.')
+        return redirect('/sales')
+
+    # build items with allowed return quantities (per original sale_item)
+    items = []
+    for si in sale_order.sale_items.all():
+        returned_qty = models.SaleReturnItem.objects.filter(original_item=si).aggregate(total=Sum('quantity'))['total'] or 0
+        allowed = max(0, si.quantity - int(returned_qty))
+        items.append({
+            'sale_item': si,
+            'product': si.product,
+            'sold_quantity': si.quantity,
+            'unit_price': si.unit_price,
+            'allowed_return_quantity': allowed,
+        })
+
+    if request.method == 'POST':
+        # collect requested returns
+        requested = []
+        for entry in items:
+            si = entry['sale_item']
+            key = f'return_qty_{si.id}'
+            qty_str = request.POST.get(key, '0')
+            try:
+                qty = int(qty_str)
+            except ValueError:
+                qty = 0
+            if qty > 0:
+                if qty > entry['allowed_return_quantity']:
+                    messages.error(request, f'Cannot return {qty} of {si.product.product_name}; only {entry["allowed_return_quantity"]} available to return.')
+                    return redirect(request.path)
+                requested.append((si, qty))
+
+        if not requested:
+            messages.error(request, 'Please enter at least one quantity to return.')
+            return redirect(request.path)
+
+        # create SaleReturn and items
+        employee_id = request.session['employee_id']
+        # use Django transaction when available
+        with transaction.atomic():
+            # use helper to create return (keeps consistency with existing code)
+            models.create_sale_return(employee_id, sale_order_id)
+            for si, qty in requested:
+                unit_price = float(si.unit_price or 0)
+                total_price = qty * unit_price
+                models.add_item_to_sale_return(si.product.id, qty, unit_price, total_price, original_item_id=si.id)
+                # increase stock on return
+                models.add_product_back_on_return(si.product.id, qty)
+
+            # update totals on the created SaleReturn
+            try:
+                grand = sum(qty * float(si.unit_price or 0) for si, qty in requested)
+            except Exception:
+                grand = 0.0
+            last_sr = models.SaleReturn.objects.last()
+            if last_sr:
+                last_sr.grand_total = grand
+                last_sr.total_amount = grand
+                last_sr.save()
+
+        messages.success(request, 'Sale return recorded.', extra_tags='sale_return')
+        return redirect(f'/sales/returns/{ last_sr.id }')
+
+    context = {
+        'sale_order': sale_order,
+        'items': items,
+        'employee': models.get_employee_by_id(request.session['employee_id']) if 'employee_id' in request.session else None,
+    }
+    return render(request, 'sales/sale_return_form.html', context)
+
+
+def sale_return_detail_view(request, id):
+    try:
+        sr = models.SaleReturn.objects.get(id=id)
+    except models.SaleReturn.DoesNotExist:
+        messages.error(request, 'Sale return not found.')
+        return redirect('/sales')
+
+    items = sr.items.select_related('product', 'original_item').all()
+    total = items.aggregate(total=Sum('total_price'))['total'] or 0
+    context = {
+        'sale_return': sr,
+        'items': items,
+        'total': total,
+    }
+    return render(request, 'sales/sale_return_detail.html', context)
+
+
+# -------------------- Purchase Return (supplier returns) --------------------
+def purchase_return_create_view(request, purchase_id):
+    if 'employee_id' not in request.session:
+        messages.error(request, 'Please sign in to create a return.')
+        return redirect('/')
+
+    try:
+        purchase = models.Purchase.objects.get(id=purchase_id)
+    except models.Purchase.DoesNotExist:
+        messages.error(request, 'Purchase not found.')
+        return redirect('/purchases')
+
+    items = []
+    for pi in purchase.purchase_items.all():
+        returned_qty = models.Return_item.objects.filter(original_item=pi).aggregate(total=Sum('quantity'))['total'] or 0
+        allowed = max(0, pi.quantity - int(returned_qty))
+        items.append({
+            'purchase_item': pi,
+            'product': pi.product,
+            'purchased_quantity': pi.quantity,
+            'unit_price': pi.unit_price,
+            'allowed_return_quantity': allowed,
+        })
+
+    if request.method == 'POST':
+        requested = []
+        for entry in items:
+            pi = entry['purchase_item']
+            key = f'return_qty_{pi.id}'
+            qty_str = request.POST.get(key, '0')
+            try:
+                qty = int(qty_str)
+            except ValueError:
+                qty = 0
+            if qty > 0:
+                if qty > entry['allowed_return_quantity']:
+                    messages.error(request, f'Cannot return {qty} of {pi.product.product_name}; only {entry["allowed_return_quantity"]} available to return.')
+                    return redirect(request.path)
+                requested.append((pi, qty))
+
+        if not requested:
+            messages.error(request, 'Please enter at least one quantity to return.')
+            return redirect(request.path)
+
+        employee_id = request.session['employee_id']
+        with transaction.atomic():
+            models.create_return_order(employee_id)
+            for pi, qty in requested:
+                unit_price = float(pi.unit_price or 0)
+                total_price = qty * unit_price
+                models.add_item_to_return_invoice(pi.product.id, qty, unit_price, total_price, original_item_id=pi.id)
+                # For purchase returns, decrease stock because products are returned to supplier
+                models.add_product_to_return(pi.product.id, qty)
+
+            try:
+                grand = sum(qty * float(pi.unit_price or 0) for pi, qty in requested)
+            except Exception:
+                grand = 0.0
+            last_r = models.Return.objects.last()
+            if last_r:
+                last_r.grand_total = grand
+                last_r.total_amount = grand
+                last_r.save()
+
+        messages.success(request, 'Purchase return recorded.', extra_tags='return_purchase')
+        return redirect(f'/purchases/returns/{ last_r.id }')
+
+    context = {
+        'purchase': purchase,
+        'items': items,
+        'employee': models.get_employee_by_id(request.session['employee_id']) if 'employee_id' in request.session else None,
+    }
+    return render(request, 'purchases/purchase_return_form.html', context)
+
+
+def purchase_return_detail_view(request, id):
+    try:
+        r = models.Return.objects.get(id=id)
+    except models.Return.DoesNotExist:
+        messages.error(request, 'Return not found.')
+        return redirect('/purchases')
+
+    items = r.return_items.select_related('product', 'original_item').all()
+    total = items.aggregate(total=Sum('total_price'))['total'] or 0
+    context = {
+        'return': r,
+        'items': items,
+        'total': total,
+    }
+    return render(request, 'purchases/purchase_return_detail.html', context)
+
+
 
 purchases_order = []
 #____________________________________PURCHASE___________________________________
@@ -517,28 +726,64 @@ def submit_sale_return(request):
         messages.error(request, "Please add at least one product to return!")
         return redirect('/return_sales')
     else:
+        from django.db import transaction
         employee_id = request.session['employee_id']
         sale_order_id = request.POST.get('sale_order_id') if request.method == 'POST' else None
-        models.create_sale_return(employee_id, sale_order_id)
-        for key in cart:
-            product_id = key.get('product_id')
-            quantity = int(key.get('quantity'))
-            unit_price = float(key.get('unit_price'))
-            total_price = float(key.get('total_price'))
-            models.add_item_to_sale_return(product_id, quantity, unit_price, total_price)
 
-        # compute grand total and save to sale return record
-        try:
-            grand = sum(float(item.get('total_price')) for item in cart)
-        except Exception:
-            grand = 0.0
-        last_sr = models.SaleReturn.objects.last()
-        if last_sr:
-            last_sr.grand_total = grand
-            last_sr.total_amount = grand
-            last_sr.save()
+        # If a sale_order_id was chosen, validate each cart item belongs to that sale and quantity <= allowed (sold - already returned)
+        if sale_order_id:
+            try:
+                so = models.Sale_order.objects.get(id=sale_order_id)
+            except Exception:
+                messages.error(request, "Selected sale order not found.")
+                return redirect('/return_sales')
 
-        # clear session cart
+            # build sold map and already-returned map
+            sold_qs = models.Sale_item.objects.filter(sale_order=so).values('product_id').annotate(total=Sum('quantity'))
+            sold_map = {row['product_id']: int(row['total'] or 0) for row in sold_qs}
+            returned_qs = models.SaleReturnItem.objects.filter(sale_return__sale_order=so).values('product_id').annotate(total=Sum('quantity'))
+            returned_map = {row['product_id']: int(row['total'] or 0) for row in returned_qs}
+
+            for item in cart:
+                pid = item.get('product_id')
+                requested = int(item.get('quantity'))
+                sold = sold_map.get(pid, 0)
+                already = returned_map.get(pid, 0)
+                allowed = max(0, sold - already)
+                if sold == 0:
+                    messages.error(request, f"Product id {pid} is not part of sale invoice #{sale_order_id}.")
+                    return redirect('/return_sales')
+                if requested > allowed:
+                    messages.error(request, f"Cannot return {requested} of product id {pid}; only {allowed} remaining from invoice #{sale_order_id}.")
+                    return redirect('/return_sales')
+
+        # Passed validations; create SaleReturn and items inside a transaction, linking to original sale_item when possible
+        with transaction.atomic():
+            models.create_sale_return(employee_id, sale_order_id)
+            for key in cart:
+                product_id = key.get('product_id')
+                quantity = int(key.get('quantity'))
+                unit_price = float(key.get('unit_price'))
+                total_price = float(key.get('total_price'))
+                original_item_id = None
+                if sale_order_id:
+                    orig = models.Sale_item.objects.filter(sale_order_id=sale_order_id, product_id=product_id).first()
+                    if orig:
+                        original_item_id = orig.id
+                models.add_item_to_sale_return(product_id, quantity, unit_price, total_price, original_item_id)
+
+            # compute grand total and save to sale return record
+            try:
+                grand = sum(float(item.get('total_price')) for item in cart)
+            except Exception:
+                grand = 0.0
+            last_sr = models.SaleReturn.objects.last()
+            if last_sr:
+                last_sr.grand_total = grand
+                last_sr.total_amount = grand
+                last_sr.save()
+
+        # clear session cart and return
         _save_sale_returns_cart(request, [])
         messages.success(request, "Sale return recorded!", extra_tags='sale_return')
         return redirect('/return_sales')

@@ -143,7 +143,11 @@
                     <span class="text-sm mb-0 font-weight-bold">{{order.created_at}}</span>
                 </td>
                 <td>
-                    <span class="text-sm  mb-0 font-weight-bold"><a href="/view_sale_order/{{order.id}}">View</a></span>
+                    <span class="text-sm  mb-0 font-weight-bold">
+                        <a href="/view_sale_order/{{order.id}}">View</a>
+                        &nbsp;|&nbsp;
+                        <a href="{% url 'sale_return_create' order.id %}" class="return-link" data-return-label="Sale #{{ order.id }}">Return</a>
+                    </span>
                 </td>
                 </tr>
                 {% endfor %}
@@ -224,6 +228,38 @@
     </div> 
     </div>
 </div>
+<!-- pagination for orders -->
+{% if orders_paginator.num_pages > 1 %}
+<div class="row">
+    <div class="col-12 d-flex justify-content-center">
+        <nav aria-label="Orders pagination">
+            <ul class="pagination">
+                {% if orders.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?orders_page={{ orders.previous_page_number }}" aria-label="Previous">&laquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+                {% for num in orders.paginator.page_range %}
+                    {% if orders.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="?orders_page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if orders.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?orders_page={{ orders.next_page_number }}" aria-label="Next">&raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
 
 
 
