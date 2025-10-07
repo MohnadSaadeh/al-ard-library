@@ -23,6 +23,9 @@
                         <th>الكمية</th>
                         <th>سعر الشراء</th>
                         <th>سعر البيع</th>
+                        <th>ISBN</th>
+                        <th>تاريخ الإنتاج</th>
+                        <th>المؤلف</th>
                         <th>التاريخ الانتهاء</th>
                         <th>المورد</th>
                         <th>الموظف</th>
@@ -38,10 +41,12 @@
                         <td>{{ product.quantity }}</td>
                         <td>{{ product.purchasing_price }}</td>
                         <td>{{ product.sale_price }}</td>
+                        <td>{{ product.isbn }}</td>
+                        <td>{{ product.production_date }}</td>
+                        <td>{{ product.author }}</td>
                         <td>{{ product.expiry_date }}</td>
                         <td>{{ product.supplier }}</td>
                         <td>{{ product.employee.first_name }}</td>
-            
                         <td>
                             <ul class="list-unstyled mb-0">
                                 {% for attr in product.attributes.all %}

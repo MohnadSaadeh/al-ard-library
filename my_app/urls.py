@@ -36,6 +36,8 @@ urlpatterns = [
     
     path('add_order_to_sale', views.add_product_to_sale),
     path('add_order_to_purchase', views.add_product_to_purchase),
+    path('scan/add-to-sale/', views.scan_add_to_sale, name='scan_add_to_sale'),
+    path('scan/add-to-purchase/', views.scan_add_to_purchase, name='scan_add_to_purchase'),
     
     path('submet_sale_order', views.submet_sale_order),
     path('submet_purchase_order', views.submet_purchase_order),

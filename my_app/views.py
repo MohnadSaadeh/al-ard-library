@@ -12,6 +12,25 @@ from . import validations
 from django.core.paginator import Paginator
 
 
+# Session-backed cart helpers (per-user carts stored in session)
+def _get_sale_cart(request):
+    return request.session.get('sale_order', [])
+
+
+def _save_sale_cart(request, cart):
+    request.session['sale_order'] = cart
+    request.session.modified = True
+
+
+def _get_purchase_cart(request):
+    return request.session.get('purchases_order', [])
+
+
+def _save_purchase_cart(request, cart):
+    request.session['purchases_order'] = cart
+    request.session.modified = True
+
+
 # to display the sign-in page
 def about_us(request):
     return render(request, 'about_us.html')
@@ -213,8 +232,9 @@ def add_new_product(request):
 
 
 def display_sales(request):
-    # calculate grand total for current sale order
-    grand_total = sum(item.get('total_price', 0) for item in sale_order)
+    # calculate grand total for current sale order (session-backed)
+    cart = _get_sale_cart(request)
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
     # paginate recent sales orders
     orders_qs = models.get_all_sales_orders()
     orders_page_number = request.GET.get('orders_page')
@@ -222,7 +242,7 @@ def display_sales(request):
     orders_page = orders_paginator.get_page(orders_page_number)
 
     context = {
-            'sale_order': sale_order,
+            'sale_order': cart,
             'products': models.get_all_products(),
             'orders' : orders_page,
             'employee': models.get_employee_by_id(request.session['employee_id']),
@@ -232,8 +252,9 @@ def display_sales(request):
     return render(request , 'sale_orders.html', context )
 
 def display_purchases(request):
-    # calculate grand total
-    grand_total = sum(item['total_price'] for item in purchases_order)
+    # calculate grand total (session-backed)
+    p_cart = _get_purchase_cart(request)
+    grand_total = sum(float(item.get('total_price', 0)) for item in p_cart)
     # paginate recent purchase invoices
     invoices_qs = models.get_all_invoices()
     invoices_page_number = request.GET.get('invoices_page')
@@ -241,7 +262,7 @@ def display_purchases(request):
     invoices_page = invoices_paginator.get_page(invoices_page_number)
 
     context = {
-            'purchases_order': purchases_order,
+            'purchases_order': p_cart,
             'products': models.get_all_products(),#--------------------------------------------Mai
             'invoices' : invoices_page,
             'employee': models.get_employee_by_id(request.session['employee_id']),#--------------------------------------------Mai
@@ -255,7 +276,7 @@ def delete_product(request):
     return redirect('/employye_dashboard')
 
 
-sale_order = []
+# session-backed sale_order is stored per-user in request.session via helpers above
 #____________________________________SALE___________________________________
 def add_product_to_sale(request):
     errors = models.Sale_order.objects.invoice_sale_validator(request.POST)
@@ -265,32 +286,77 @@ def add_product_to_sale(request):
         return redirect('/sales')
     else:
         product_name = request.POST['product_name']
-        quantity = request.POST['quantity']
+        quantity = int(request.POST['quantity'])
         product = models.Product.objects.get(product_name=product_name)
         product_id = product.id
-        sale_price = product.sale_price if product.sale_price is not None else 0
-        total_price = int(quantity) * float(sale_price)
-        sale_order.append ( {'product_name': product_name , 'product_id': product_id , 'quantity': quantity, 'sale_price': sale_price, 'total_price': total_price } )
+        sale_price = float(product.sale_price) if product.sale_price is not None else 0.0
+        total_price = quantity * sale_price
+        cart = _get_sale_cart(request)
+        cart.append({'product_name': product_name, 'product_id': product_id, 'quantity': quantity, 'sale_price': sale_price, 'total_price': total_price})
+        _save_sale_cart(request, cart)
         return redirect('/sales')
     
+
+def scan_add_to_sale(request):
+    """
+    AJAX endpoint: receive 'isbn' (POST) from scanner and add product to sale_order list.
+    Returns JSON with status and rendered HTML snippet for the order summary.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+    isbn = request.POST.get('isbn', '').strip()
+    if not isbn:
+        return JsonResponse({'status': 'error', 'message': 'No ISBN provided'}, status=400)
+
+    try:
+        product = models.Product.objects.get(isbn=isbn)
+    except Exception:
+        return JsonResponse({'status': 'not_found', 'message': 'Product not found'})
+
+    # find existing session-backed sale_order list and increment or add
+    cart = _get_sale_cart(request)
+    for item in cart:
+        if int(item.get('product_id')) == int(product.id):
+            item['quantity'] = int(item.get('quantity', 0)) + 1
+            try:
+                item['total_price'] = int(item['quantity']) * float(item.get('sale_price', 0))
+            except Exception:
+                item['total_price'] = 0
+            break
+    else:
+        sale_price = float(product.sale_price) if product.sale_price is not None else 0.0
+        cart.append({
+            'product_name': product.product_name,
+            'product_id': product.id,
+            'quantity': 1,
+            'sale_price': sale_price,
+            'total_price': sale_price,
+        })
+
+    _save_sale_cart(request, cart)
+
+    # compute grand total
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+
+    # return simplified JSON payload; front-end will re-render
+    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+
 def submet_sale_order(request):
-    if sale_order == []:
+    cart = _get_sale_cart(request)
+    if not cart:
         messages.error(request, "Please add at least one product to sale!")
         return redirect('/sales')
     else:
         employee_id = request.session['employee_id']
         models.create_sale_order(employee_id) #---------CREATE the invoise------- 1
 
-        for key in sale_order :
-            product_name = key.get('product_name')
+        for key in cart:
             product_id = key.get('product_id')
-            quantity = key.get('quantity')
-            #make invoice                                        
-            # models.add_sale_relation(product_id)#---------GET the product-----AMD------ADD the product------- 4
-            ###############################
-            models.add_item_to_invoice(product_id, quantity)#new
-            ##############################
-            models.add_product_to_sale( product_id, quantity )
+            quantity = int(key.get('quantity'))
+            models.add_item_to_invoice(product_id, quantity)
+            models.add_product_to_sale(product_id, quantity)
+
         # update the created Sale_order total_amount by summing sale items
         try:
             last_sale = models.Sale_order.objects.last()
@@ -298,10 +364,9 @@ def submet_sale_order(request):
             last_sale.total_amount = total_sum
             last_sale.save()
         except Exception:
-            # if something goes wrong, don't block the flow; leave total as default
             pass
 
-        sale_order.clear()
+        _save_sale_cart(request, [])
         messages.success(request, "Successfully Sold!", extra_tags = 'sold_product')
 
         return redirect('/sales')
@@ -500,7 +565,7 @@ def purchase_return_detail_view(request, id):
 
 
 
-purchases_order = []
+# session-backed purchases_order is stored per-user in request.session via helpers above
 #____________________________________PURCHASE___________________________________
 def add_product_to_purchase(request):
     errors = models.Purchase.objects.invoice_validator(request.POST)
@@ -510,39 +575,84 @@ def add_product_to_purchase(request):
         return redirect('/purchases')
     else:
         product_name = request.POST['product_name']
-        quantity = request.POST['quantity']
-        product_id = models.Product.objects.get(product_name=product_name).id
-        purchase_price = models.Product.objects.get(product_name=product_name).purchasing_price
-        total_price = int(quantity) * float(purchase_price)
-        purchases_order.append ( {
+        quantity = int(request.POST['quantity'])
+        prod = models.Product.objects.get(product_name=product_name)
+        product_id = prod.id
+        purchase_price = float(prod.purchasing_price) if prod.purchasing_price is not None else 0.0
+        total_price = quantity * purchase_price
+        cart = _get_purchase_cart(request)
+        cart.append({
             'product_name': product_name,
-            'product_id': product_id ,
+            'product_id': product_id,
             'quantity': quantity,
             'purchase_price': purchase_price,
             'total_price': total_price,
-            } )
+        })
+        _save_purchase_cart(request, cart)
         return redirect('/purchases')
     
+
+def scan_add_to_purchase(request):
+    """
+    AJAX endpoint: receive 'isbn' (POST) from scanner and add product to purchases_order list.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+    isbn = request.POST.get('isbn', '').strip()
+    if not isbn:
+        return JsonResponse({'status': 'error', 'message': 'No ISBN provided'}, status=400)
+
+    try:
+        product = models.Product.objects.get(isbn=isbn)
+    except Exception:
+        return JsonResponse({'status': 'not_found', 'message': 'Product not found'})
+
+    cart = _get_purchase_cart(request)
+    for item in cart:
+        if int(item.get('product_id')) == int(product.id):
+            item['quantity'] = int(item.get('quantity', 0)) + 1
+            try:
+                item['total_price'] = int(item['quantity']) * float(item.get('purchase_price', 0))
+            except Exception:
+                item['total_price'] = 0
+            break
+    else:
+        purchase_price = float(product.purchasing_price) if product.purchasing_price is not None else 0.0
+        # read session-backed purchases cart
+        cart = _get_purchase_cart(request)
+        # if item wasn't found in loop above, append
+        cart.append({
+            'product_name': product.product_name,
+            'product_id': product.id,
+            'quantity': 1,
+            'purchase_price': purchase_price,
+            'total_price': purchase_price,
+        })
+
+        _save_purchase_cart(request, cart)
+
+    # compute grand total from session cart
+    cart = _get_purchase_cart(request)
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+    
 def submet_purchase_order(request):
-    if purchases_order == []:
+    cart = _get_purchase_cart(request)
+    if not cart:
         messages.error(request, "Please add at least one product to purchase!")
         return redirect('/purchases')
     else:
         employee_id = request.session['employee_id']
         models.create_purchase_order(employee_id) #---------CREATE the invoise------- 1
-        for key in purchases_order :
-            product_name = key.get('product_name')
+        for key in cart:
             product_id = key.get('product_id')
-            quantity = key.get('quantity')
-            purchase_price = key.get('purchase_price')
-            total_price = key.get('total_price')
-            #make invoice
-            
-            # models.add_purchase_relation(product_id)#---------GET the product-----AMD------ADD the product------- 4
-            #################################
-            models.add_item_to_purchase_invoice(product_id, quantity , purchase_price, total_price )#new
-            #################################
+            quantity = int(key.get('quantity'))
+            purchase_price = float(key.get('purchase_price') or 0)
+            total_price = float(key.get('total_price') or 0)
+            models.add_item_to_purchase_invoice(product_id, quantity, purchase_price, total_price)
             models.add_product_to_purchase(product_id, quantity)
+
         # update the created Purchase total (grand_total and total_amount)
         try:
             last_purchase = models.Purchase.objects.last()
@@ -553,21 +663,19 @@ def submet_purchase_order(request):
         except Exception:
             pass
 
-        purchases_order.clear()
+        _save_purchase_cart(request, [])
         messages.success(request, "Purchased Successfully!", extra_tags = 'add_invoice')
 
         return redirect('/purchases')
 #____________________________________PURCHASE___________________________________
 
 def clear_purchases_list(request):
-    if purchases_order == []:
+    cart = _get_purchase_cart(request)
+    if not cart:
         messages.error(request, "already empty!")
         return redirect('/purchases')
-    else:
-        purchases_order.clear()
-        return redirect('/purchases')
-
-    return purchases_order.clear()
+    _save_purchase_cart(request, [])
+    return redirect('/purchases')
 
 
 # -------------------- RETURN PURCHASES (Products returned) --------------------
@@ -846,12 +954,12 @@ def print_purchase_invoice(request, id):
     return render(request, 'print_purchase_invoice.html', context)
 
 def clear_sales_list(request) :
-    if sale_order == []:
+    cart = _get_sale_cart(request)
+    if not cart:
         messages.error(request, "already empty!")
         return redirect('/sales')
-    else:
-        sale_order.clear()
-        return redirect('/sales')
+    _save_sale_cart(request, [])
+    return redirect('/sales')
 
 def display_employee_reports(request):
     context = {

@@ -98,13 +98,16 @@ def get_employee_by_id(id):
 
 class Product(models.Model):
     product_name = models.CharField(max_length=255)
-    quantity = models.IntegerField( default = 0  ) #stock_quantity
-    purchasing_price = models.DecimalField(max_digits=6, decimal_places=2) # 999999.99
-    sale_price = models.DecimalField(max_digits=6, decimal_places=2, null=True , blank=True) # 999999.99
+    quantity = models.IntegerField(default=0)
+    purchasing_price = models.DecimalField(max_digits=6, decimal_places=2)
+    sale_price = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     category = models.CharField(max_length=100, blank=True, null=True)
-    expiry_date  = models.DateField(blank=True, null=True)
-    supplier = models.CharField(max_length=255,blank=True, null=True)  # Supplier NAME
-    employee = models.ForeignKey(Employee , related_name="products", on_delete=models.CASCADE , null=True, blank=True) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
+    expiry_date = models.DateField(blank=True, null=True)
+    isbn = models.CharField(max_length=32, blank=True, null=True, unique=True)
+    production_date = models.DateField(blank=True, null=True)
+    author = models.CharField(max_length=255, blank=True, null=True)
+    supplier = models.CharField(max_length=255, blank=True, null=True)
+    employee = models.ForeignKey(Employee, related_name="products", on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = ProductManager()

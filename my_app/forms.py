@@ -5,7 +5,14 @@ from .models import Product , ProductAttribute
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['product_name', 'quantity', 'purchasing_price', 'sale_price', 'supplier']
+        fields = [
+            'product_name', 'quantity', 'purchasing_price', 'sale_price', 'supplier',
+            'isbn', 'production_date', 'author', 'expiry_date'
+        ]
+        widgets = {
+            'production_date': forms.DateInput(attrs={'type': 'date'}),
+            'expiry_date': forms.DateInput(attrs={'type': 'date'}),
+        }
 
 
 ProductAttributeFormSet = forms.inlineformset_factory(

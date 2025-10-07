@@ -1,4 +1,5 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
 
 {% block title %}Sales Orders{% endblock %}
 
@@ -19,7 +20,12 @@
             <div class="d-flex align-items-center">
             <p class="mb-0 ">New Sale Invoice</p>
             
-            <button class="btn btn-primary btn-sm ms-auto">Add product</button>
+            <!-- Scanner focus control -->
+            <div class="input-group ms-auto me-2" style="max-width:260px;">
+                <input id="scanner-input" class="form-control" type="text" placeholder="Scanner input" aria-label="Scanner input">
+                <button type="button" class="btn btn-outline-primary" onclick="focusScannerInput()">Listen</button>
+            </div>
+            <button class="btn btn-primary btn-sm">Add product</button>
             </div>
         </div>
         <div class="card-body">
@@ -266,6 +272,33 @@
 {% endblock content %}
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %} {% endblock javascripts %}
+
+<script src="{% static 'js/isbn-scanner.js' %}"></script>
+<script>
+// Renderer for scanner updates on sales page
+window.onScannerUpdate = function(payload){
+    const tbody = document.querySelector('table.table tbody');
+    if (!tbody) return;
+    // find the order summary table -- we assume the first table on page is the summary
+    // Rebuild rows from payload.items
+    const items = payload.items || [];
+    // Remove existing item rows except header/footer: simplify by reloading the page section
+    // We'll replace the tbody entirely
+    let rows = '';
+    items.forEach(function(it){
+        rows += '<tr>'+
+            '<td class="ps-3">'+it.product_id+'</td>'+
+            '<td class="ps-3">'+it.product_name+'</td>'+
+            '<td>'+it.quantity+'</td>'+
+            '<td class="ps-3">'+it.sale_price+'</td>'+
+            '<td class="ps-3">'+it.total_price+'</td>'+
+            '</tr>';
+    });
+    // add grand total row
+    rows += '<tr class="table-secondary fw-bold"><td colspan="4" class="text-end">Grand Total</td><td class="ps-3">'+payload.grand_total+'</td></tr>';
+    tbody.innerHTML = rows;
+};
+</script>
 
 
 
