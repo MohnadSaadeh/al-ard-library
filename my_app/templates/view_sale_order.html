@@ -1,27 +1,28 @@
 
 {% extends 'layouts/base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}View Sale Invoice{% endblock %}
+{% block title %}{% trans "View Sale Invoice" %}{% endblock %}
 
 {% block content %}
 
-{% block page_name %}View Sale Invoice{% endblock %}
-{% block page_name2 %}View Sale Invoice{% endblock %}
+{% block page_name %}{% trans "View Sale Invoice" %}{% endblock %}
+{% block page_name2 %}{% trans "View Sale Invoice" %}{% endblock %}
 
 <div class="row">
   <div class="col-12">
     <div class="card mb-4">
       <div class="p-2">
-        <small class="text-muted">Products in invoice: {{ sale_products_count }}</small>
+  <small class="text-muted">{% trans "Products in invoice:" %} {{ sale_products_count }}</small>
       </div>
       <div class="card-header d-flex align-items-center justify-content-between pb-0">
         <div>
-          <h6 class="mb-0">Sales Invoice #{{ order.id }}</h6>
-          <small class="text-muted">Added by: {{ order.employee.first_name }} {{ order.employee.last_name }} &nbsp; | &nbsp; Date: {{ order.created_at|date:'Y-m-d H:i' }}</small>
+          <h6 class="mb-0">{% trans "Sales Invoice" %} #{{ order.id }}</h6>
+          <small class="text-muted">{% trans "Added by:" %} {{ order.employee.first_name }} {{ order.employee.last_name }} &nbsp; | &nbsp; {% trans "Date:" %} {{ order.created_at|date:'Y-m-d H:i' }}</small>
         </div>
         <div>
-          <a class="btn btn-sm btn-outline-primary" href="/print_sale_invoice/{{ order.id }}" target="_blank">Print Invoice</a>
+          <a class="btn btn-sm btn-outline-primary" href="/print_sale_invoice/{{ order.id }}" target="_blank">{% trans "Print Invoice" %}</a>
         </div>
       </div>
       <div class="card-body px-0 pt-0 pb-2">
@@ -34,23 +35,23 @@
 
           <!-- Title and metadata -->
           <div class="text-center mb-3">
-            <h2 class="mb-0">Sales Invoice</h2>
-            <div class="small text-muted">Invoice No: <strong>#{{ order.id }}</strong> &nbsp; | &nbsp; Date: <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong></div>
-            <div class="small text-muted">Added by: <strong>{{ order.employee.first_name }} {{ order.employee.last_name }}</strong></div>
+            <h2 class="mb-0">{% trans "Sales Invoice" %}</h2>
+            <div class="small text-muted">{% trans "Invoice No:" %} <strong>#{{ order.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong></div>
+            <div class="small text-muted">{% trans "Added by:" %} <strong>{{ order.employee.first_name }} {{ order.employee.last_name }}</strong></div>
           </div>
 
           <!-- Company contact (left) and invoice meta (right) for screen view -->
           <div class="d-flex justify-content-between mb-3">
             <div class="small text-muted">
-              <div><strong>الأرض للنشر والتوزيع</strong></div>
-              <div>Address: البالوع , رام الله , فلسطين</div>
-              <div>Phone: +972-599-966535</div>
-              <div>Email: info@al-ard.com</div>
+              <div><strong>{% trans "الأرض للنشر والتوزيع" %}</strong></div>
+              <div>{% trans "Address:" %} {% trans "البالوع , رام الله , فلسطين" %}</div>
+              <div>{% trans "Phone:" %} 0599966535</div>
+              {% comment %} <div>{% trans "Email:" %} info@al-ard.com</div> {% endcomment %}
             </div>
             <div class="text-end small text-muted">
-              <div>Invoice No: <strong>#{{ order.id }}</strong></div>
-              <div>Date: <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong></div>
-              <div>Issued by: <strong>{{ order.employee.first_name }} {{ order.employee.last_name }}</strong></div>
+              <div>{% trans "Invoice No:" %} <strong>#{{ order.id }}</strong></div>
+              <div>{% trans "Date:" %} <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong></div>
+              <div>{% trans "Issued by:" %} <strong>{{ order.employee.first_name }} {{ order.employee.last_name }}</strong></div>
             </div>
           </div>
 

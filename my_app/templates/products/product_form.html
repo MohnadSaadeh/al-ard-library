@@ -1,23 +1,24 @@
 {% extends "layouts/base.html" %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>إضافة / تعريف منتج جديد</h2>
+    <h2>{% trans "Add / Define New Product" %}</h2>
     <form method="post">
         {% csrf_token %}
 
-        <!-- تفاصيل المنتج -->
+        <!-- {% trans "Product Details" %} -->
         <div class="card mb-4">
-            <div class="card-header">تفاصيل المنتج</div>
+            <div class="card-header">{% trans "Product Details" %}</div>
             <div class="card-body">
                 {{ form|crispy }}
             </div>
         </div>
 
-        <!-- خصائص المنتج -->
+        <!-- {% trans "Product Attributes" %} -->
         <div class="card mb-4">
-            <div class="card-header">خصائص المنتج</div>
+            <div class="card-header">{% trans "Product Attributes" %}</div>
             <div class="card-body">
                 {{ formset.management_form }}
 
@@ -29,16 +30,16 @@
                     {% endfor %}
                 </div>
 
-                <!-- زر إضافة خاصية -->
+                <!-- {% trans "Add Attribute Button" %} -->
                 <button type="button" class="btn btn-sm btn-secondary" id="add-attribute">
-                    + إضافة خاصية
+                    {% trans "+ Add Attribute" %}
                 </button>
             </div>
         </div>
 
-        <!-- أزرار التحكم -->
-        <button type="submit" class="btn btn-primary">💾 حفظ المنتج</button>
-        <a href="{% url 'product_list' %}" class="btn btn-secondary">إلغاء</a>
+        <!-- {% trans "Form Buttons" %} -->
+        <button type="submit" class="btn btn-primary">💾 {% trans "Save Product" %}</button>
+        <a href="{% url 'product_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
     </form>
 </div>
 

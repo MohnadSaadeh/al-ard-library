@@ -1,26 +1,27 @@
 
 {% extends 'layouts/base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}View Purchase Invoice{% endblock %}
+{% block title %}{% trans "View Purchase Invoice" %}{% endblock %}
 
 {% block content %}
 
-{% block page_name %}View Purchase Invoice{% endblock %}
-{% block page_name2 %}View Purchase Invoice{% endblock %}
+{% block page_name %}{% trans "View Purchase Invoice" %}{% endblock %}
+{% block page_name2 %}{% trans "View Purchase Invoice" %}{% endblock %}
 
 <div class="row">
   <div class="col-12">
     <div class="card mb-4">
       <div class="card-header d-flex align-items-center justify-content-between pb-0">
         <div>
-          <h6 class="mb-0">Purchase Invoice #{{ invoice.id }}</h6>
-          <small class="text-muted">Added by: {{ invoice.employee.first_name }} {{ invoice.employee.last_name }} &nbsp; | &nbsp; Date: {{ invoice.created_at|date:'Y-m-d H:i' }}</small>
+          <h6 class="mb-0">{% trans "Purchase Invoice" %} #{{ invoice.id }}</h6>
+          <small class="text-muted">{% trans "Added by:" %} {{ invoice.employee.first_name }} {{ invoice.employee.last_name }} &nbsp; | &nbsp; {% trans "Date:" %} {{ invoice.created_at|date:'Y-m-d H:i' }}</small>
         </div>
         <div>
-          <a class="btn btn-sm btn-outline-primary" href="/print_purchase_invoice/{{ invoice.id }}" target="_blank">Print Invoice</a>
+          <a class="btn btn-sm btn-outline-primary" href="/print_purchase_invoice/{{ invoice.id }}" target="_blank">{% trans "Print Invoice" %}</a>
           &nbsp;
-          <a class="btn btn-sm btn-outline-danger return-link" href="{% url 'purchase_return_create' invoice.id %}" data-return-label="Purchase #{{ invoice.id }}">Return</a>
+          <a class="btn btn-sm btn-outline-danger return-link" href="{% url 'purchase_return_create' invoice.id %}" data-return-label="{% trans "Purchase" %} #{{ invoice.id }}">{% trans "Return" %}</a>
         </div>
       </div>
       <div class="card-body px-0 pt-0 pb-2">
@@ -33,23 +34,23 @@
 
           <!-- Title and metadata -->
           <div class="text-center mb-3">
-            <h2 class="mb-0">Purchase Invoice</h2>
-            <div class="small text-muted">Invoice No: <strong>#{{ invoice.id }}</strong> &nbsp; | &nbsp; Date: <strong>{{ invoice.created_at|date:'Y-m-d H:i' }}</strong></div>
-            <div class="small text-muted">Added by: <strong>{{ invoice.employee.first_name }} {{ invoice.employee.last_name }}</strong></div>
+            <h2 class="mb-0">{% trans "Purchase Invoice" %}</h2>
+            <div class="small text-muted">{% trans "Invoice No:" %} <strong>#{{ invoice.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ invoice.created_at|date:'Y-m-d H:i' }}</strong></div>
+            <div class="small text-muted">{% trans "Added by:" %} <strong>{{ invoice.employee.first_name }} {{ invoice.employee.last_name }}</strong></div>
           </div>
 
           <!-- Company contact (left) and invoice meta (right) for screen view -->
           <div class="d-flex justify-content-between mb-3">
             <div class="small text-muted">
-              <div><strong>الأرض للنشر والتوزيع</strong></div>
-              <div>Address: البالوع , رام الله , فلسطين</div>
-              <div>Phone: +972-599-966535</div>
-              <div>Email: info@al-ard.com</div>
+              <div><strong>{% trans "الأرض للنشر والتوزيع" %}</strong></div>
+              <div>{% trans "Address:" %} {% trans "البالوع , رام الله , فلسطين" %}</div>
+              <div>{% trans "Phone:" %} +972-599-966535</div>
+              <div>{% trans "Email:" %} info@al-ard.com</div>
             </div>
             <div class="text-end small text-muted">
-              <div>Invoice No: <strong>#{{ invoice.id }}</strong></div>
-              <div>Date: <strong>{{ invoice.created_at|date:'Y-m-d H:i' }}</strong></div>
-              <div>Issued by: <strong>{{ invoice.employee.first_name }} {{ invoice.employee.last_name }}</strong></div>
+              <div>{% trans "Invoice No:" %} <strong>#{{ invoice.id }}</strong></div>
+              <div>{% trans "Date:" %} <strong>{{ invoice.created_at|date:'Y-m-d H:i' }}</strong></div>
+              <div>{% trans "Issued by:" %} <strong>{{ invoice.employee.first_name }} {{ invoice.employee.last_name }}</strong></div>
             </div>
           </div>
 

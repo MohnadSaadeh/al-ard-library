@@ -1,14 +1,15 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Sales Orders{% endblock %}
+{% block title %}{% trans "Sales Orders" %}{% endblock %}
 
 {% block stylesheets %} {% endblock stylesheets %}
 
 {% block content %}
 
-{% block page_name %}Sales Orders{% endblock %}
-{% block page_name2 %}Sales Orders{% endblock %}
+{% block page_name %}{% trans "Sales Orders" %}{% endblock %}
+{% block page_name2 %}{% trans "Sales Orders" %}{% endblock %}
 <!-- comtent -->
 <div class="row">
     <div class="col-8">
@@ -18,28 +19,28 @@
         <form action="/add_order_to_sale" method="post" id="add-form">
             {% csrf_token %}
             <div class="d-flex align-items-center">
-            <p class="mb-0 ">New Sale Invoice</p>
+            <p class="mb-0 ">{% trans "New Sale Invoice" %}</p>
             
             <!-- Scanner focus control -->
             <div class="input-group ms-auto me-2" style="max-width:260px;">
-                <input id="scanner-input" class="form-control" type="text" placeholder="Scanner input" aria-label="Scanner input">
-                <button type="button" class="btn btn-outline-primary" onclick="focusScannerInput()">Listen</button>
+                <input id="scanner-input" class="form-control" type="text" placeholder="{% trans "Scanner input" %}" aria-label="{% trans "Scanner input" %}">
+                <button type="button" class="btn btn-outline-primary" onclick="focusScannerInput()">{% trans "Listen" %}</button>
             </div>
-            <button class="btn btn-primary btn-sm">Add product</button>
+            <button class="btn btn-primary btn-sm">{% trans "Add product" %}</button>
             </div>
         </div>
         <div class="card-body">
             <p class="text-uppercase text-sm"></p>
             <div class="row">
             <div class="col-md-6">
-                <label for="example-text-input" class="form-control-label">Product Name</label>
+                <label for="example-text-input" class="form-control-label">{% trans "Product Name" %}</label>
                 </div>
                 <div class="btn-group ">
                 <div class="col-md-4">
                     <div class="form-group">
                 
                     <select id="results-box"   class="form-control" name="product_name">
-                        <option value="- Select Product -">- Select Product -</option>
+                        <option value="- Select Product -">{% trans "- Select Product -" %}</option>
                         {% for product in products %}
                         <option>{{product.product_name}}</option>
                         {% endfor %}
@@ -49,7 +50,7 @@
                 </div>
                 <div class="w-15 text-center">
                     <div id="search-form"   outocomplete = "off">
-                        <input id="search-input" class="form-control me-2" type="search" placeholder="Search " aria-label="Search">
+                        <input id="search-input" class="form-control me-2" type="search" placeholder="{% trans "Search" %} " aria-label="{% trans "Search" %}">
                     </div>
                 </div>
                 </div>
@@ -59,7 +60,7 @@
             </div>
             <div class="col-md-4">
                 <div class="form-group">
-                <label for="example-text-input" class="form-control-label">Quantity</label>
+                <label for="example-text-input" class="form-control-label">{% trans "Quantity" %}</label>
                 <input class="form-control" type="number" name="quantity" >
                 </div>
             </div>
@@ -70,15 +71,15 @@
 
             <form action="/submet_sale_order" method="post">
             {% csrf_token %}
-            <p>Order Summery</p>
+            <p>{% trans "Order Summary" %}</p>
             
             <table class="table">
                 <tr >
-                    <th class="ps-3">id</th>
-                    <th class="ps-3">Product</th>
-                    <th>Quantity</th>
-                    <th class="ps-3">Sale Price</th>
-                    <th class="ps-3">Total Price</th>
+                    <th class="ps-3">{% trans "ID" %}</th>
+                    <th class="ps-3">{% trans "Product" %}</th>
+                    <th>{% trans "Quantity" %}</th>
+                    <th class="ps-3">{% trans "Sale Price" %}</th>
+                    <th class="ps-3">{% trans "Total Price" %}</th>
                 </tr>
                 {% for order in sale_order %}
                 <tr>
@@ -90,13 +91,13 @@
                 </tr>
                 {% endfor %}
                 <tr class="table-secondary fw-bold">
-                  <td colspan="4" class="text-end">Grand Total</td>
+                  <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
                   <td class="ps-3">{{ grand_total }}</td>
                 </tr>
             </table>
             
-            <button type="submit" class="btn btn-primary btn-sm ms-auto mt-4">Submit order</button>
-            <a href="/clear_sales_list" class="btn btn-primary btn-sm ms-auto mt-4">Clear order</a>
+            <button type="submit" class="btn btn-primary btn-sm ms-auto mt-4">{% trans "Submit order" %}</button>
+            <a href="/clear_sales_list" class="btn btn-primary btn-sm ms-auto mt-4">{% trans "Clear order" %}</a>
 
             </div>
             
@@ -120,18 +121,18 @@
     <div class="col-12">
     <div class="card mb-4">
         <div class="card-header pb-0">
-        <h6>Recent Sales Orders</h6>
+    <h6>{% trans "Recent Sales Orders" %}</h6>
         </div>
         <div class="card-body px-0 pt-0 pb-2">
         <div class="table-responsive p-0">
             <table class="table align-items-center justify-content-center mb-0">
             <thead>
                 <tr>
-                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Order No.</th>
+                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">{% trans "Order No." %}</th>
                 
-                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">Added by</th>
-                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">Added at</th>
-                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Action</th>
+                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">{% trans "Added by" %}</th>
+                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">{% trans "Added at" %}</th>
+                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">{% trans "Action" %}</th>
                 
                 
                 </tr>
@@ -150,9 +151,9 @@
                 </td>
                 <td>
                     <span class="text-sm  mb-0 font-weight-bold">
-                        <a href="/view_sale_order/{{order.id}}">View</a>
+                        <a href="/view_sale_order/{{order.id}}">{% trans "View" %}</a>
                         &nbsp;|&nbsp;
-                        <a href="{% url 'sale_return_create' order.id %}" class="return-link" data-return-label="Sale #{{ order.id }}">Return</a>
+                        <a href="{% url 'sale_return_create' order.id %}" class="return-link" data-return-label="{% trans "Sale" %} #{{ order.id }}">{% trans "Return" %}</a>
                     </span>
                 </td>
                 </tr>

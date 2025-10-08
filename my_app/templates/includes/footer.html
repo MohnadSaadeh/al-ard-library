@@ -1,3 +1,4 @@
+{% load i18n %}
 <footer class="footer pt-3  ">
 <div class="container-fluid">
     <div class="row align-items-center justify-content-lg-between">
@@ -7,20 +8,20 @@
         © <script>
             document.getElementById("year").textContent = new Date().getFullYear();
         </script>,
-        made with <i class="fa fa-heart"></i> by
-        <a href="http://www.membrmate.com" class="font-weight-bold" target="_blank">Member Mate</a>
+    {% trans "made with" %} <i class="fa fa-heart"></i> {% trans "by" %}
+    <a href="http://www.membrmate.com" class="font-weight-bold" target="_blank">{% trans "Member Mate" %}</a>
         </div>
     </div>
     <div class="col-lg-6">
         <ul class="nav nav-footer justify-content-center justify-content-lg-end">
         <li class="nav-item">
-            <a class="nav-link text-muted" target="_blank">StockSync</a>
+            <a class="nav-link text-muted" target="_blank">{% trans "StockSync" %}</a>
         </li>
         <li class="nav-item">
-            <a href="/about_us" class="nav-link text-muted" target="_blank">About Us</a>
+            <a href="/about_us" class="nav-link text-muted" target="_blank">{% trans "About Us" %}</a>
         </li>
         <li class="nav-item">
-            <a  class="nav-link text-muted" target="_blank">WhatsApp</a>
+            <a  class="nav-link text-muted" target="_blank">{% trans "WhatsApp" %}</a>
         </li>
         <li class="nav-item">
             <a  class="nav-link pe-0 text-muted" target="_blank"> +970599938149</a>

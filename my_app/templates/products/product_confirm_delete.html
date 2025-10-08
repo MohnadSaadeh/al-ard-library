@@ -1,14 +1,15 @@
 {% extends "layouts/base.html" %}
+{% load i18n %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>حذف المنتج</h2>
-    <p>هل أنت متأكد من حذف المنتج <strong>{{ object.product_name }}</strong>؟</p>
+    <h2>{% trans "Delete Product" %}</h2>
+    <p>{% trans "Are you sure you want to delete the product" %} <strong>{{ object.product_name }}</strong>؟</p>
 
     <form method="post">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger">نعم، احذف</button>
-        <a href="{% url 'product_list' %}" class="btn btn-secondary">إلغاء</a>
+    <button type="submit" class="btn btn-danger">{% trans "Yes, delete" %}</button>
+    <a href="{% url 'product_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
     </form>
 </div>
 {% endblock %}

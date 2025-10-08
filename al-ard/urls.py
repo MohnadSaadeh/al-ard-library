@@ -13,6 +13,7 @@ class ManagerAdmin(admin.ModelAdmin):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('my_app.urls'))
+    path('', include('my_app.urls')),
+    path('i18n/', include('django.conf.urls.i18n')),
 
 ]

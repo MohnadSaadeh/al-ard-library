@@ -10,6 +10,8 @@ from django.db.models.functions import ExtractWeekDay
 from django.http import JsonResponse
 from . import validations
 from django.core.paginator import Paginator
+from django.utils.translation import gettext as _
+
 
 
 # Session-backed cart helpers (per-user carts stored in session)

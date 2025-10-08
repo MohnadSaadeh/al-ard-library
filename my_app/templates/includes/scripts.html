@@ -1,5 +1,6 @@
 <!--   Core JS Files   -->
 {% load static %}
+{% load i18n %}
 <script src="{% static 'js/core/popper.min.js' %}"></script>
 <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
 <script src="{% static 'js/plugins/perfect-scrollbar.min.js' %}"></script>
@@ -39,9 +40,9 @@ document.addEventListener('DOMContentLoaded', function(){
         if(!el) return;
         e.preventDefault();
         targetUrl = el.getAttribute('href') || el.dataset.returnUrl;
-        var label = el.dataset.returnLabel || 'this return form';
+    var label = el.dataset.returnLabel || '{% trans "this return form" %}';
         var textEl = document.getElementById('returnConfirmText');
-        if(textEl) textEl.textContent = 'Open return form for ' + label + '?';
+    if(textEl) textEl.textContent = '{% trans "Open return form for" %} ' + label + '?';
         bsModal.show();
     });
 

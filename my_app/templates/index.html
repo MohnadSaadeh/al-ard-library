@@ -1,16 +1,15 @@
-
-
 {% extends 'layouts/base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Manager Dashboard{% endblock %}
+
+{% block title %}{% trans "Manager Dashboard" %}{% endblock %}
 
 {% block stylesheets %} {% endblock stylesheets %}
 
 {% block content %}
-
-            {% block page_name %} Dashboard {% endblock %}
-            {% block page_name2 %} Manager Dashboard {% endblock %}
+            {% block page_name %} {% trans "Dashboard" %} {% endblock %}
+            {% block page_name2 %} {% trans "Manager Dashboard" %} {% endblock %}
 <!-- comtent -->
     <div class="row">
       <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
@@ -19,7 +18,7 @@
             <div class="row">
               <div class="col-8">
                 <div class="numbers">
-                  <p class="text-sm mb-0 text-uppercase font-weight-bold">Today's Sales Orders</p>
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">{% trans "Today's Sales Orders" %}</p>
                   <h5 class="font-weight-bolder">
                     {{today_sale_order}}
                   </h5>
@@ -44,7 +43,7 @@
             <div class="row">
               <div class="col-8">
                 <div class="numbers">
-                  <p class="text-sm mb-0 text-uppercase font-weight-bold">Today's Purchase Orders</p>
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">{% trans "Today's Purchase Orders" %}</p>
                   <h5 class="font-weight-bolder">
                     {{today_purchases_order}}
                   </h5>
@@ -69,7 +68,7 @@
             <div class="row">
               <div class="col-8">
                 <div class="numbers">
-                  <p class="text-sm mb-0 text-uppercase font-weight-bold">Out of stock products</p>
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">{% trans "Out of stock products" %}</p>
                   <h5 class="font-weight-bolder">
                     {{count}}
                   </h5>
@@ -95,7 +94,7 @@
             <div class="row">
               <div class="col-8">
                 <div class="numbers">
-                  <p class="text-sm mb-0 text-uppercase font-weight-bold">Near Expiry products</p>
+                  <p class="text-sm mb-0 text-uppercase font-weight-bold">{% trans "Near Expiry products" %}</p>
                   <h5 class="font-weight-bolder">
                     {{near_expiry.all.count}}
                   </h5>
@@ -119,7 +118,7 @@
       <div class="col-lg-7 mb-lg-0 mb-4">
         <div class="card z-index-2 h-100">
           <div class="card-header pb-0 pt-3 bg-transparent">
-            <h6 class="text-capitalize">Sales overview</h6>
+            <h6 class="text-capitalize">{% trans "Sales overview" %}</h6>
             <!-- <p class="text-sm mb-0">
               <i class="fa fa-arrow-up text-success"></i>
               <span class="font-weight-bold">4% more</span> in 2021
