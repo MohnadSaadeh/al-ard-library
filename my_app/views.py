@@ -978,6 +978,8 @@ def view_sale_order(request, id):#--------------------------------------------Ma
         'order': models.get_sale_order(id),
         'sale_products': sale_qs,
         'sale_products_count': sale_qs.count(),
+        'page_title': _("View Sale Order"),
+        'no_products_message': _("No products found in this sale order."),
     }
     return render(request, 'view_sale_order.html',context)
 
