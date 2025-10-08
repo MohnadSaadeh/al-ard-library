@@ -1,5 +1,6 @@
 {% load static %}
 {% load i18n %}
+{% load i18n %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -25,7 +26,7 @@
       </div>
 
   <h2 class="text-center">{% trans "Sale Return Invoice" %}</h2>
-      <div class="text-center small text-muted mb-2">Invoice No: <strong>#{{ invoice.id }}</strong> &nbsp; | &nbsp; Date: <strong>{{ invoice.created_at|date:'Y-m-d H:i' }}</strong></div>
+      <div class="text-center small text-muted mb-2">{% trans "Invoice No:" %} <strong>#{{ invoice.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ invoice.created_at|date:'Y-m-d H:i' }}</strong></div>
 
       <div class="table-responsive">
         <table class="table table-sm table-bordered">

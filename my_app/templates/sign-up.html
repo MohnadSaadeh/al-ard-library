@@ -1,6 +1,7 @@
 {% extends 'layouts/base-landing.html' %}
+{% load i18n %}
 
-{% block title %}Sign Up{% endblock %}
+{% block title %}{% trans "Sign Up" %}{% endblock %}
 
 {% block stylesheets %} {% endblock stylesheets %}
 
@@ -14,7 +15,7 @@
         <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
           <div class="card mb-4 mt-12 ms-4 me-4 z-index-10">
             <div class="card-header text-center pt-4">
-              <h5>Register with</h5>
+              <h5>{% trans "Register with" %}</h5>
             </div>
             <!-- <div class="row px-xl-5 px-sm-4 px-3">
               <div class="col-3 ms-auto px-1">
@@ -66,46 +67,46 @@
                 
               </div>
               <div class="card-body">
-                <p class="text-uppercase text-sm">Employee Information</p>
+                <p class="text-uppercase text-sm">{% trans "Employee Information" %}</p>
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">First Name</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "First Name" %}</label>
                       <input class="form-control" type="text" name="f_name" >
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">Last Name</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "Last Name" %}</label>
                       <input class="form-control" type="text" name="l_name">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">Email</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "Email" %}</label>
                       <input class="form-control" type="email" name="email" autocomplete="email">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">Date of birth</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "Date of birth" %}</label>
                       <input class="form-control" type="date" name="DOB">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">Password</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "Password" %}</label>
                       <input class="form-control" type="password" name="password"autocomplete="password">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">Confirm Password</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "Confirm Password" %}</label>
                       <input class="form-control" type="password" name="c_password"autocomplete="c_password">
                     </div>
                   </div>
                   <div class="text-center">
-                  <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">Sign up</button>
+                  <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">{% trans "Sign Up" %}</button>
                   </div>
                 </div>
                 {% if messages %}

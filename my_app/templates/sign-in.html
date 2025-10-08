@@ -1,6 +1,7 @@
 {% extends 'layouts/base-landing.html' %}
 {% load static %}
-{% block title %}main page{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Sign In" %}{% endblock %}
 
 {% block stylesheets %} {% endblock stylesheets %}
 
@@ -32,26 +33,26 @@
                       <img src="{% static 'img/al-ard-profile-Banner.png' %}" alt="logo"  style="width: 300px; height: auto;padding-top: 1.5rem;">
 
                       <!-- user img -->
-                      <h4 class="font-weight-bolder">Sign In</h4>
+                      <h4 class="font-weight-bolder">{% trans "Sign In" %}</h4>
                     </div>
                   <form action="/signin" role="form" method="post">
                     {% csrf_token %}
                     <select class="form-select form-select-lg mb-3" aria-label="Large select example" name="account_type">
-                      <option value="1">Employee account</option>
-                      <option value="2">Manager account</option>
+                      <option value="1">{% trans "Employee account" %}</option>
+                      <option value="2">{% trans "Manager account" %}</option>
                     </select>
                     <div class="mb-1">
-                      <input type="email" class="form-control form-control-lg" placeholder="Email" aria-label="Email" name="email"autocomplete="username">
+                      <input type="email" class="form-control form-control-lg" placeholder="{% trans "Email" %}" aria-label="Email" name="email"autocomplete="username">
                     </div>
                     <div class="mb-1">
-                      <input type="password" class="form-control form-control-lg" placeholder="Password" aria-label="Password" name="password"autocomplete="current-password">
+                      <input type="password" class="form-control form-control-lg" placeholder="{% trans "Password" %}" aria-label="Password" name="password"autocomplete="current-password">
                     </div>
                     <!-- <div class="form-check form-switch">
                       <input class="form-check-input" type="checkbox" id="rememberMe" name="form_check">
                       <label class="form-check-label" for="rememberMe">Remember me</label>
                     </div> -->
                     <div >
-                      <button type="submit" class="btn btn-lg btn-primary  w-100 mt-0 mb-0">Sign in</button>
+                      <button type="submit" class="btn btn-lg btn-primary  w-100 mt-0 mb-0">{% trans "Sign In" %}</button>
                     </div>
                   </form>
                   {% if messages %}
@@ -66,15 +67,15 @@
                   </ul>
                   {% else %}
                       {% if messages.success %}
-                          <p class="message_success" >You have successfully loged as Admin!  </p>
+                          <p class="message_success" >{% trans "You have successfully logged as Admin!" %}</p>
                       {% endif %}
                   {% endif %}
 
                 </div>
                 <div class="card-footer text-center pt-0 px-lg-2 px-1">
                   <p class="mb-4 text-sm mx-auto">
-                    Don't have an account?
-                    <a href="/signup" class="text-primary text-gradient font-weight-bold">Sign up</a>
+                    {% trans "Don't have an account?" %}
+                    <a href="/signup" class="text-primary text-gradient font-weight-bold">{% trans "Sign Up" %}</a>
                   </p>
                 </div>
               </div>
@@ -84,8 +85,8 @@
                 style="background-image: url('{% static 'img/al-ard.png' %}');
                       background-size: cover;">
                 <span class="mask bg-gradient-primary opacity-6"></span>
-                <h4 class="mt-5 text-white font-weight-bolder position-relative">"The way to manage your stock, STOCKSYNC"</h4>
-                <p class="text-white position-relative">All the features you'll ever need to manage your business</p>
+                <h4 class="mt-5 text-white font-weight-bolder position-relative">"{% trans "The way to manage your stock, STOCKSYNC" %}"</h4>
+                <p class="text-white position-relative">{% trans "All the features you'll ever need to manage your business" %}</p>
               </div>
             </div>
           </div>

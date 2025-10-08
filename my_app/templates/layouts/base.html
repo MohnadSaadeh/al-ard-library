@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
+{% load i18n %}
 <head>
 
 <meta charset="utf-8" />
@@ -10,7 +11,7 @@
         <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
 
     <title>
-        AL Ard {% block title %}{% endblock %}
+        {% trans "AL Ard" %} {% block title %}{% endblock %}
     </title>
     
         <!-- Fonts and Icons -->
@@ -55,7 +56,7 @@
                 <div class="container-fluid py-1 px-3">
                     <nav aria-label="breadcrumb">
                     <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
-                        <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white" href="javascript:;">Pages</a></li>
+                        <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white" href="javascript:;">{% trans "Pages" %}</a></li>
                         <li class="breadcrumb-item text-sm text-white active" aria-current="page"> {% block page_name %}{% endblock %}</li>
                     </ol>
                     <h6 class="font-weight-bolder text-white mb-0"> {% block page_name2 %}{% endblock %}</h6>
@@ -83,15 +84,15 @@
                     <div class="modal-dialog modal-sm modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="returnConfirmModalLabel">Confirm Return</h5>
+                                <h5 class="modal-title" id="returnConfirmModalLabel">{% trans "Confirm Return" %}</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <p id="returnConfirmText">Are you sure you want to open the return form?</p>
+                                <p id="returnConfirmText">{% trans "Are you sure you want to open the return form?" %}</p>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" id="returnConfirmBtn" class="btn btn-primary btn-sm">Open</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                                <button type="button" id="returnConfirmBtn" class="btn btn-primary btn-sm">{% trans "Open" %}</button>
                             </div>
                         </div>
                     </div>

@@ -1,7 +1,8 @@
 {% extends 'layouts/base-landing.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}About Us{% endblock %}
+{% block title %}{% trans "About Us" %}{% endblock %}
 
 {% block stylesheets %} {% endblock stylesheets %}
 
@@ -13,17 +14,17 @@
           <div class="row">
             <div class="col-xl-6 col-lg-5 col-md-7 d-flex flex-column mx-lg-0 mx-auto">
               <br><br>
-                <h3>About Us</h3>
-                <p>Welcome to our comprehensive stock management system <span style="color: blueviolet;"><b>StockSync</b></span>. In today's dynamic business landscape, efficient stock management is paramount for businesses of all sizes to optimize operations, minimize costs, and maximize profits. Our stock management system provides a robust solution for businesses to streamline inventory tracking, procurement, and sales processes.</p>
-                <p>The primary purpose of our stock management system is to provide businesses with a centralized platform to effectively manage their inventory. Whether you're a small retail store or a large-scale manufacturer, our system empowers you to maintain accurate stock levels, track product movements, and make informed decisions to meet customer demand and drive business growth.</p>
+                <h3>{% trans "About Us" %}</h3>
+                {% blocktrans %}Welcome to our comprehensive stock management system <span style="color: blueviolet;"><b>StockSync</b></span>. In today's dynamic business landscape, efficient stock management is paramount for businesses of all sizes to optimize operations, minimize costs, and maximize profits. Our stock management system provides a robust solution for businesses to streamline inventory tracking, procurement, and sales processes.{% endblocktrans %}
+                {% blocktrans %}The primary purpose of our stock management system is to provide businesses with a centralized platform to effectively manage their inventory. Whether you're a small retail store or a large-scale manufacturer, our system empowers you to maintain accurate stock levels, track product movements, and make informed decisions to meet customer demand and drive business growth.{% endblocktrans %}
                 <div>
                   <br>
                   <br>
-                  <h3 > <b>Our Team</b></h3>
+                  <h3 > <b>{% trans "Our Team" %}</b></h3>
                   
                   <ul>
                     <!-- <li>Mai Thaher</li> -->
-                    <li>Mohannad Saadeh</li>
+                    <li>{% trans "Mohannad Saadeh" %}</li>
                     <!-- <li>Akram Jaber</li> -->
                   </ul>
                 </div>
@@ -32,8 +33,8 @@
         <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden" style="background-image: url('{% static 'img/hompage_background.png' %}');
       background-size: cover;">
                 <span class="mask bg-gradient-primary opacity-6"></span>
-                <h4 class="mt-5 text-white font-weight-bolder position-relative">"The way to manage your stock, STOCKSYNC"</h4>
-                <p class="text-white position-relative">All the features you'll ever need to manage your business</p>
+                <h4 class="mt-5 text-white font-weight-bolder position-relative">"{% trans "The way to manage your stock, STOCKSYNC" %}"</h4>
+                <p class="text-white position-relative">{% trans "All the features you'll ever need to manage your business" %}</p>
                 
               </div>
             </div>

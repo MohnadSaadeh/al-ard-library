@@ -1,11 +1,11 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}Return Purchases{% endblock %}
+{% block title %}{% trans "Return Purchases" %}{% endblock %}
 
 {% block content %}
 
-      {% block page_name %}Return Purchases{% endblock %}
-      {% block page_name2 %}Return Purchases{% endblock %}
+  {% block page_name %}{% trans "Return Purchases" %}{% endblock %}
+  {% block page_name2 %}{% trans "Return Purchases" %}{% endblock %}
 
 <div class="row">
     <div class="col-8">
@@ -14,22 +14,22 @@
           <form action="/add_order_to_return" method="post" id="add-form">
             {% csrf_token %}
             <div class="d-flex align-items-center">
-              <p class="mb-0 ">New Return Invoice</p>
+              <p class="mb-0 ">{% trans "New Return Invoice" %}</p>
               
-              <button class="btn btn-danger btn-sm ms-auto">Add product</button>
+              <button class="btn btn-danger btn-sm ms-auto">{% trans "Add product" %}</button>
             </div>
           </div>
           <div class="card-body">
             <p class="text-uppercase text-sm"></p>
             <div class="row">
               <div class="col-md-6">
-                <label for="example-text-input" class="form-control-label">Product Name</label>
+                <label for="example-text-input" class="form-control-label">{% trans "Product Name" %}</label>
                 </div>
                 <div class="btn-group ">
                   <div class="col-md-4">
                     <div class="form-group">
                       <select id="results-box"   class="form-control" name="product_name">
-                        <option value="- Select Product -">- Select Product -</option>
+                        <option value="- Select Product -">{% trans "- Select Product -" %}</option>
                         {% for product in products %}
                         <option>{{product.product_name}}</option>
                         {% endfor %}
@@ -39,14 +39,14 @@
                   </div>
                   <div class="w-15 text-center">
                     <div id="search-form"   outocomplete = "off">
-                        <input id="search-input" class="form-control me-2" type="search" placeholder="Search " aria-label="Search">
+                        <input id="search-input" class="form-control me-2" type="search" placeholder="{% trans "Search" %}" aria-label="{% trans "Search" %}">
                     </div>
                   </div>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
-                  <label for="example-text-input" class="form-control-label">Quantity</label>
+                  <label for="example-text-input" class="form-control-label">{% trans "Quantity" %}</label>
                   <input class="form-control" type="number" name="quantity" >
                 </div>
               </div>
@@ -56,7 +56,7 @@
 
           <form action="/submet_return_order" method="post">
               {% csrf_token %}
-              <p>Return Summery</p>
+              <p>{% trans "Return Summary" %}</p>
               <table class="table">
                 <tr >
                   <th class="ps-3">id</th>

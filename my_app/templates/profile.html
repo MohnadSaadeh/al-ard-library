@@ -1,12 +1,15 @@
 {% extends 'layouts/base.html' %}
+{% load i18n %}
 
 {% block title %}Employees{% endblock %}
+{% block title %}{% trans "Employees" %}{% endblock %}
 
 {% block stylesheets %} {% endblock stylesheets %}
 
 {% block content %}
 
             {% block page_name %} Emoloyees{% endblock %}
+              {% block page_name %} {% trans "Employees" %} {% endblock %}
             {% block page_name2 %} {% endblock %}
 
 
@@ -22,7 +25,7 @@
           <div class="col-auto my-auto">
             <div class="h-100">
               <h5 class="mb-1">
-                The SKELETONE of our stock
+             {% trans "The SKELETONE of our stock" %}
               </h5>
               <!-- <p class="mb-0 font-weight-bold text-sm">
                 Public Relations
@@ -65,46 +68,47 @@
                 {% csrf_token %}
                 <div class="d-flex align-items-center">
                   <p class="mb-0 ">Add New Employee</p>
+                    <p class="mb-0 ">{% trans "Add New Employee" %}</p>
                   
-                  <button type="submit" class="btn btn-primary btn-sm ms-auto">Add</button>
+                  <button type="submit" class="btn btn-primary btn-sm ms-auto">{% trans "Add" %}</button>
                 </div>
               </div>
               <div class="card-body">
-                <p class="text-uppercase text-sm">Employee Information</p>
+                <p class="text-uppercase text-sm">{% trans "Employee Information" %}</p>
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">First Name</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "First Name" %}</label>
                       <input class="form-control" type="text" name="f_name" >
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">Last Name</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "Last Name" %}</label>
                       <input class="form-control" type="text" name="l_name">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">Email</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "Email" %}</label>
                       <input class="form-control" type="email" name="email" autocomplete="email">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">Date of birth</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "Date of birth" %}</label>
                       <input class="form-control" type="date" name="DOB">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">Password</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "Password" %}</label>
                       <input class="form-control" type="password" name="password"autocomplete="password">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label for="example-text-input" class="form-control-label">Confirm Password</label>
+                      <label for="example-text-input" class="form-control-label">{% trans "Confirm Password" %}</label>
                       <input class="form-control" type="password" name="c_password"autocomplete="c_password">
                     </div>
                   </div>
@@ -127,14 +131,14 @@
           <div class="col-md-6">
             <div class="card" >
               <div class="card card-profile">
-                  <h5 class="ps-2 pt-2">Employees List</h5>
+                  <h5 class="ps-2 pt-2">{% trans "Employees List" %}</h5>
                 <div class="card-body px-0 pt-0 pb-2" >
                   <div class="table-responsive p-0" >
                   <table class="table">
                     <tr>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Joined us at</th>
+                      <th>{% trans "Last Name" %}</th>
+                      <th>{% trans "Email" %}</th>
+                      <th>{% trans "Joined us at" %}</th>
                     </tr>
                     {% for emp in employees %}
                     <tr>
