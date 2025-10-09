@@ -5,6 +5,11 @@ from datetime import datetime , timedelta
 import datetime
 from .validations import EmployeeManager , ManagerManager , ProductManager , PurchaseManager , Sale_orderManager
 
+# Define pay_choices globally to avoid repetition and NameError
+pay_choices = [
+    ('cash', 'Cash'),
+    ('debts', 'Debts'),
+]
 
 class Supplier(models.Model):
     name = models.CharField(max_length=255)
@@ -103,7 +108,7 @@ class Product(models.Model):
     sale_price = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     category = models.CharField(max_length=100, blank=True, null=True)
     expiry_date = models.DateField(blank=True, null=True)
-    isbn = models.CharField(max_length=32, blank=True, null=True, unique=True)
+    isbn = models.CharField(max_length=32, unique=True)
     production_date = models.DateField(blank=True, null=True)
     author = models.CharField(max_length=255, blank=True, null=True)
     supplier = models.CharField(max_length=255, blank=True, null=True)
@@ -226,16 +231,11 @@ def get_six_monthes_products():
 # (المشتريات من الموردين)
 # (فاتورة)
 class Purchase(models.Model): #i changed from Purchasing_invoice to Purchase >
-    pay_choices = [
-        ('cash', 'Cash'),
-        ('debts','Debts'),
-    ]
-    # supplier = models.foreignKey(Supplier , related_name="purchasing_invoices", on_delete=models.CASCADE, null=True)
     employee = models.ForeignKey(Employee , related_name="Purchases", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
     # إجمالي قيمة الفاتورة
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # the total amount of the invoice
     payment_method = models.CharField(max_length=10, choices=pay_choices, default='cash')
-
+    invoice_pay_method = models.CharField(max_length=10, choices=pay_choices, default='cash')  # Added field
     grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -264,10 +264,9 @@ def get_all_invoices():
 # S.Order is made by one EMP
 # (فاتورة)
 class Sale_order(models.Model):
-    # customer_name = models.CharField(max_length=255) 
     employee = models.ForeignKey(Employee , related_name="sale_orders", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) #means the total amount of the order
-    
+    invoice_pay_method = models.CharField(max_length=10, choices=pay_choices, default='cash')  # Added field
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = Sale_orderManager()
@@ -372,6 +371,7 @@ class Return(models.Model):
     employee = models.ForeignKey(Employee, related_name="returns", on_delete=models.CASCADE)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    invoice_pay_method = models.CharField(max_length=10, choices=pay_choices, default='cash')  # Added field
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

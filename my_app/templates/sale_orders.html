@@ -20,12 +20,6 @@
             {% csrf_token %}
             <div class="d-flex align-items-center">
             <p class="mb-0 ">{% trans "New Sale Invoice" %}</p>
-            
-            <!-- Scanner focus control -->
-            <div class="input-group ms-auto me-2" style="max-width:260px;">
-                <input id="scanner-input" class="form-control" type="text" placeholder="{% trans "Scanner input" %}" aria-label="{% trans "Scanner input" %}">
-                <button type="button" class="btn btn-outline-primary" onclick="focusScannerInput()">{% trans "Listen" %}</button>
-            </div>
             <button class="btn btn-primary btn-sm">{% trans "Add product" %}</button>
             </div>
         </div>
@@ -71,8 +65,18 @@
 
             <form action="/submet_sale_order" method="post">
             {% csrf_token %}
-            <p>{% trans "Order Summary" %}</p>
-            
+            <p>{% trans "Order Summary" %}</p> 
+            <div class="form-group">
+                <label>{% trans "Payment Method" %}</label>
+                <div>
+                    <input type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
+                    <label for="cash">{% trans "Cash" %}</label>
+                </div>
+                <div>
+                    <input type="radio" id="debts" name="invoice_pay_method" value="debts">
+                    <label for="debts">{% trans "Debts" %}</label>
+                </div>
+            </div>
             <table class="table">
                 <tr >
                     <th class="ps-3">{% trans "ID" %}</th>
@@ -273,33 +277,6 @@
 {% endblock content %}
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %} {% endblock javascripts %}
-
-<script src="{% static 'js/isbn-scanner.js' %}"></script>
-<script>
-// Renderer for scanner updates on sales page
-window.onScannerUpdate = function(payload){
-    const tbody = document.querySelector('table.table tbody');
-    if (!tbody) return;
-    // find the order summary table -- we assume the first table on page is the summary
-    // Rebuild rows from payload.items
-    const items = payload.items || [];
-    // Remove existing item rows except header/footer: simplify by reloading the page section
-    // We'll replace the tbody entirely
-    let rows = '';
-    items.forEach(function(it){
-        rows += '<tr>'+
-            '<td class="ps-3">'+it.product_id+'</td>'+
-            '<td class="ps-3">'+it.product_name+'</td>'+
-            '<td>'+it.quantity+'</td>'+
-            '<td class="ps-3">'+it.sale_price+'</td>'+
-            '<td class="ps-3">'+it.total_price+'</td>'+
-            '</tr>';
-    });
-    // add grand total row
-    rows += '<tr class="table-secondary fw-bold"><td colspan="4" class="text-end">Grand Total</td><td class="ps-3">'+payload.grand_total+'</td></tr>';
-    tbody.innerHTML = rows;
-};
-</script>
 
 
 
