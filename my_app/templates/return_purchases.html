@@ -60,11 +60,11 @@
               <p>{% trans "Return Summary" %}</p>
               <table class="table">
                 <tr >
-                  <th class="ps-3">id</th>
-                  <th class="ps-3">Product</th>
-                  <th>Quantity</th>
-                  <th class="ps-3">Unit Price</th>
-                  <th class="ps-3">Total Price</th>
+                  <th class="ps-3">{% trans "id" %}</th>
+                  <th class="ps-3">{% trans "Product" %}</th>
+                  <th>{% trans "Quantity" %}</th>
+                  <th class="ps-3">{% trans "Unit Price" %}</th>
+                  <th class="ps-3">{% trans "Total Price" %}</th>
                 </tr>
                 {% for order in returns_order %}
                 <tr>
@@ -76,14 +76,14 @@
                 </tr>
                 {% endfor %}
                 <tr class="table-secondary fw-bold">
-                  <td colspan="4" class="text-end">Grand Total</td>
+                  <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
                   <td class="ps-3">{{ grand_total }}</td>
                 </tr>
               </table>
                  
 
-              <button type="submit" class="btn btn-danger btn-sm ms-auto mt-4">Submit return</button>
-              <a href="/clear_returns_list" class="btn btn-danger btn-sm ms-auto mt-4"> Clear return</a>
+              <button type="submit" class="btn btn-danger btn-sm ms-auto mt-4">{% trans "Submit return" %}</button>
+              <a href="/clear_returns_list" class="btn btn-danger btn-sm ms-auto mt-4">{% trans "Clear return" %}</a>
             </div>
 
               {% if messages %}
@@ -106,17 +106,17 @@
     <div class="col-12">
       <div class="card mb-4">
         <div class="card-header pb-0">
-          <h6>Recent Returned Invoices</h6>
+          <h6>{% trans "Recent Returned Invoices" %}</h6>
         </div>
         <div class="card-body px-0 pt-0 pb-2">
           <div class="table-responsive p-0">
             <table class="table align-items-center justify-content-center mb-0">
               <thead>
                 <tr>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Return No.</th>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">Added by</th>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">Added at</th>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">Action</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">{% trans "Return No." %}</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">{% trans "Added by" %}</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">{% trans "Added at" %}</th>
+                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">{% trans "Action" %}</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,7 +132,7 @@
                     <span class="text-sm mb-0 font-weight-bold">{{invoice.created_at}}</span>
                   </td>
                   <td>
-                    <span class="text-sm  mb-0 font-weight-bold"><a href="/view_return_invoice/{{invoice.id}}">View</a></span>
+                    <span class="text-sm  mb-0 font-weight-bold"><a href="/view_return_invoice/{{invoice.id}}">{% trans "View" %}</a></span>
                   </td>
                 </tr>
                 {% endfor %}
@@ -143,5 +143,55 @@
       </div>
     </div>
   </div>
+  <div class="pagination-container">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      {% if return_purchases.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?return_purchases_page={{ return_purchases.previous_page_number }}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+      {% endif %}
+      {% for num in return_purchases.paginator.page_range %}
+        <li class="page-item {% if return_purchases.number == num %}active{% endif %}">
+          <a class="page-link" href="?return_purchases_page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+      {% if return_purchases.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?return_purchases_page={{ return_purchases.next_page_number }}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+<div class="pagination-container">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      {% if return_invoices.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?return_invoices_page={{ return_invoices.previous_page_number }}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+      {% endif %}
+      {% for num in return_invoices.paginator.page_range %}
+        <li class="page-item {% if return_invoices.number == num %}active{% endif %}">
+          <a class="page-link" href="?return_invoices_page={{ num }}">{{ num }}</a>
+        </li>
+      {% endfor %}
+      {% if return_invoices.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?return_invoices_page={{ return_invoices.next_page_number }}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
 
 {% endblock content %}

@@ -686,12 +686,20 @@ returns_order = []
 def display_returns(request):
     # calculate grand total for current return order
     grand_total = sum(item['total_price'] for item in returns_order)
+
+    # Paginate recent returned invoices
+    return_invoices_qs = models.get_all_return_invoices()
+    return_invoices_page_number = request.GET.get('return_invoices_page')
+    return_invoices_paginator = Paginator(return_invoices_qs, 10)  # 10 items per page
+    return_invoices_page = return_invoices_paginator.get_page(return_invoices_page_number)
+
     context = {
         'returns_order': returns_order,
         'products': models.get_all_products(),
-        'return_invoices': models.get_all_return_invoices(),
+        'return_invoices': return_invoices_page,  # Updated to use paginated data
         'employee': models.get_employee_by_id(request.session['employee_id']),
         'grand_total': grand_total,
+        'return_invoices_paginator': return_invoices_paginator,
     }
     return render(request, 'return_purchases.html', context)
 
@@ -791,12 +799,20 @@ def display_sale_returns(request):
     cart = _get_sale_returns_cart(request)
     # ensure numeric floats for display
     grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+
+    # Paginate recent sale returns
+    sale_returns_qs = models.get_all_sale_returns()
+    sale_returns_page_number = request.GET.get('sale_returns_page')
+    sale_returns_paginator = Paginator(sale_returns_qs, 10)  # 10 items per page
+    sale_returns_page = sale_returns_paginator.get_page(sale_returns_page_number)
+
     context = {
         'sale_returns_cart': cart,
         'products': models.get_all_products(),
-        'sale_returns': models.get_all_sale_returns(),
+        'sale_returns': sale_returns_page,  # Updated to use paginated data
         'employee': models.get_employee_by_id(request.session['employee_id']),
         'grand_total': grand_total,
+        'sale_returns_paginator': sale_returns_paginator,
     }
     return render(request, 'return_sales.html', context)
 
