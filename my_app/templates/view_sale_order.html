@@ -1,4 +1,3 @@
-
 {% extends 'layouts/base.html' %}
 {% load static %}
 {% load i18n %}
@@ -60,10 +59,10 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Product</th>
-                  <th class="text-center">Qty</th>
-                  <th class="text-end">Unit Price</th>
-                  <th class="text-end">Total</th>
+                  <th>{% trans "Product" %}</th>
+                  <th class="text-center">{% trans "Qty" %}</th>
+                  <th class="text-end">{% trans "Unit Price" %}</th>
+                  <th class="text-end">{% trans "Total" %}</th>
                 </tr>
               </thead>
               <tbody>
@@ -79,14 +78,14 @@
                   {% endfor %}
                 {% else %}
                   <tr>
-                    <td colspan="5" class="text-center text-muted">No products for this sale.</td>
+                    <td colspan="5" class="text-center text-muted">{% trans "No products for this sale." %}</td>
                   </tr>
                 {% endif %}
               </tbody>
               <tfoot>
                 <tr>
                   <td colspan="3"></td>
-                  <td class="text-end fw-bold">Grand Total</td>
+                  <td class="text-end fw-bold">{% trans "Grand Total" %}</td>
                   <td class="text-end fw-bold">{{ order.total_amount }}</td>
                 </tr>
               </tfoot>
@@ -94,23 +93,23 @@
           </div>
 
           <div class="invoice-notes mt-4">
-            <p class="small text-muted">This sales invoice documents products sold. Keep this invoice for your records.</p>
+            <p class="small text-muted">{% trans "This sales invoice documents products sold. Keep this invoice for your records." %}</p>
           </div>
 
           <!-- Financial footer: VAT and signatures -->
           <div class="invoice-footer mt-4 d-flex justify-content-between align-items-start">
             <div class="vat-info small text-muted">
               <div><strong>{% trans "VAT / Tax No:" %}</strong> {% trans "12345678" %}</div>
-              <div><strong>Payment Terms:</strong> As agreed</div>
+              <div><strong>{% trans "Payment Terms:" %}</strong> {% trans "As agreed" %}</div>
             </div>
             <div class="signatures text-end" style="min-width:300px;">
               <div class="signature-block" style="margin-bottom:40px;">
                 <div class="small text-muted">_____________________________</div>
-                <div class="small">Authorized Signature</div>
+                <div class="small">{% trans "Authorized Signature" %}</div>
               </div>
               <div class="signature-block">
                 <div class="small text-muted">_____________________________</div>
-                <div class="small">Received by (Customer)</div>
+                <div class="small">{% trans "Received by (Customer)" %}</div>
               </div>
             </div>
           </div>

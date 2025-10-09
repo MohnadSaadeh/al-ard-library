@@ -2,29 +2,29 @@ from django.db import models
 import datetime 
 from django.utils import timezone 
 import re 
+from django.utils.translation import gettext as _
+
 # from . import views
 
 class EmployeeManager(models.Manager):
     def employee_validator(self, postData):
-        # dob_val = views.get_date_time()
         dob_val = datetime.date.today()
         errors = {}
         EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
         if len(postData['f_name']) < 2:
-            errors['f_name'] = "First name should be at least 2 characters"
+            errors['f_name'] = _("First name should be at least 2 characters")
         if len(postData['l_name']) < 2:
-            errors['l_name'] = "Last name should be at least 2 characters"
+            errors['l_name'] = _("Last name should be at least 2 characters")
         if not EMAIL_REGEX.match(postData['email']):
-            errors['email'] = "Invalid email address!"
+            errors['email'] = _("Invalid email address!")
         if postData['DOB'] == "":
-            errors['DOB'] = "Please enter a date"
-        
-        if postData['DOB'] > str(dob_val):
-            errors['DOB'] = "Date should be in the past"
+            errors['DOB'] = _("Please enter a date")
+        if postData['DOB'] and datetime.datetime.strptime(postData['DOB'], '%Y-%m-%d').date() >= dob_val:
+            errors['DOB'] = _("Date should be in the past")
         if len(postData['password']) < 8:
-            errors['password'] = "Password should be at least 8 characters"
-        if postData['c_password'] != postData['password']:
-            errors['c_password'] = "Passwords not match"
+            errors['password'] = _("Password should be at least 8 characters")
+        if postData['password'] != postData['c_password']:
+            errors['c_password'] = _("Passwords do not match")
         return errors
     
     def login_employee_validator(self, postData):

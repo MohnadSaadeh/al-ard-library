@@ -79,21 +79,21 @@ def sign_up(request):
 
 # if anyone want to Sign is
 def sign_in(request):
+    # Translate messages for user feedback
     if request.method == 'POST':
-        # if he is an EMPLOYEE
-        if request.POST['account_type'] == "1" : # Emoployee
+        if request.POST['account_type'] == "1":  # Employee
             errors = models.Employee.objects.login_employee_validator(request.POST)
             if len(errors) > 0:
                 for key, value in errors.items():
-                    messages.error(request, value )
+                    messages.error(request, _(value))  # Translate error messages
                 return redirect('/')
             else:
-                employee_email = request.POST['email'] # here we get the email thet ENSERTED
-                employee_password = request.POST['password'] # here we get the password thet ENSERTED
-                employee = models.Employee.objects.filter(email=employee_email) # here we get the EMPLOYEE by the email from DB
-                if employee: # here we check if the EMPLOYEE exist
-                    employee_user = employee[0] # here we get the EMPLOYEE from the list
-                    if bcrypt.checkpw(employee_password.encode(), employee_user.password.encode()): # here we chick the password 
+                employee_email = request.POST['email']
+                employee_password = request.POST['password']
+                employee = models.Employee.objects.filter(email=employee_email)
+                if employee:
+                    employee_user = employee[0]
+                    if bcrypt.checkpw(employee_password.encode(), employee_user.password.encode()):
                         request.session['employee_id'] = employee_user.id
                         #---------------is Active -----------------------
                         employee = models.Employee.objects.get(id=request.session['employee_id'])
@@ -102,10 +102,10 @@ def sign_in(request):
                         #---------------is Active -----------------------
                         return redirect('/index')
                     else:
-                        messages.error(request, "Incorrect Password")
+                        messages.error(request, _("Incorrect Password"))
                         # messages.error(request, value , extra_tags = 'admin_login' )
                         return redirect('/')
-                messages.error(request, "Email is incorrect")
+                messages.error(request, _("Email is incorrect"))
                 return redirect('/')
         # if he is a MANAGER
         else:
@@ -126,10 +126,10 @@ def sign_in(request):
                             request.session['manager_id'] = manager_user.id
                             return redirect('/index')
                         else:
-                            messages.error(request, "Incorrect Password")
+                            messages.error(request, _("Incorrect Password"))
                             # messages.error(request, value , extra_tags = 'admin_login' )
                             return redirect('/')
-                    messages.error(request, "Email is incorrect")
+                    messages.error(request, _("Email is incorrect"))
     else:
         return redirect('/')
 

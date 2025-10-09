@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-09 01:41+0300\n"
+"POT-Creation-Date: 2025-10-09 03:04+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -78,18 +78,32 @@ msgstr "معلومات المنتج"
 #: .\my_app\templates\edit_product.html:28
 #: .\my_app\templates\products\product_list.html:23
 #: .\my_app\templates\purchase_invoices.html:36
+#: .\my_app\templates\return_purchases.html:27
+#: .\my_app\templates\return_sales.html:26
 #: .\my_app\templates\sale_orders.html:36
 msgid "Product Name"
 msgstr "اسم المنتج"
 
+#: .\my_app\templates\edit_product.html:34
+#: .\my_app\templates\employee_reports.html:29
 #: .\my_app\templates\products\product_list.html:24
 #: .\my_app\templates\purchase_invoices.html:63
 #: .\my_app\templates\purchase_invoices.html:79
+#: .\my_app\templates\return_purchases.html:50
+#: .\my_app\templates\return_sales.html:48
 #: .\my_app\templates\sale_orders.html:63
 #: .\my_app\templates\sale_orders.html:80
 msgid "Quantity"
 msgstr "الكمية"
 
+#: .\my_app\templates\edit_product.html:40
+#: .\my_app\templates\employee_reports.html:30
+#, fuzzy
+#| msgid "Purchase Price"
+msgid "Purchasing Price"
+msgstr "سعر الشراء"
+
+#: .\my_app\templates\edit_product.html:46
 #: .\my_app\templates\employee_reports.html:31
 #: .\my_app\templates\products\product_list.html:30
 msgid "Expiry Date"
@@ -123,11 +137,36 @@ msgstr "ستوك سينك / التقرير اليومي"
 #: .\my_app\templates\view_purchase_invoice.html:19
 #: .\my_app\templates\view_purchase_invoice.html:38
 #: .\my_app\templates\view_purchase_invoice.html:52
+#: .\my_app\templates\view_return_invoice.html:18
+#: .\my_app\templates\view_return_invoice.html:35
+#: .\my_app\templates\view_return_invoice.html:49
+#: .\my_app\templates\view_return_sale.html:18
+#: .\my_app\templates\view_sale_order.html:21
+#: .\my_app\templates\view_sale_order.html:38
+#: .\my_app\templates\view_sale_order.html:53
+msgid "Date:"
+msgstr ""
+
+#: .\my_app\templates\employee_reports.html:28
+#: .\my_app\templates\print_purchase_invoice.html:46
 #: .\my_app\templates\print_return_invoice.html:41
+#: .\my_app\templates\print_return_sale.html:36
+#: .\my_app\templates\print_sale_invoice.html:42
+#: .\my_app\templates\purchase_invoices.html:78
+#: .\my_app\templates\purchases\purchase_return_detail.html:10
+#: .\my_app\templates\purchases\purchase_return_form.html:26
+#: .\my_app\templates\return_sales.html:47
+#: .\my_app\templates\sale_orders.html:79
 #: .\my_app\templates\sales\sale_return_detail.html:15
+#: .\my_app\templates\sales\sale_return_form.html:27
+#: .\my_app\templates\view_return_sale.html:30
+#: .\my_app\templates\view_sale_order.html:63
+msgid "Product"
+msgstr "المنتج"
+
 #: .\my_app\templates\employee_reports.html:156
 msgid "Print"
-msgstr ""
+msgstr "طباعة"
 
 #: .\my_app\templates\includes\aside.html:8
 msgid "Employee Dashboard"
@@ -148,6 +187,9 @@ msgid "Sales Orders"
 msgstr "طلبات المبيعات"
 
 #: .\my_app\templates\includes\aside.html:50
+#: .\my_app\templates\return_sales.html:5
+#: .\my_app\templates\return_sales.html:9
+#: .\my_app\templates\return_sales.html:10
 msgid "Return Sales"
 msgstr "مرتجعات المبيعات"
 
@@ -156,6 +198,9 @@ msgid "Purchase Invoices"
 msgstr "فواتير الشراء"
 
 #: .\my_app\templates\includes\aside.html:66
+#: .\my_app\templates\return_purchases.html:4
+#: .\my_app\templates\return_purchases.html:8
+#: .\my_app\templates\return_purchases.html:9
 msgid "Return Purchases"
 msgstr "مرتجعات الشراء"
 
@@ -164,8 +209,8 @@ msgstr "مرتجعات الشراء"
 msgid "Product List"
 msgstr "قائمة المنتجات"
 
-#: .\my_app\templates\includes\aside.html:102 .\my_app\templates\profile.html:5
-#: .\my_app\templates\profile.html:12
+#: .\my_app\templates\includes\aside.html:102 .\my_app\templates\profile.html:4
+#: .\my_app\templates\profile.html:10
 msgid "Employees"
 msgstr "الموظفون"
 
@@ -348,12 +393,18 @@ msgstr "فاتورة شراء"
 #: .\my_app\templates\print_sale_invoice.html:35
 #: .\my_app\templates\view_purchase_invoice.html:38
 #: .\my_app\templates\view_purchase_invoice.html:51
-#: .\my_app\templates\view_sale_order.html:39
-#: .\my_app\templates\view_sale_order.html:53
+#: .\my_app\templates\view_return_invoice.html:35
+#: .\my_app\templates\view_return_invoice.html:48
+#: .\my_app\templates\view_sale_order.html:38
+#: .\my_app\templates\view_sale_order.html:52
 msgid "Invoice No:"
 msgstr "رقم الفاتورة:"
+
+#: .\my_app\templates\print_purchase_invoice.html:45
+#: .\my_app\templates\print_return_invoice.html:40
 #: .\my_app\templates\print_return_sale.html:35
 #: .\my_app\templates\print_sale_invoice.html:41
+#: .\my_app\templates\view_return_sale.html:29
 msgid "#"
 msgstr "#"
 
@@ -361,16 +412,21 @@ msgstr "#"
 #: .\my_app\templates\print_return_invoice.html:42
 #: .\my_app\templates\print_return_sale.html:37
 #: .\my_app\templates\print_sale_invoice.html:43
+#: .\my_app\templates\view_return_sale.html:31
+#: .\my_app\templates\view_sale_order.html:64
 msgid "Qty"
 msgstr "الكمية"
 
 #: .\my_app\templates\print_purchase_invoice.html:48
 #: .\my_app\templates\print_return_invoice.html:43
 #: .\my_app\templates\print_return_sale.html:38
-#: .\my_app\templates\purchases\purchase_return_detail.html:11
+#: .\my_app\templates\purchases\purchase_return_detail.html:12
 #: .\my_app\templates\purchases\purchase_return_form.html:30
+#: .\my_app\templates\return_sales.html:49
 #: .\my_app\templates\sales\sale_return_detail.html:17
 #: .\my_app\templates\sales\sale_return_form.html:31
+#: .\my_app\templates\view_return_sale.html:32
+#: .\my_app\templates\view_sale_order.html:65
 msgid "Unit Price"
 msgstr "سعر الوحدة"
 
@@ -378,8 +434,10 @@ msgstr "سعر الوحدة"
 #: .\my_app\templates\print_return_invoice.html:44
 #: .\my_app\templates\print_return_sale.html:39
 #: .\my_app\templates\print_sale_invoice.html:45
-#: .\my_app\templates\purchases\purchase_return_detail.html:12
+#: .\my_app\templates\purchases\purchase_return_detail.html:13
 #: .\my_app\templates\sales\sale_return_detail.html:18
+#: .\my_app\templates\view_return_sale.html:33
+#: .\my_app\templates\view_sale_order.html:66
 msgid "Total"
 msgstr "الإجمالي"
 
@@ -393,6 +451,8 @@ msgstr "لا توجد منتجات لهذا الإرجاع."
 #: .\my_app\templates\print_sale_invoice.html:66
 #: .\my_app\templates\purchase_invoices.html:98
 #: .\my_app\templates\sale_orders.html:94
+#: .\my_app\templates\view_return_sale.html:54
+#: .\my_app\templates\view_sale_order.html:89
 msgid "Grand Total"
 msgstr "الإجمالي الكلي"
 
@@ -400,6 +460,7 @@ msgstr "الإجمالي الكلي"
 #: .\my_app\templates\print_return_invoice.html:74
 #: .\my_app\templates\print_return_sale.html:69
 #: .\my_app\templates\print_sale_invoice.html:75
+#: .\my_app\templates\view_sale_order.html:103
 msgid "VAT / Tax No:"
 msgstr "رقم الضريبة / ضريبة القيمة المضافة:"
 
@@ -407,12 +468,14 @@ msgstr "رقم الضريبة / ضريبة القيمة المضافة:"
 #: .\my_app\templates\print_return_invoice.html:75
 #: .\my_app\templates\print_return_sale.html:70
 #: .\my_app\templates\print_sale_invoice.html:76
+#: .\my_app\templates\view_sale_order.html:104
 msgid "Payment Terms:"
 msgstr "شروط الدفع:"
 
 #: .\my_app\templates\print_purchase_invoice.html:80
 #: .\my_app\templates\print_return_sale.html:70
 #: .\my_app\templates\print_sale_invoice.html:76
+#: .\my_app\templates\view_sale_order.html:104
 msgid "As agreed"
 msgstr "حسب الاتفاق"
 
@@ -420,6 +483,7 @@ msgstr "حسب الاتفاق"
 #: .\my_app\templates\print_return_invoice.html:78
 #: .\my_app\templates\print_return_sale.html:73
 #: .\my_app\templates\print_sale_invoice.html:79
+#: .\my_app\templates\view_sale_order.html:109
 msgid "Authorized Signature"
 msgstr "التوقيع المعتمد"
 
@@ -429,10 +493,13 @@ msgid "Received by (Supplier)"
 msgstr "استلم بواسطة (العميل)"
 
 #: .\my_app\templates\print_return_invoice.html:8
+#: .\my_app\templates\view_return_invoice.html:17
+#: .\my_app\templates\view_return_sale.html:17
 msgid "Return Invoice"
 msgstr "فاتورة إرجاع مبيعات"
 
 #: .\my_app\templates\print_return_invoice.html:33
+#: .\my_app\templates\view_return_invoice.html:34
 msgid "Returned Products Invoice"
 msgstr "المنتجات في الفاتورة:"
 
@@ -450,18 +517,20 @@ msgid "Sale Return Invoice"
 msgstr "فاتورة إرجاع مبيعات"
 
 #: .\my_app\templates\print_return_sale.html:54
+#: .\my_app\templates\view_return_sale.html:48
 msgid "No products for this return."
 msgstr "لا توجد منتجات لهذا الإرجاع."
 
 #: .\my_app\templates\print_return_sale.html:74
 #: .\my_app\templates\print_sale_invoice.html:80
+#: .\my_app\templates\view_sale_order.html:113
 msgid "Received by (Customer)"
 msgstr "استلم بواسطة (العميل)"
 
 #: .\my_app\templates\print_sale_invoice.html:8
 #: .\my_app\templates\print_sale_invoice.html:34
-#: .\my_app\templates\view_sale_order.html:21
-#: .\my_app\templates\view_sale_order.html:38
+#: .\my_app\templates\view_sale_order.html:20
+#: .\my_app\templates\view_sale_order.html:37
 msgid "Sales Invoice"
 msgstr "فاتورة مبيعات"
 
@@ -472,6 +541,7 @@ msgid "Sale Price"
 msgstr "سعر البيع"
 
 #: .\my_app\templates\print_sale_invoice.html:60
+#: .\my_app\templates\view_sale_order.html:82
 msgid "No products for this sale."
 msgstr "لا توجد منتجات لهذا الإرجاع."
 
@@ -575,58 +645,55 @@ msgstr "حذف"
 msgid "No products yet"
 msgstr "لا يوجد منتجات بعد"
 
-#: .\my_app\templates\profile.html:28
+#: .\my_app\templates\profile.html:26
 msgid "The SKELETONE of our stock"
 msgstr ""
 
-#: .\my_app\templates\profile.html:71
+#: .\my_app\templates\profile.html:69
 msgid "Add New Employee"
 msgstr "الموظف"
 
-#: .\my_app\templates\profile.html:73
+#: .\my_app\templates\profile.html:71
 msgid "Add"
 msgstr "اضافة"
 
-#: .\my_app\templates\profile.html:77 .\my_app\templates\sign-up.html:70
+#: .\my_app\templates\profile.html:75 .\my_app\templates\sign-up.html:70
 msgid "Employee Information"
 msgstr "معلومات الموظف"
 
 # Removed malformed duplicate block
-#: .\my_app\templates\profile.html:81 .\my_app\templates\sign-up.html:74
+#: .\my_app\templates\profile.html:79 .\my_app\templates\sign-up.html:74
 msgid "First Name"
 msgstr "الاسم الأول"
 
-#: .\my_app\templates\profile.html:87 .\my_app\templates\sign-up.html:80
+#: .\my_app\templates\profile.html:85 .\my_app\templates\profile.html:137
+#: .\my_app\templates\sign-up.html:80
 msgid "Last Name"
 msgstr "اسم العائلة"
 
-#: .\my_app\templates\profile.html:93 .\my_app\templates\profile.html:140
+#: .\my_app\templates\profile.html:91 .\my_app\templates\profile.html:138
 #: .\my_app\templates\sign-in.html:45 .\my_app\templates\sign-up.html:86
 msgid "Email"
 msgstr "البريد الإلكتروني"
 
-#: .\my_app\templates\profile.html:99 .\my_app\templates\sign-up.html:92
+#: .\my_app\templates\profile.html:97 .\my_app\templates\sign-up.html:92
 msgid "Date of birth"
 msgstr "تاريخ الميلاد"
 
-#: .\my_app\templates\profile.html:105 .\my_app\templates\sign-in.html:48
+#: .\my_app\templates\profile.html:103 .\my_app\templates\sign-in.html:48
 #: .\my_app\templates\sign-up.html:98
 msgid "Password"
 msgstr "كلمة المرور"
 
-#: .\my_app\templates\profile.html:111 .\my_app\templates\sign-up.html:104
+#: .\my_app\templates\profile.html:109 .\my_app\templates\sign-up.html:104
 msgid "Confirm Password"
 msgstr "تأكيد كلمة المرور"
 
-#: .\my_app\templates\profile.html:134
+#: .\my_app\templates\profile.html:132
 msgid "Employees List"
 msgstr "الموظفون"
 
 #: .\my_app\templates\profile.html:139
-msgid "Name"
-msgstr "اسم العائلة"
-
-#: .\my_app\templates\profile.html:141
 msgid "Joined us at"
 msgstr ""
 
@@ -652,16 +719,21 @@ msgid "Listen"
 msgstr "استمع"
 
 #: .\my_app\templates\purchase_invoices.html:29
+#: .\my_app\templates\return_purchases.html:20
+#: .\my_app\templates\return_sales.html:20
 #: .\my_app\templates\sale_orders.html:29
 msgid "Add product"
 msgstr "إضافة منتج"
 
 #: .\my_app\templates\purchase_invoices.html:43
+#: .\my_app\templates\return_purchases.html:33
+#: .\my_app\templates\return_sales.html:28
 #: .\my_app\templates\sale_orders.html:43
 msgid "- Select Product -"
 msgstr "- اختر منتج -"
 
 #: .\my_app\templates\purchase_invoices.html:53
+#: .\my_app\templates\return_purchases.html:43
 #: .\my_app\templates\sale_orders.html:53
 msgid "Search"
 msgstr "بحث"
@@ -677,6 +749,7 @@ msgid "ID"
 msgstr "المعرف"
 
 #: .\my_app\templates\purchase_invoices.html:81
+#: .\my_app\templates\return_sales.html:50
 #: .\my_app\templates\sale_orders.html:82
 msgid "Total Price"
 msgstr "السعر الإجمالي"
@@ -731,20 +804,20 @@ msgstr "شراء"
 msgid "Return"
 msgstr "إرجاع"
 
-#: .\my_app\templates\purchases\purchase_return_detail.html:4
+#: .\my_app\templates\purchases\purchase_return_detail.html:5
 msgid "Purchase Return"
 msgstr "مرتجع شراء"
 
-#: .\my_app\templates\purchases\purchase_return_detail.html:5
+#: .\my_app\templates\purchases\purchase_return_detail.html:6
 msgid "Original Purchase Invoice:"
 msgstr "فاتورة الشراء الأصلية:"
 
-#: .\my_app\templates\purchases\purchase_return_detail.html:10
+#: .\my_app\templates\purchases\purchase_return_detail.html:11
 #: .\my_app\templates\sales\sale_return_detail.html:16
 msgid "Returned Quantity"
 msgstr "الكمية المُرتجعة"
 
-#: .\my_app\templates\purchases\purchase_return_detail.html:27
+#: .\my_app\templates\purchases\purchase_return_detail.html:28
 #: .\my_app\templates\sales\sale_return_detail.html:33
 msgid "Total Returned"
 msgstr "إجمالي المرتجع"
@@ -771,6 +844,23 @@ msgstr "كمية الإرجاع"
 #: .\my_app\templates\sales\sale_return_form.html:48
 msgid "Submit Return"
 msgstr "إرسال الإرجاع"
+
+#: .\my_app\templates\return_purchases.html:18
+msgid "New Return Invoice"
+msgstr "فاتورة إرجاع مبيعات"
+
+#: .\my_app\templates\return_purchases.html:60
+#: .\my_app\templates\return_sales.html:43
+msgid "Return Summary"
+msgstr "ملخص الطلب"
+
+#: .\my_app\templates\return_sales.html:19
+msgid "New Sale Return"
+msgstr "إرجاع بيع"
+
+#: .\my_app\templates\return_sales.html:46
+msgid "id"
+msgstr ""
 
 #: .\my_app\templates\sale_orders.html:22
 msgid "New Sale Invoice"
@@ -833,35 +923,139 @@ msgstr "عرض فاتورة شراء"
 
 #: .\my_app\templates\view_purchase_invoice.html:19
 #: .\my_app\templates\view_purchase_invoice.html:39
-#: .\my_app\templates\view_sale_order.html:22
-#: .\my_app\templates\view_sale_order.html:40
+#: .\my_app\templates\view_return_invoice.html:18
+#: .\my_app\templates\view_return_invoice.html:36
+#: .\my_app\templates\view_return_sale.html:18
+#: .\my_app\templates\view_sale_order.html:21
+#: .\my_app\templates\view_sale_order.html:39
 msgid "Added by:"
 msgstr "أضيف بواسطة:"
+
+#: .\my_app\templates\view_purchase_invoice.html:22
+#: .\my_app\templates\view_return_invoice.html:21
+#: .\my_app\templates\view_return_sale.html:21
+#: .\my_app\templates\view_sale_order.html:24
+#, fuzzy
+#| msgid "Return Invoice"
+msgid "Print Invoice"
+msgstr "فاتورة إرجاع مبيعات"
+
 #: .\my_app\templates\view_purchase_invoice.html:45
-#: .\my_app\templates\view_sale_order.html:46
+#: .\my_app\templates\view_return_invoice.html:42
+#: .\my_app\templates\view_sale_order.html:45
 msgid "الأرض للنشر والتوزيع"
 msgstr "الأرض للنشر والتوزيع"
+
+#: .\my_app\templates\view_purchase_invoice.html:46
+#: .\my_app\templates\view_return_invoice.html:43
+#: .\my_app\templates\view_sale_order.html:46
 msgid "Address:"
 msgstr "العنوان:"
 
 #: .\my_app\templates\view_purchase_invoice.html:46
-#: .\my_app\templates\view_sale_order.html:47
+#: .\my_app\templates\view_return_invoice.html:43
+#: .\my_app\templates\view_sale_order.html:46
 msgid "البالوع , رام الله , فلسطين"
 msgstr "البالوع , رام الله , فلسطين"
 
 #: .\my_app\templates\view_purchase_invoice.html:47
-#: .\my_app\templates\view_sale_order.html:48
+#: .\my_app\templates\view_return_invoice.html:44
+#: .\my_app\templates\view_sale_order.html:47
 msgid "Phone:"
 msgstr "الهاتف:"
 
 #: .\my_app\templates\view_purchase_invoice.html:48
+#: .\my_app\templates\view_return_invoice.html:45
 msgid "Email:"
 msgstr "البريد الإلكتروني:"
 
 #: .\my_app\templates\view_purchase_invoice.html:53
-#: .\my_app\templates\view_sale_order.html:55
+#: .\my_app\templates\view_return_invoice.html:50
+#: .\my_app\templates\view_sale_order.html:54
 msgid "Issued by:"
 msgstr "صادرة بواسطة:"
-#: .\my_app\templates\view_sale_order.html:11
+
+#: .\my_app\templates\view_return_invoice.html:5
+#: .\my_app\templates\view_return_invoice.html:9
+#: .\my_app\templates\view_return_invoice.html:10
+#, fuzzy
+#| msgid "Return Invoice"
+msgid "View Return Invoice"
+msgstr "فاتورة إرجاع مبيعات"
+
+#: .\my_app\templates\view_return_sale.html:5
+#: .\my_app\templates\view_return_sale.html:9
+#: .\my_app\templates\view_return_sale.html:10
+#, fuzzy
+#| msgid "Sale Return"
+msgid "View Sale Return"
+msgstr "إرجاع بيع"
+
+#: .\my_app\templates\view_sale_order.html:5
+#: .\my_app\templates\view_sale_order.html:9
+#: .\my_app\templates\view_sale_order.html:10
 msgid "View Sale Invoice"
 msgstr "عرض فاتورة بيع"
+
+#: .\my_app\templates\view_sale_order.html:16
+#, fuzzy
+#| msgid "Returned Products Invoice"
+msgid "Products in invoice:"
+msgstr "المنتجات في الفاتورة:"
+
+#: .\my_app\templates\view_sale_order.html:97
+msgid ""
+"This sales invoice documents products sold. Keep this invoice for your "
+"records."
+msgstr ""
+
+#: .\my_app\templates\view_sale_order.html:103
+msgid "12345678"
+msgstr ""
+
+#: .\my_app\validations.py:15
+msgid "First name should be at least 2 characters"
+msgstr "يجب أن يتكون الاسم الأول من حرفين على الأقل"
+
+#: .\my_app\validations.py:17
+msgid "Last name should be at least 2 characters"
+msgstr "يجب أن يتكون اسم العائلة من حرفين على الأقل"
+
+#: .\my_app\validations.py:19
+msgid "Invalid email address!"
+msgstr "عنوان البريد الإلكتروني غير صالح!"
+
+#: .\my_app\validations.py:21
+msgid "Please enter a date"
+msgstr "يرجى إدخال تاريخ"
+
+#: .\my_app\validations.py:23
+msgid "Date should be in the past"
+msgstr "يجب أن يكون التاريخ في الماضي"
+
+#: .\my_app\validations.py:25
+msgid "Password should be at least 8 characters"
+msgstr "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل"
+
+#: .\my_app\validations.py:27
+msgid "Passwords do not match"
+msgstr "كلمات المرور غير متطابقة"
+
+#: .\my_app\views.py:105 .\my_app\views.py:129
+msgid "Incorrect Password"
+msgstr "تأكيد من كلمة المرور"
+
+#: .\my_app\views.py:108 .\my_app\views.py:132
+msgid "Email is incorrect"
+msgstr ""
+
+#: .\my_app\views.py:981
+msgid "View Sale Order"
+msgstr "طلبات المبيعات"
+
+#: .\my_app\views.py:982
+msgid "No products found in this sale order."
+msgstr "لا توجد منتجات لهذا الإرجاع."
+
+#~ msgid "Name"
+#~ msgstr "اسم العائلة"
