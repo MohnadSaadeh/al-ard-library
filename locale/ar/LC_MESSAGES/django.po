@@ -184,25 +184,25 @@ msgstr "لوحة التحكم / المخزون"
 #: .\my_app\templates\sale_orders.html:5 .\my_app\templates\sale_orders.html:11
 #: .\my_app\templates\sale_orders.html:12
 msgid "Sales Orders"
-msgstr "طلبات المبيعات"
+msgstr "سند مبيعات"
 
 #: .\my_app\templates\includes\aside.html:50
 #: .\my_app\templates\return_sales.html:5
 #: .\my_app\templates\return_sales.html:9
 #: .\my_app\templates\return_sales.html:10
 msgid "Return Sales"
-msgstr "مرتجعات المبيعات"
+msgstr "سند مردودات مبيعات"
 
 #: .\my_app\templates\includes\aside.html:58
 msgid "Purchase Invoices"
-msgstr "فواتير الشراء"
+msgstr "سند مشتريات"
 
 #: .\my_app\templates\includes\aside.html:66
 #: .\my_app\templates\return_purchases.html:4
 #: .\my_app\templates\return_purchases.html:8
 #: .\my_app\templates\return_purchases.html:9
 msgid "Return Purchases"
-msgstr "مرتجعات الشراء"
+msgstr "سند مردود مشتريات"
 
 #: .\my_app\templates\includes\aside.html:75
 #: .\my_app\templates\products\product_list.html:15
