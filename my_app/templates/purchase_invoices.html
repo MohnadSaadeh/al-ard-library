@@ -21,11 +21,7 @@
             <div class="d-flex align-items-center">
               <p class="mb-0 ">{% trans "New Purchase Invoice" %}</p>
               
-              <!-- Scanner focus control -->
-              <div class="input-group ms-auto me-2" style="max-width:260px;">
-                <input id="scanner-input" class="form-control" type="text" placeholder="{% trans "Scanner input" %}" aria-label="{% trans "Scanner input" %}">
-                <button type="button" class="btn btn-outline-primary" onclick="focusScannerInput()">{% trans "Listen" %}</button>
-              </div>
+            
               <button class="btn btn-primary btn-sm">{% trans "Add product" %}</button>
             </div>
           </div>
@@ -49,8 +45,14 @@
                     </div>
                   </div>
                   <div class="w-15 text-center">
-                    <div id="search-form"   outocomplete = "off">
+                    <div id="search-form" autocomplete="off">
                         <input id="search-input" class="form-control me-2" type="search" placeholder="{% trans "Search" %} " aria-label="{% trans "Search" %}">
+                    </div>
+                  </div>
+                  <!-- ISBN search input for barcode/manual entry -->
+                  <div class="w-15 text-center ms-2">
+                    <div id="isbn-search-form" autocomplete="off">
+                        <input id="isbn-search-input" class="form-control me-2" type="search" placeholder="{% trans "Type or scan ISBN" %}" aria-label="{% trans "Type or scan ISBN" %}" autocomplete="off">
                     </div>
                   </div>
                 </div>
@@ -73,31 +75,28 @@
               {% csrf_token %}
               <p>{% trans "Order Summary" %}</p>
               <table class="table">
-                <tr >
-                  <th class="ps-3">{% trans "ID" %}</th>
-                  <th class="ps-3">{% trans "Product" %}</th>
-                  <th>{% trans "Quantity" %}</th>
-                  <th class="ps-3">{% trans "Purchase Price" %}</th>
-                  <th class="ps-3">{% trans "Total Price" %}</th>
-                  
-                    
-                </tr>
-                {% for order in purchases_order %}
-                <tr>
-                  <td class="ps-3"> {{order.product_id}} </td>
-                  <td class="ps-3"> {{order.product_name}} </td>
-                  <td>{{order.quantity}}</td>
-                  <td class="ps-3"> {{order.purchase_price}} </td>
-                  <td class="ps-3"> {{order.total_price}} </td>
-                  
-                  
-                </tr>
-                
-                {% endfor %}
-                <tr class="table-secondary fw-bold">
-                  <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
-                  <td class="ps-3">{{ grand_total }}</td>
-                </tr>
+                <tbody id="purchase-cart-tbody">
+                  <tr>
+                    <th class="ps-3">{% trans "ID" %}</th>
+                    <th class="ps-3">{% trans "Product" %}</th>
+                    <th>{% trans "Quantity" %}</th>
+                    <th class="ps-3">{% trans "Purchase Price" %}</th>
+                    <th class="ps-3">{% trans "Total Price" %}</th>
+                  </tr>
+                  {% for order in purchases_order %}
+                  <tr>
+                    <td class="ps-3"> {{order.product_id}} </td>
+                    <td class="ps-3"> {{order.product_name}} </td>
+                    <td>{{order.quantity}}</td>
+                    <td class="ps-3"> {{order.purchase_price}} </td>
+                    <td class="ps-3"> {{order.total_price}} </td>
+                  </tr>
+                  {% endfor %}
+                  <tr class="table-secondary fw-bold">
+                    <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
+                    <td class="ps-3">{{ grand_total }}</td>
+                  </tr>
+                </tbody>
               </table>
                 
 
@@ -280,7 +279,87 @@
 
 {% endblock content %}
 <!-- Specific Page JS goes HERE  -->
-{% block javascripts %} {% endblock javascripts %}
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var isbnInput = document.getElementById('isbn-search-input');
+  if (isbnInput) {
+    isbnInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        var isbn = isbnInput.value.trim();
+        if (!isbn) return;
+        fetch('/scan/add-to-purchase/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          body: JSON.stringify({ isbn })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'ok') {
+            // Update purchase cart table dynamically
+            const tbody = document.getElementById('purchase-cart-tbody');
+            if (tbody && Array.isArray(data.items)) {
+              // Always render the table header row first
+              tbody.innerHTML = `
+                <tr>
+                  <th class="ps-3">ID</th>
+                  <th class="ps-3">Product</th>
+                  <th>Quantity</th>
+                  <th class="ps-3">Purchase Price</th>
+                  <th class="ps-3">Total Price</th>
+                </tr>
+              `;
+              data.items.forEach(item => {
+                tbody.innerHTML += `
+                  <tr>
+                    <td class="ps-3">${item.product_id}</td>
+                    <td class="ps-3">${item.product_name}</td>
+                    <td>${item.quantity}</td>
+                    <td class="ps-3">${item.purchase_price}</td>
+                    <td class="ps-3">${item.total_price}</td>
+                  </tr>
+                `;
+              });
+              // Always render the Grand Total row at the end
+              tbody.innerHTML += `
+                <tr class="table-secondary fw-bold">
+                  <td colspan="4" class="text-end">Grand Total</td>
+                  <td class="ps-3">${data.grand_total}</td>
+                </tr>
+              `;
+            }
+            isbnInput.value = '';
+          } else {
+            alert(data.message || "Product not found");
+          }
+        })
+        .catch(error => {
+          alert("Error adding product: " + error);
+        });
+      }
+    });
+  }
+});
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+{% endblock javascripts %}
 
 <script src="{% static 'js/isbn-scanner.js' %}"></script>
 <script>

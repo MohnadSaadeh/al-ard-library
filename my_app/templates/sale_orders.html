@@ -43,8 +43,14 @@
                     </div>
                 </div>
                 <div class="w-15 text-center">
-                    <div id="search-form"   outocomplete = "off">
+                    <div id="search-form" autocomplete="off">
                         <input id="search-input" class="form-control me-2" type="search" placeholder="{% trans "Search" %} " aria-label="{% trans "Search" %}">
+                    </div>
+                </div>
+                <!-- ISBN search input for barcode/manual entry -->
+                <div class="w-15 text-center ms-2">
+                    <div id="isbn-search-form" autocomplete="off">
+                        <input id="isbn-search-input" class="form-control me-2" type="search" placeholder="{% trans "Type or scan ISBN" %}" aria-label="{% trans "Type or scan ISBN" %}" autocomplete="off">
                     </div>
                 </div>
                 </div>
@@ -276,7 +282,90 @@
 
 {% endblock content %}
 <!-- Specific Page JS goes HERE  -->
-{% block javascripts %} {% endblock javascripts %}
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var isbnInput = document.getElementById('isbn-search-input');
+    if (isbnInput) {
+        isbnInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                var isbn = isbnInput.value.trim();
+                if (!isbn) return;
+                fetch('/add_product_to_sale_cart_by_isbn', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({ isbn })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        // Update sale list table dynamically
+                        const tbody = document.querySelector('table.table tbody');
+                        if (tbody && Array.isArray(data.items)) {
+                            // Always render the table header row first
+                            tbody.innerHTML = `
+                                <tr>
+                                    <th class="ps-3">ID</th>
+                                    <th class="ps-3">Product</th>
+                                    <th>Quantity</th>
+                                    <th class="ps-3">Sale Price</th>
+                                    <th class="ps-3">Total Price</th>
+                                </tr>
+                            `;
+                            data.items.forEach(item => {
+                                tbody.innerHTML += `
+                                    <tr>
+                                        <td class="ps-3">${item.product_id}</td>
+                                        <td class="ps-3">${item.product_name}</td>
+                                        <td>${item.quantity}</td>
+                                        <td class="ps-3">${item.sale_price}</td>
+                                        <td class="ps-3">${item.total_price}</td>
+                                    </tr>
+                                `;
+                            });
+                            // Always render the Grand Total row at the end
+                            tbody.innerHTML += `
+                                <tr class="table-secondary fw-bold">
+                                    <td colspan="4" class="text-end">Grand Total</td>
+                                    <td class="ps-3">${data.grand_total}</td>
+                                </tr>
+                            `;
+                        }
+                        // Update grand total
+                        const grandTotalCell = document.querySelector('tr.table-secondary td.ps-3');
+                        if (grandTotalCell) grandTotalCell.textContent = data.grand_total;
+                        isbnInput.value = '';
+                    } else {
+                        alert(data.message || "Product not found");
+                    }
+                })
+                .catch(error => {
+                    alert("Error adding product: " + error);
+                });
+            }
+        });
+    }
+});
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock javascripts %}
 
 
 

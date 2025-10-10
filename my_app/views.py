@@ -1,3 +1,65 @@
+# AJAX endpoint: add product to sale cart by ISBN
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+def add_product_to_sale_cart_by_isbn(request):
+    """
+    AJAX endpoint: receive 'isbn' (POST, JSON) and add product to sale cart by ISBN.
+    Returns JSON with status, grand_total, and updated cart items.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+    # Accept JSON or form POST
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            isbn = data.get('isbn', '').strip()
+        except Exception:
+            isbn = ''
+    else:
+        isbn = request.POST.get('isbn', '').strip()
+
+    if not isbn:
+        return JsonResponse({'status': 'error', 'message': 'No ISBN provided'}, status=400)
+
+    try:
+        product = models.Product.objects.get(isbn=isbn)
+    except models.Product.DoesNotExist:
+        return JsonResponse({'status': 'not_found', 'message': 'Product not found'})
+
+    # Use add_product_to_sale logic for validation and addition
+    if product.quantity <= 0:
+        return JsonResponse({'status': 'error', 'message': f"Cannot sell '{product.product_name}': out of stock."})
+
+    cart = _get_sale_cart(request)
+    for item in cart:
+        if int(item.get('product_id')) == int(product.id):
+            new_quantity = int(item.get('quantity', 0)) + 1
+            if new_quantity > product.quantity:
+                return JsonResponse({'status': 'error', 'message': f"Cannot sell more than available stock for '{product.product_name}'."})
+            item['quantity'] = new_quantity
+            try:
+                item['total_price'] = int(item['quantity']) * float(item.get('sale_price', 0))
+            except Exception:
+                item['total_price'] = 0
+            break
+    else:
+        if 1 > product.quantity:
+            return JsonResponse({'status': 'error', 'message': f"Cannot sell more than available stock for '{product.product_name}'."})
+        sale_price = float(product.sale_price) if product.sale_price is not None else 0.0
+        cart.append({
+            'product_name': product.product_name,
+            'product_id': product.id,
+            'quantity': 1,
+            'sale_price': sale_price,
+            'total_price': sale_price,
+        })
+
+    _save_sale_cart(request, cart)
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
 from django.shortcuts import render ,redirect
 from . import models
 from django.contrib import messages
@@ -290,6 +352,9 @@ def add_product_to_sale(request):
         product_name = request.POST['product_name']
         quantity = int(request.POST['quantity'])
         product = models.Product.objects.get(product_name=product_name)
+        if product.quantity <= 0:
+            messages.error(request, f"Cannot sell '{product_name}': out of stock.")
+            return redirect('/sales')
         product_id = product.id
         sale_price = float(product.sale_price) if product.sale_price is not None else 0.0
         total_price = quantity * sale_price
@@ -601,7 +666,17 @@ def scan_add_to_purchase(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
 
-    isbn = request.POST.get('isbn', '').strip()
+    # Support AJAX JSON payload
+    try:
+        if request.content_type == 'application/json':
+            import json
+            data = json.loads(request.body)
+            isbn = data.get('isbn', '').strip()
+        else:
+            isbn = request.POST.get('isbn', '').strip()
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Invalid payload'}, status=400)
+
     if not isbn:
         return JsonResponse({'status': 'error', 'message': 'No ISBN provided'}, status=400)
 
@@ -621,9 +696,6 @@ def scan_add_to_purchase(request):
             break
     else:
         purchase_price = float(product.purchasing_price) if product.purchasing_price is not None else 0.0
-        # read session-backed purchases cart
-        cart = _get_purchase_cart(request)
-        # if item wasn't found in loop above, append
         cart.append({
             'product_name': product.product_name,
             'product_id': product.id,
@@ -632,7 +704,7 @@ def scan_add_to_purchase(request):
             'total_price': purchase_price,
         })
 
-        _save_purchase_cart(request, cart)
+    _save_purchase_cart(request, cart)
 
     # compute grand total from session cart
     cart = _get_purchase_cart(request)
