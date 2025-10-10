@@ -416,7 +416,12 @@ def submet_sale_order(request):
         return redirect('/sales')
     else:
         employee_id = request.session['employee_id']
-        models.create_sale_order(employee_id) #---------CREATE the invoise------- 1
+        # Get payment method from form POST
+        pay_method = request.POST.get('invoice_pay_method', 'cash')
+        # Create sale order and set payment method
+        sale_order = models.create_sale_order(employee_id)
+        sale_order.invoice_pay_method = pay_method
+        sale_order.save()
 
         for key in cart:
             product_id = key.get('product_id')
@@ -718,7 +723,11 @@ def submet_purchase_order(request):
         return redirect('/purchases')
     else:
         employee_id = request.session['employee_id']
-        models.create_purchase_order(employee_id) #---------CREATE the invoise------- 1
+        # Get payment method from form POST
+        pay_method = request.POST.get('invoice_pay_method', 'cash')
+        purchase = models.create_purchase_order(employee_id)
+        purchase.invoice_pay_method = pay_method
+        purchase.save()
         for key in cart:
             product_id = key.get('product_id')
             quantity = int(key.get('quantity'))
@@ -807,7 +816,11 @@ def submet_return_order(request):
         return redirect('/return_purchases')
     else:
         employee_id = request.session['employee_id']
-        models.create_return_order(employee_id)
+        # Get payment method from form POST
+        pay_method = request.POST.get('invoice_pay_method', 'cash')
+        ret = models.create_return_order(employee_id)
+        ret.invoice_pay_method = pay_method
+        ret.save()
         for key in returns_order:
             product_id = key.get('product_id')
             quantity = key.get('quantity')
@@ -957,7 +970,11 @@ def submit_sale_return(request):
 
         # Passed validations; create SaleReturn and items inside a transaction, linking to original sale_item when possible
         with transaction.atomic():
-            models.create_sale_return(employee_id, sale_order_id)
+            # Get payment method from form POST
+            pay_method = request.POST.get('invoice_pay_method', 'cash')
+            sr = models.create_sale_return(employee_id, sale_order_id)
+            sr.invoice_pay_method = pay_method
+            sr.save()
             for key in cart:
                 product_id = key.get('product_id')
                 quantity = int(key.get('quantity'))

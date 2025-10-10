@@ -77,7 +77,7 @@
       <div class="mt-4 d-flex justify-content-between invoice-footer">
         <div class="small text-muted">
           <div><strong>{% trans "VAT / Tax No:" %}</strong> 12345678</div>
-          <div><strong>{% trans "Payment Terms:" %}</strong> {% trans "As agreed" %}</div>
+          <div><strong>{% trans "Payment Terms:" %}</strong> {{ invoice.invoice_pay_method|title }}</div>
         </div>
         <div style="min-width:300px; text-align:right;">
           <div style="margin-bottom:40px;">_____________________________<br/>{% trans "Authorized Signature" %}</div>

@@ -21,6 +21,17 @@
     {% endif %}
 <form method="post">
   {% csrf_token %}
+  <div class="form-group mb-3">
+    <label>{% trans "Payment Method" %}</label>
+    <div>
+      <input type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
+      <label for="cash">{% trans "Cash" %}</label>
+    </div>
+    <div>
+      <input type="radio" id="debts" name="invoice_pay_method" value="debts">
+      <label for="debts">{% trans "Debts" %}</label>
+    </div>
+  </div>
   <table class="table">
     <thead>
       <tr>

@@ -74,6 +74,17 @@
           <form action="/submet_purchase_order" method="post">
               {% csrf_token %}
               <p>{% trans "Order Summary" %}</p>
+              <div class="form-group">
+                <label>{% trans "Payment Method" %}</label>
+                <div>
+                  <input type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
+                  <label for="cash">{% trans "Cash" %}</label>
+                </div>
+                <div>
+                  <input type="radio" id="debts" name="invoice_pay_method" value="debts">
+                  <label for="debts">{% trans "Debts" %}</label>
+                </div>
+              </div>
               <table class="table">
                 <tbody id="purchase-cart-tbody">
                   <tr>
