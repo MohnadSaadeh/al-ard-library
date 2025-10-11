@@ -9,7 +9,6 @@ urlpatterns = [
     path('emp_logout' , views.emp_logout ),
     path('employees', views.display_employees),
     path('add_employee', views.add_new_employee),
-    path('employye_dashboard', views.display_employee_dashboard),
     path('add_product', views.add_new_product),
     path('sales', views.display_sales),
     path('purchases', views.display_purchases),
@@ -69,4 +68,6 @@ urlpatterns = [
     path('products/<int:pk>/edit/', views.product_update, name='product_update'),
     path('products/<int:pk>/delete/', views.product_delete, name='product_delete'),
     path('stock_products_report/', views.stock_products_report, name='stock_products_report'),
+    path('empty_products_report/', views.empty_products_report, name='empty_products_report'),
+    path('sales_products_report/', views.sales_products_report, name='sales_products_report'),
 ]

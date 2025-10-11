@@ -1,0 +1,93 @@
+{% extends 'layouts/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Sales Report" %}{% endblock %}
+
+{% block content %}
+<div class="card mb-4" id="printableTable">
+ <div class="card-header pb-0">
+  <h2>{% trans "Sales Report" %}</h2>
+  <form method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+      <label for="from_date" class="form-label">{% trans "From Date" %}</label>
+      <input type="date" id="from_date" name="from_date" class="form-control" value="{{ from_date|default:'' }}">
+    </div>
+    <div class="col-md-4">
+      <label for="to_date" class="form-label">{% trans "To Date" %}</label>
+      <input type="date" id="to_date" name="to_date" class="form-control" value="{{ to_date|default:'' }}">
+    </div>
+    <div class="col-md-4 align-self-end">
+      <button type="submit" class="btn btn-primary">{% trans "Generate Report" %}</button>
+    </div>
+  </form>
+
+    {% if error_message %}
+        <div class="alert alert-danger">{{ error_message }}</div>
+    {% endif %}
+
+    {% if report_data %}
+    <div class="table-responsive">
+        <table class="table table-bordered">
+        <thead>
+            <tr>
+            <th>{% trans "Product" %}</th>
+            <th>{% trans "Author" %}</th>
+            <th>{% trans "Supplier/Publisher." %}</th>
+            <th>{% trans "Sale Price" %}</th>
+            <th>{% trans "Production Date" %}</th>
+            <th>{% trans "Sold Quantity" %}</th>
+            <th>{% trans "Returned" %}</th>
+            <th>{% trans "Remain Sold" %}</th>
+            <th>{% trans "Income" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in report_data %}
+            <tr>
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.author_name }}</td>
+            <td>{{ item.supplier_name }}</td>
+            <td>{{ item.sale_price }}</td>
+            <td>{{ item.production_date }}</td>
+            <td>{{ item.sold_quantity }}</td>
+            <td>{{ item.return_sale_quantity }}</td>
+            <td>{{ item.remain_sold_quantity }}</td>
+            <td>{{ item.money_should_received }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+            <th colspan="5">{% trans "Totals" %}</th>
+            <th>{{ total_sold_quantity }}</th>
+            <th>{{ total_return_sale_quantity }}</th>
+            <th>{{ total_remain_sold_quantity }}</th>
+            <th>{{ grand_total_money_should_received }}</th>
+            </tr>
+        </tfoot>
+        </table>
+        <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if report_data.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?from_date={{ from_date }}&to_date={{ to_date }}&page={{ report_data.previous_page_number }}">&laquo; Previous</a>
+            </li>
+            {% endif %}
+            {% for num in report_data.paginator.page_range %}
+            {% if report_data.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?from_date={{ from_date }}&to_date={{ to_date }}&page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+            {% endfor %}
+            {% if report_data.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?from_date={{ from_date }}&to_date={{ to_date }}&page={{ report_data.next_page_number }}">Next &raquo;</a>
+            </li>
+            {% endif %}
+        </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

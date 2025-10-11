@@ -1,3 +1,16 @@
+def stock_products_report(request):
+    products = models.Product.objects.filter(quantity__gt=0)
+    context = {
+        'products': products,
+    }
+    return render(request, 'stock_products_report.html', context)
+
+def empty_products_report(request):
+    products = models.Product.objects.filter(quantity=0)
+    context = {
+        'products': products,
+    }
+    return render(request, 'empty_products_report.html', context)
 # AJAX endpoint: add product to sale cart by ISBN
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -264,15 +277,6 @@ def display_employees(request):
 
 
 
-def display_employee_dashboard(request):
-    if 'employee_id' not in request.session:
-        return redirect('/index')
-    else:
-        context = {
-            'products': models.get_all_products(),
-            'employee': models.get_employee_by_id(request.session['employee_id'])
-        }
-        return render(request, 'tables.html' , context )
 
 
 
@@ -1230,9 +1234,75 @@ def product_delete(request, pk):
         return redirect('product_list')
     return render(request, 'products/product_confirm_delete.html', {'product': product})
 
-def stock_products_report(request):
-    products = models.Product.objects.filter(quantity__gt=0)
+
+def sales_products_report(request):
+
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+    report_data = []
+    total_sold_quantity = 0
+    total_return_sale_quantity = 0
+    total_remain_sold_quantity = 0
+    grand_total_money_should_received = 0
+    error_message = None
+
+    # Only generate report if both dates are provided
+    if from_date and to_date:
+        sales = models.Sale_item.objects.filter(created_at__date__gte=from_date, created_at__date__lte=to_date)
+        for sale in sales:
+            product = sale.product
+            product_name = product.product_name
+            author_name = getattr(product, 'author', '')
+            supplier_name = getattr(product, 'supplier', '')
+            sale_price = sale.unit_price
+            production_date = getattr(product, 'production_date', '')
+            sold_quantity = sale.quantity
+            # Get return sale quantity for this sale item
+            return_sale_quantity = getattr(sale, 'return_quantity', 0)
+            remain_sold_quantity = sold_quantity - return_sale_quantity
+            money_should_received = remain_sold_quantity * sale_price
+
+            report_data.append({
+                'product_name': product_name,
+                'author_name': author_name,
+                'supplier_name': supplier_name,
+                'sale_price': sale_price,
+                'production_date': production_date,
+                'sold_quantity': sold_quantity,
+                'return_sale_quantity': return_sale_quantity,
+                'remain_sold_quantity': remain_sold_quantity,
+                'money_should_received': money_should_received,
+            })
+
+            total_sold_quantity += sold_quantity
+            total_return_sale_quantity += return_sale_quantity
+            total_remain_sold_quantity += remain_sold_quantity
+            grand_total_money_should_received += money_should_received
+
+        # Pagination
+        from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+        page = request.GET.get('page', 1)
+        paginator = Paginator(report_data, 20)  # 20 items per page
+        try:
+            report_page = paginator.page(page)
+        except PageNotAnInteger:
+            report_page = paginator.page(1)
+        except EmptyPage:
+            report_page = paginator.page(paginator.num_pages)
+    elif from_date or to_date:
+        error_message = "Please select both From Date and To Date."
+        report_page = None
+    else:
+        report_page = None
+
     context = {
-        'products': products,
+        'report_data': report_page,
+        'from_date': from_date,
+        'to_date': to_date,
+        'total_sold_quantity': total_sold_quantity,
+        'total_return_sale_quantity': total_return_sale_quantity,
+        'total_remain_sold_quantity': total_remain_sold_quantity,
+        'grand_total_money_should_received': grand_total_money_should_received,
+        'error_message': error_message,
     }
-    return render(request, 'stock_products_report.html', context)
+    return render(request, 'sales_products_report.html', context)
