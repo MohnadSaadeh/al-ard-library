@@ -1,4 +1,6 @@
+
 from django import forms
+from django.utils.translation import gettext_lazy as _
 from .models import Product , ProductAttribute
 
 
@@ -6,18 +8,46 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = [
-            'product_name', 'quantity', 'purchasing_price', 'sale_price', 'supplier',
-            'isbn', 'production_date', 'author', 'expiry_date'
+            'product_name','isbn', 'quantity', 'purchasing_price', 'sale_price', 'supplier',
+            'production_date', 'author', 'expiry_date'
         ]
+        labels = {
+            'product_name': _('Product Name'),
+            'isbn': _('ISBN'),
+            'quantity': _('Quantity'),
+            'purchasing_price': _('Purchasing Price'),
+            'sale_price': _('Sale Price'),
+            'supplier': _('Supplier'),
+            'production_date': _('Production Date'),
+            'author': _('Author'),
+            'expiry_date': _('Expiry Date'),
+        }
         widgets = {
             'production_date': forms.DateInput(attrs={'type': 'date'}),
             'expiry_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
 
+
+class ProductAttributeForm(forms.ModelForm):
+    class Meta:
+        model = ProductAttribute
+        fields = ('attribute_name', 'value_type', 'attribute_value')
+        labels = {
+            'attribute_name': _('Attribute Name'),
+            'value_type': _('Value Type'),
+            'attribute_value': _('Attribute Value'),
+        }
+        help_texts = {
+            'attribute_name': _('Enter the attribute name.'),
+            'value_type': _('Select the value type.'),
+            'attribute_value': _('Enter the value for this attribute.'),
+        }
+
 ProductAttributeFormSet = forms.inlineformset_factory(
     Product,
     ProductAttribute,
+    form=ProductAttributeForm,
     fields=('attribute_name', 'value_type', 'attribute_value'),
     extra=1,
     can_delete=True

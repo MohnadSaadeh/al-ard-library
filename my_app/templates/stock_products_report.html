@@ -1,0 +1,41 @@
+{% extends 'layouts/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Stock Products Report" %}{% endblock %}
+
+{% block content %}
+<div class="col-8 ms-10">
+  <div class="card mb-4" id="printableTable">
+    <div class="card-header pb-0">
+        <div class="container mt-4">
+            <h2>{% trans "Stock Products Report" %}</h2>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>{% trans "Product Name" %}</th>
+                        <th>{% trans "Author" %}</th>
+                        <th>{% trans "Supplier/Publisher" %}</th>
+                        <th>{% trans "Sale Price" %}</th>
+                        <th>{% trans "Production Date" %}</th>
+                        <th>{% trans "Quantity" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.product_name }}</td>
+                        <td>{{ product.author }}</td>
+                        <td>{{ product.supplier }}</td>
+                        <td>{{ product.sale_price }}</td>
+                        <td>{{ product.production_date }}</td>
+                        <td>{{ product.quantity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

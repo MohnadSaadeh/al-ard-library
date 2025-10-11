@@ -7,37 +7,34 @@
     <h2>{% trans "Add / Define New Product" %}</h2>
     <form method="post">
         {% csrf_token %}
-
-        <!-- {% trans "Product Details" %} -->
-        <div class="card mb-4">
-            <div class="card-header">{% trans "Product Details" %}</div>
-            <div class="card-body">
-                {{ form|crispy }}
-            </div>
-        </div>
-
-        <!-- {% trans "Product Attributes" %} -->
-        <div class="card mb-4">
-            <div class="card-header">{% trans "Product Attributes" %}</div>
-            <div class="card-body">
-                {{ formset.management_form }}
-
-                <div id="formset-area">
-                    {% for subform in formset %}
-                        <div class="border rounded p-3 mb-3 formset-form">
-                            {{ subform|crispy }}
-                        </div>
-                    {% endfor %}
+        <div class="row">
+            <div class="col-md-7">
+                <div class="card mb-4">
+                    <div class="card-header">{% trans "Product Details" %}</div>
+                    <div class="card-body">
+                        {{ form|crispy }}
+                    </div>
                 </div>
-
-                <!-- {% trans "Add Attribute Button" %} -->
-                <button type="button" class="btn btn-sm btn-secondary" id="add-attribute">
-                    {% trans "+ Add Attribute" %}
-                </button>
+            </div>
+            <div class="col-md-5">
+                <div class="card mb-4">
+                    <div class="card-header">{% trans "Product Attributes" %}</div>
+                    <div class="card-body">
+                        {{ formset.management_form }}
+                        <div id="formset-area">
+                            {% for subform in formset %}
+                                <div class="border rounded p-3 mb-3 formset-form">
+                                    {{ subform|crispy }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-secondary" id="add-attribute">
+                            {% trans "+ Add Attribute" %}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- {% trans "Form Buttons" %} -->
         <button type="submit" class="btn btn-primary">💾 {% trans "Save Product" %}</button>
         <a href="{% url 'product_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
     </form>

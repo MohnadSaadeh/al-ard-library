@@ -1060,6 +1060,7 @@ def print_purchase_invoice(request, id):
     }
     return render(request, 'print_purchase_invoice.html', context)
 
+
 def clear_sales_list(request) :
     cart = _get_sale_cart(request)
     if not cart:
@@ -1228,3 +1229,10 @@ def product_delete(request, pk):
         product.delete()
         return redirect('product_list')
     return render(request, 'products/product_confirm_delete.html', {'product': product})
+
+def stock_products_report(request):
+    products = models.Product.objects.filter(quantity__gt=0)
+    context = {
+        'products': products,
+    }
+    return render(request, 'stock_products_report.html', context)
