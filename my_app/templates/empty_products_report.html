@@ -2,7 +2,6 @@
 {% load i18n %}
 
 {% block content %}
-<div class="col-8 ms-10">
   <div class="card mb-4" id="printableTable">
     <div class="card-header pb-0">
       <h4 class="mb-0">{% trans "Empty Products Report" %}</h4>
@@ -10,11 +9,12 @@
     <div class="card-body">
       <div class="container mt-4">
         <h2>{% trans "Empty Products Report" %}</h2>
-        <table class="table table-bordered table-striped">
-          <thead>
-            <tr>
-                <th>{% trans "Product Name" %}</th>
-                <th>{% trans "Author" %}</th>
+        <div class="table-responsive p-0">
+            <table class="table table-striped table-bordered">
+              <thead class="table-dark">
+                <tr>
+                    <th>{% trans "Product Name" %}</th>
+                    <th>{% trans "Author" %}</th>
                 <th>{% trans "Supplier/Publisher" %}</th>
                 <th>{% trans "Sale Price" %}</th>
                 <th>{% trans "Production Date" %}</th>
@@ -34,5 +34,6 @@
             {% endfor %}
         </tbody>
     </table>
-</div>
+    </div>
+      </div>
 {% endblock %}
