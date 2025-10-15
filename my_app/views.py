@@ -1206,8 +1206,20 @@ def product_list(request):
     """
     عرض قائمة المنتجات مع خصائصها
     """
-    products = Product.objects.all().prefetch_related('attributes')
-    return render(request, 'products/product_list.html', {'products': products})
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    search_query = request.GET.get('search', '').strip()
+    products_qs = Product.objects.all().prefetch_related('attributes')
+    if search_query:
+        products_qs = products_qs.filter(product_name__icontains=search_query)
+    paginator = Paginator(products_qs, 10)  # 10 products per page
+    page = request.GET.get('page', 1)
+    try:
+        products = paginator.page(page)
+    except PageNotAnInteger:
+        products = paginator.page(1)
+    except EmptyPage:
+        products = paginator.page(paginator.num_pages)
+    return render(request, 'products/product_list.html', {'products': products, 'search_query': search_query})
 
 
 

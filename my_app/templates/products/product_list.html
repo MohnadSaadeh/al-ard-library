@@ -8,70 +8,102 @@
 
 {% block content %}
 
+
 {% block page_name %}{% trans "Products" %}{% endblock %}
 {% block page_name2 %}{% trans "Add / View products" %}{% endblock %}
-<div class="row" >
-    <div class="container mt-5">
-    <h2>{% trans "Product List" %}</h2>
-    <a href="{% url 'product_create' %}" class="btn btn-success mb-3">{% trans "+ Add / Define New Product" %}</a>
-        <div class="card-body px-0 pt-0 pb-2">
-        <div class="table-responsive p-0">
-            <table class="table table-striped table-bordered">
-                <thead class="table-dark">
-                    <tr>
-                        <th>#</th>
-                        <th>{% trans "Product Name" %}</th>
-                        <th>{% trans "Quantity" %}</th>
-                        <th>{% trans "Purchase Price" %}</th>
-                        <th>{% trans "Sale Price" %}</th>
-                        <th>{% trans "ISBN" %}</th>
-                        <th>{% trans "Production Date" %}</th>
-                        <th>{% trans "Author" %}</th>
-                        <th>{% trans "Expiry Date" %}</th>
-                        <th>{% trans "Supplier" %}</th>
-                        <th>{% trans "Employee" %}</th>
-                        <th>{% trans "Attributes" %}</th>
-                        <th>{% trans "Actions" %}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ product.product_name }}</td>
-                        <td>{{ product.quantity }}</td>
-                        <td>{{ product.purchasing_price }}</td>
-                        <td>{{ product.sale_price }}</td>
-                        <td>{{ product.isbn }}</td>
-                        <td>{{ product.production_date }}</td>
-                        <td>{{ product.author }}</td>
-                        <td>{{ product.expiry_date }}</td>
-                        <td>{{ product.supplier }}</td>
-                        <td>{{ product.employee.first_name }}</td>
-                        <td>
-                            <ul class="list-unstyled mb-0">
-                                {% for attr in product.attributes.all %}
-                                    <li><strong>{{ attr.attribute_name }}:</strong> {{ attr.attribute_value }}</li>
-                                {% empty %}
-                                    <li>{% trans "No attributes" %}</li>
-                                {% endfor %}
-                            </ul>
-                        </td>
 
-                        <td>
-                        <a class="btn btn-link text-dark px-1 mb-0 " href="{% url 'product_update' product.pk %}"><i class="fas fa-pencil-alt text-dark me-2" ></i>{% trans "Edit" %}</a>
-                        <a class="btn btn-link text-danger px-0 mb-0" href="{% url 'product_delete' product.pk %}"><i class="far fa-trash-alt me-2" ></i>{% trans "Delete" %}</a>
-                        </td>
-
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="10" class="text-center">{% trans "No products yet" %}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="row justify-content-center">
+    <div class="card shadow-sm border-0 mt-5">
+        <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between py-3">
+            <h2 class="mb-0" style="font-size:2rem; font-weight:600; color:#2d3748;">{% trans "Product List" %}</h2>
+            <a href="{% url 'product_create' %}" class="btn btn-success ms-2">{% trans "+ Add / Define New Product" %}</a>
         </div>
+        <div class="card-body">
+            <form method="get" action="" class="mb-4">
+                <div class="d-flex align-items-center gap-2" style="max-width: 500px;">
+                    <input type="search" name="search" class="form-control form-control-lg" placeholder="{% trans 'Search by name' %}" value="{{ search_query }}" aria-label="{% trans 'Search products' %}">
+                    <button type="submit" class="btn btn-primary" style="height:48px;">{% trans 'Search' %}</button>
+                </div>
+            </form>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">{% trans "Product Name" %}</th>
+                            <th scope="col">{% trans "Quantity" %}</th>
+                            <th scope="col">{% trans "Purchase Price" %}</th>
+                            <th scope="col">{% trans "Sale Price" %}</th>
+                            <th scope="col">{% trans "ISBN" %}</th>
+                            <th scope="col">{% trans "Production Date" %}</th>
+                            <th scope="col">{% trans "Author" %}</th>
+                            {% comment %} <th scope="col">{% trans "Expiry Date" %}</th> {% endcomment %}
+                            <th scope="col">{% trans "Supplier" %}</th>
+                            {% comment %} <th scope="col">{% trans "Employee" %}</th> {% endcomment %}
+                            <th scope="col">{% trans "Attributes" %}</th>
+                            <th scope="col">{% trans "Actions" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td style="font-weight:500; color:#2d3748;">{{ product.product_name }}</td>
+                            <td>{{ product.quantity }}</td>
+                            <td>{{ product.purchasing_price }}</td>
+                            <td>{{ product.sale_price }}</td>
+                            <td>{{ product.isbn }}</td>
+                            <td>{{ product.production_date }}</td>
+                            <td>{{ product.author }}</td>
+                            {% comment %} <td>{{ product.expiry_date }}</td> {% endcomment %}
+                            <td>{{ product.supplier }}</td>
+                            {% comment %} <td>{{ product.employee.first_name }}</td> {% endcomment %}
+                            <td>
+                                <ul class="list-unstyled mb-0">
+                                    {% for attr in product.attributes.all %}
+                                        <li><span style="font-weight:600; color:#4a5568;">{{ attr.attribute_name }}:</span> {{ attr.attribute_value }}</li>
+                                    {% empty %}
+                                        <li class="text-muted">{% trans "No attributes" %}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>
+                                <a class="btn btn-outline-primary btn-sm me-1" href="{% url 'product_update' product.pk %}" title="{% trans 'Edit' %}"><i class="fas fa-pencil-alt"></i></a>
+                                <a class="btn btn-outline-danger btn-sm" href="{% url 'product_delete' product.pk %}" title="{% trans 'Delete' %}"><i class="far fa-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="13" class="text-center text-muted">{% trans "No products yet" %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination controls -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for num in products.paginator.page_range %}
+                        <li class="page-item {% if products.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
     </div>
 </div>

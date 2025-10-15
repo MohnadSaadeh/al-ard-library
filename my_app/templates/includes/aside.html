@@ -15,7 +15,7 @@
             </span>
                 <div id="sidenav-scrollbar">
         <ul class="navbar-nav">
-        <li class="nav-item {% if request.path == '/index'   %} bg-gradient-secondary {% endif %}">
+        <li class="nav-item {% if request.path == '/index'   %} bg-gradient-success {% endif %}">
             <a class="nav-link " href="/index">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
@@ -23,20 +23,20 @@
             <span class="nav-link-text ms-1">{% trans "Dashboard / Manage" %}</span>
             </a>
         </li>
-        <li class="nav-item {% if request.path == '/sales' or 'view_sale_order' in request.path %} bg-gradient-secondary {% endif %}">
+        <li class="nav-item {% if request.path == '/sales' or 'view_sale_order' in request.path %} bg-gradient-success {% endif %}">
             <a class="nav-link " href="/sales">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-calendar-grid-58 text-warning text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1"> <strong>{% trans "Sales Orders" %}</strong></span>
+            <span class="nav-link-text ms-1" style="font-size:18px !important;"> <strong>{% trans "Sales Orders" %}</strong></span>
             </a>
         </li>
-                <li class="nav-item {% if request.path == '/return_sales' or 'view_return_sale' in request.path  %} bg-gradient-danger {% endif %}">
+                <li class="nav-item {% if request.path == '/return_sales' or 'view_return_sale' in request.path  %} bg-gradient-success {% endif %}">
             <a class="nav-link " href="/return_sales">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-basket text-danger text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1"><strong>{% trans "Return Sales" %}</strong></span>
+            <span class="nav-link-text ms-1" style="font-size:18px !important;"><strong>{% trans "Return Sales" %}</strong></span>
             </a>
         </li>
         <li class="nav-item {% if request.path == '/purchases' or 'view_purchase_invoice' in request.path  %} bg-gradient-success {% endif %}">
@@ -44,15 +44,15 @@
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1"><strong>{% trans "Purchase Invoices" %}</strong></span>
+            <span class="nav-link-text ms-1" style="font-size:18px !important;"><strong>{% trans "Purchase Invoices" %}</strong></span>
             </a>
         </li>
-        <li class="nav-item {% if request.path == '/return_purchases' or 'view_return_invoice' in request.path  %} bg-gradient-danger {% endif %}">
+        <li class="nav-item {% if request.path == '/return_purchases' or 'view_return_invoice' in request.path  %} bg-gradient-success {% endif %}">
             <a class="nav-link " href="/return_purchases">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-tag text-danger text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1"><strong>{% trans "Return Purchases" %}</strong></span>
+            <span class="nav-link-text ms-1" style="font-size:18px !important;"><strong>{% trans "Return Purchases" %}</strong></span>
             </a>
         </li>
 
@@ -61,7 +61,7 @@
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-app text-info text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1"> <strong>{% trans "Product List" %}</strong></span>
+            <span class="nav-link-text ms-1" style="font-size:18px !important;"> <strong>{% trans "Product List" %}</strong></span>
             </a>
         </li>
         <!-- <li class="nav-item">
@@ -83,23 +83,23 @@
             <span class="nav-link-text ms-1">Profile</span>
             </a>
         </li>-->
-        <li class="nav-item {% if request.path == '/employees'   %} bg-gradient-secondary {% endif %}">
+        <li class="nav-item {% if request.path == '/employees'   %} bg-gradient-success {% endif %}">
             <a class="nav-link " href="/employees">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1">{% trans "Employees" %}</span>
+            <span class="nav-link-text ms-1" style="font-size:18px !important;">{% trans "Employees" %}</span>
             </a>
         </li>
             </ul>
             </div>
-        
-        <li class="nav-item {% if request.path == '/employee_reports'   %} bg-gradient-secondary {% endif %}">
+
+        <li class="nav-item {% if request.path == '/employee_reports'   %} bg-gradient-success {% endif %}">
             <a class="nav-link " href="/employee_reports">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-single-copy-04 text-warning text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1">{% trans "Reports" %}</span>
+            <span class="nav-link-text ms-1" style="font-size:18px !important;">{% trans "Reports" %}</span>
             </a>
         </li> 
         <li class="nav-item">
@@ -107,7 +107,7 @@
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-collection text-info text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1">{% trans "Logout" %}</span>
+            <span class="nav-link-text ms-1" style="font-size:18px !important;">{% trans "Logout" %}</span>
             </a>
         </li>
         </ul>
