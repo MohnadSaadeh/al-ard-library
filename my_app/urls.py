@@ -14,7 +14,7 @@ urlpatterns = [
     path('purchases', views.display_purchases),
     path('return_purchases', views.display_returns),
     path('return_sales', views.display_sale_returns),
-    path('sales/<int:sale_order_id>/return/', views.sale_return_create_view, name='sale_return_create'),
+    path('sales/<int:sale_order_id>/return/', views.sale_return_create_view, name='sale_return_create'),#sale return
     path('sales/returns/<int:id>/', views.sale_return_detail_view, name='sale_return_detail'),
     path('purchases/<int:purchase_id>/return/', views.purchase_return_create_view, name='purchase_return_create'),
     path('purchases/returns/<int:id>/', views.purchase_return_detail_view, name='purchase_return_detail'),

@@ -440,6 +440,7 @@ class SaleReturn(models.Model):
     employee = models.ForeignKey(Employee, related_name="sale_returns", on_delete=models.CASCADE)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    invoice_pay_method = models.CharField(max_length=10, choices=pay_choices, default='cash')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -464,7 +465,8 @@ def create_sale_return(employee_id, sale_order_id=None):
             sale_order = Sale_order.objects.get(id=sale_order_id)
         except Exception:
             sale_order = None
-    return SaleReturn.objects.create(employee=employee, sale_order=sale_order)
+    # Always set invoice_pay_method to a default value if not provided
+    return SaleReturn.objects.create(employee=employee, sale_order=sale_order, invoice_pay_method='cash')
 
 
 def add_item_to_sale_return(product_id, quantity, unit_price, total_price, original_item_id=None):

@@ -2,32 +2,46 @@
 {% load static %}
 {% load i18n %}
 {% block content %}
-<h2>{% trans "Purchase Return" %} #{{ return.id }}</h2>
-<p>{% trans "Original Purchase Invoice:" %} {% if return.purchase_id %}#{{ return.purchase_id.id }}{% else %}—{% endif %}</p>
-<table class="table">
-  <thead>
-    <tr>
-  <th>{% trans "Product" %}</th>
-  <th>{% trans "Returned Quantity" %}</th>
-  <th>{% trans "Unit Price" %}</th>
-  <th>{% trans "Total" %}</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in items %}
-    <tr>
-      <td>{{ item.product.product_name }}</td>
-      <td>{{ item.quantity }}</td>
-      <td>{{ item.unit_price }}</td>
-      <td>{{ item.total_price }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-  <tfoot>
-    <tr>
-  <td colspan="3"><strong>{% trans "Total Returned" %}</strong></td>
-      <td><strong>{{ total }}</strong></td>
-    </tr>
-  </tfoot>
-</table>
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-info text-white d-flex align-items-center justify-content-between">
+          <h3 class="mb-0">{% trans "Purchase Return" %} <span class="badge bg-light text-info ms-2">#{{ return.id }}</span></h3>
+        </div>
+        <div class="card-body">
+          <p class="mb-3 fw-bold">{% trans "Original Purchase Invoice:" %} {% if return.purchase_id %}<span class="badge bg-secondary">#{{ return.purchase_id.id }}</span>{% else %}—{% endif %}</p>
+          <div class="table-responsive mb-4">
+            <table class="table table-bordered table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">{% trans "Product" %}</th>
+                  <th scope="col">{% trans "Returned Quantity" %}</th>
+                  <th scope="col">{% trans "Unit Price" %}</th>
+                  <th scope="col">{% trans "Total" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in items %}
+                <tr>
+                  <td>{{ item.product.product_name }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ item.unit_price }}</td>
+                  <td>{{ item.total_price }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3"><strong>{% trans "Total Returned" %}</strong></td>
+                  <td><strong>{{ total }}</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

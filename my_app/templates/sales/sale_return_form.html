@@ -1,61 +1,73 @@
 {% extends 'layouts/base.html' %}
 {% load i18n %}
 {% block content %}
-<br/> <br/> 
-<br/> 
-<br/> 
-<br/> 
-<br/> 
-
-<h2>{% trans "Return for Sale" %} #{{ sale_order.id }}</h2>
-    {% if messages %}
-      <ul class="messages">    
-      {% for message in messages %}    
-          {% if message.extra_tags == 'sold_product' %}
-          <p class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>    
-          {% else %}
-          <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p> 
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+          <h3 class="mb-0">{% trans "Return for Sale" %} <span class="badge bg-light text-primary ms-2">#{{ sale_order.id }}</span></h3>
+        </div>
+        <div class="card-body">
+          {% if messages %}
+            <div class="mb-3">
+              {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} {% if message.extra_tags == 'sold_product' %}alert-success{% endif %} fade show" role="alert">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            </div>
           {% endif %}
-          {% endfor %}
-      </ul>
-    {% endif %}
-<form method="post">
-  {% csrf_token %}
-  <div class="form-group mb-3">
-    <label>{% trans "Payment Method" %}</label>
-    <div>
-      <input type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
-      <label for="cash">{% trans "Cash" %}</label>
-    </div>
-    <div>
-      <input type="radio" id="debts" name="invoice_pay_method" value="debts">
-      <label for="debts">{% trans "Debts" %}</label>
+          <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">{% trans "Payment Method" %}</label>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
+                  <label class="form-check-label" for="cash">{% trans "Cash" %}</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" id="debts" name="invoice_pay_method" value="debts">
+                  <label class="form-check-label" for="debts">{% trans "Debts" %}</label>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive mb-4">
+              <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">{% trans "Product" %}</th>
+                    <th scope="col">{% trans "Sold Quantity" %}</th>
+                    <th scope="col">{% trans "Allowed to Return" %}</th>
+                    <th scope="col">{% trans "Return Quantity" %}</th>
+                    <th scope="col">{% trans "Unit Price" %}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in items %}
+                  <tr>
+                    <td>{{ row.product.product_name }}</td>
+                    <td>{{ row.sold_quantity }}</td>
+                    <td>{{ row.allowed_return_quantity }}</td>
+                    <td>
+                      <input type="number" name="return_qty_{{ row.sale_item.id }}" min="0" max="{{ row.allowed_return_quantity }}" value="0" class="form-control" />
+                    </td>
+                    <td>{{ row.unit_price }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-success px-4 py-2 fw-bold">
+                <i class="fas fa-undo-alt me-2"></i>{% trans "Submit Return" %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
-  <table class="table">
-    <thead>
-      <tr>
-  <th>{% trans "Product" %}</th>
-  <th>{% trans "Sold Quantity" %}</th>
-  <th>{% trans "Allowed to Return" %}</th>
-  <th>{% trans "Return Quantity" %}</th>
-  <th>{% trans "Unit Price" %}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in items %}
-      <tr>
-        <td>{{ row.product.product_name }}</td>
-        <td>{{ row.sold_quantity }}</td>
-        <td>{{ row.allowed_return_quantity }}</td>
-        <td>
-          <input type="number" name="return_qty_{{ row.sale_item.id }}" min="0" max="{{ row.allowed_return_quantity }}" value="0" />
-        </td>
-        <td>{{ row.unit_price }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <button type="submit" class="btn btn-primary">{% trans "Submit Return" %}</button>
-</form>
+</div>
 {% endblock %}
