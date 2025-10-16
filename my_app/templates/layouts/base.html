@@ -70,6 +70,17 @@
             
             <div class="container-fluid py-4">
 
+            {% if messages %}
+                <ul class="messages mt-3">    
+                {% for message in messages %}    
+                    {% if message.extra_tags == 'add_return' %}
+                    <p class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>    
+                    {% else %}
+                    <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p> 
+                    {% endif %}
+                {% endfor %}
+                </ul>
+            {% endif %}
 
                 {% block content %}{% endblock content %}
 

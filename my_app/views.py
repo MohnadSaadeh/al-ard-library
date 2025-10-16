@@ -22,7 +22,7 @@ def add_product_to_sale_cart_by_isbn(request):
     Returns JSON with status, grand_total, and updated cart items.
     """
     if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+        return JsonResponse({'status': 'error', 'message': _('Invalid method')}, status=405)
 
     # Accept JSON or form POST
     if request.content_type == 'application/json':
@@ -35,23 +35,23 @@ def add_product_to_sale_cart_by_isbn(request):
         isbn = request.POST.get('isbn', '').strip()
 
     if not isbn:
-        return JsonResponse({'status': 'error', 'message': 'No ISBN provided'}, status=400)
+        return JsonResponse({'status': 'error', 'message': _('No ISBN provided')}, status=400)
 
     try:
         product = models.Product.objects.get(isbn=isbn)
     except models.Product.DoesNotExist:
-        return JsonResponse({'status': 'not_found', 'message': 'Product not found'})
+        return JsonResponse({'status': 'not_found', 'message': _('Product not found')})
 
     # Use add_product_to_sale logic for validation and addition
     if product.quantity <= 0:
-        return JsonResponse({'status': 'error', 'message': f"Cannot sell '{product.product_name}': out of stock."})
+        return JsonResponse({'status': 'error', 'message': _('Cannot sell "%(product)s": out of stock.') % {'product': product.product_name}})
 
     cart = _get_sale_cart(request)
     for item in cart:
         if int(item.get('product_id')) == int(product.id):
             new_quantity = int(item.get('quantity', 0)) + 1
             if new_quantity > product.quantity:
-                return JsonResponse({'status': 'error', 'message': f"Cannot sell more than available stock for '{product.product_name}'."})
+                return JsonResponse({'status': 'error', 'message': _('Cannot sell more than available stock for "%(product)s".') % {'product': product.product_name}})
             item['quantity'] = new_quantity
             try:
                 item['total_price'] = int(item['quantity']) * float(item.get('sale_price', 0))
@@ -60,7 +60,7 @@ def add_product_to_sale_cart_by_isbn(request):
             break
     else:
         if 1 > product.quantity:
-            return JsonResponse({'status': 'error', 'message': f"Cannot sell more than available stock for '{product.product_name}'."})
+            return JsonResponse({'status': 'error', 'message': _('Cannot sell more than available stock for "%(product)s".') % {'product': product.product_name}})
         sale_price = float(product.sale_price) if product.sale_price is not None else 0.0
         cart.append({
             'product_name': product.product_name,
@@ -160,7 +160,7 @@ def sign_in(request):
             errors = models.Employee.objects.login_employee_validator(request.POST)
             if len(errors) > 0:
                 for key, value in errors.items():
-                    messages.error(request, _(value))  # Translate error messages
+                    messages.error(request, _(value))  # Already translated
                 return redirect('/')
             else:
                 employee_email = request.POST['email']
@@ -177,10 +177,10 @@ def sign_in(request):
                         #---------------is Active -----------------------
                         return redirect('/index')
                     else:
-                        messages.error(request, _("Incorrect Password"))
+                        messages.error(request, _("Incorrect Password"))  # Already translated
                         # messages.error(request, value , extra_tags = 'admin_login' )
                         return redirect('/')
-                messages.error(request, _("Email is incorrect"))
+                messages.error(request, _("Email is incorrect"))  # Already translated
                 return redirect('/')
         # if he is a MANAGER
         else:
@@ -201,10 +201,10 @@ def sign_in(request):
                             request.session['manager_id'] = manager_user.id
                             return redirect('/index')
                         else:
-                            messages.error(request, _("Incorrect Password"))
+                            messages.error(request, _("Incorrect Password"))  # Already translated
                             # messages.error(request, value , extra_tags = 'admin_login' )
                             return redirect('/')
-                    messages.error(request, _("Email is incorrect"))
+                    messages.error(request, _("Email is incorrect"))  # Already translated
     else:
         return redirect('/')
 
@@ -243,7 +243,7 @@ def add_new_employee(request):
     errors = models.Employee.objects.employee_validator(request.POST)
     if len(errors) > 0:
         for key, value in errors.items():
-            messages.error(request, value)
+            messages.error(request, _(value))
         return redirect('/signup')
     else:
         # manager = request.session['manager_id']
@@ -259,8 +259,8 @@ def add_new_employee(request):
         pw_hash_confirm = bcrypt.hashpw(emp_conf_password.encode(), bcrypt.gensalt()).decode()
         #hash-----Passwords-------
         models.add_employee(emp_f_name, emp_l_name, emp_emeil, emp_DOB, pw_hash, pw_hash_confirm  )
-        messages.success(request, "Successfully added an employee!" , extra_tags = 'add_employee')
-        return redirect('/signup')
+    messages.success(request, _("Successfully added an employee!"), extra_tags = 'add_employee')
+    return redirect('/signup')
 
 def display_employees(request):
     # if the manad=egr not in the loged on
@@ -284,7 +284,7 @@ def add_new_product(request):
     errors = models.Product.objects.product_validator(request.POST)
     if len(errors) > 0:
         for key, value in errors.items():
-            messages.error(request, value)
+            messages.error(request, _(value))
         return redirect('/employye_dashboard')
     else:
         employee = request.session['employee_id']
@@ -294,8 +294,8 @@ def add_new_product(request):
         expiry_date = request.POST['expiry_date']
         supplier = request.POST['supplier']
         models.add_product(product_name, quantity, purchasing_price, expiry_date, supplier, employee)
-        messages.success(request, "Successfully added a product!", extra_tags = 'add_product')
-        return redirect('/employye_dashboard')
+    messages.success(request, _("Successfully added a product!"), extra_tags = 'add_product')
+    return redirect('/employye_dashboard')
 
 
 
@@ -350,14 +350,14 @@ def add_product_to_sale(request):
     errors = models.Sale_order.objects.invoice_sale_validator(request.POST)
     if len(errors) > 0:
         for key, value in errors.items():
-            messages.error(request, value)
+            messages.error(request, _(value))
         return redirect('/sales')
     else:
         product_name = request.POST['product_name']
         quantity = int(request.POST['quantity'])
         product = models.Product.objects.get(product_name=product_name)
         if product.quantity <= 0:
-            messages.error(request, f"Cannot sell '{product_name}': out of stock.")
+            messages.error(request, _('Cannot sell "%(product)s": out of stock.') % {'product': product_name})
             return redirect('/sales')
         product_id = product.id
         sale_price = float(product.sale_price) if product.sale_price is not None else 0.0
@@ -416,7 +416,7 @@ def scan_add_to_sale(request):
 def submet_sale_order(request):
     cart = _get_sale_cart(request)
     if not cart:
-        messages.error(request, "Please add at least one product to sale!")
+        messages.error(request, _("Please add at least one product to sale!"))
         return redirect('/sales')
     else:
         employee_id = request.session['employee_id']
@@ -443,7 +443,7 @@ def submet_sale_order(request):
             pass
 
         _save_sale_cart(request, [])
-        messages.success(request, "Successfully Sold!", extra_tags = 'sold_product')
+        messages.success(request, _("Successfully Sold!"), extra_tags='sold_product')
 
         return redirect('/sales')
 #____________________________________SALE___________________________________
@@ -453,13 +453,13 @@ def submet_sale_order(request):
 def sale_return_create_view(request, sale_order_id):
     # ensure employee logged in
     if 'employee_id' not in request.session:
-        messages.error(request, 'Please sign in to create a return.')
+        messages.error(request, _('Please sign in to create a return.'))
         return redirect('/')
 
     try:
         sale_order = models.Sale_order.objects.get(id=sale_order_id)
     except models.Sale_order.DoesNotExist:
-        messages.error(request, 'Sale order not found.')
+        messages.error(request, _('Sale order not found.'))
         return redirect('/sales')
 
     # build items with allowed return quantities (per original sale_item)
@@ -488,12 +488,12 @@ def sale_return_create_view(request, sale_order_id):
                 qty = 0
             if qty > 0:
                 if qty > entry['allowed_return_quantity']:
-                    messages.error(request, f'Cannot return {qty} of {si.product.product_name}; only {entry["allowed_return_quantity"]} available to return.')
+                    messages.error(request, _('Cannot return %(qty)d of %(product)s; only %(allowed)d available to return.') % {'qty': qty, 'product': si.product.product_name, 'allowed': entry['allowed_return_quantity']})
                     return redirect(request.path)
                 requested.append((si, qty))
 
         if not requested:
-            messages.error(request, 'Please enter at least one quantity to return.')
+            messages.error(request, _('Please enter at least one quantity to return.'))
             return redirect(request.path)
 
         # create SaleReturn and items
@@ -520,7 +520,7 @@ def sale_return_create_view(request, sale_order_id):
                 last_sr.total_amount = grand
                 last_sr.save()
 
-        messages.success(request, 'Sale return recorded.', extra_tags='sale_return')
+        messages.success(request, _('Sale return recorded.'), extra_tags='sale_return')
         return redirect(f'/sales/returns/{ last_sr.id }')
 
     context = {
@@ -535,7 +535,7 @@ def sale_return_detail_view(request, id):
     try:
         sr = models.SaleReturn.objects.get(id=id)
     except models.SaleReturn.DoesNotExist:
-        messages.error(request, 'Sale return not found.')
+        messages.error(request, _('Sale return not found.'))
         return redirect('/sales')
 
     items = sr.items.select_related('product', 'original_item').all()
@@ -551,13 +551,13 @@ def sale_return_detail_view(request, id):
 # -------------------- Purchase Return (supplier returns) --------------------
 def purchase_return_create_view(request, purchase_id):
     if 'employee_id' not in request.session:
-        messages.error(request, 'Please sign in to create a return.')
+        messages.error(request, _('Please sign in to create a return.'))
         return redirect('/')
 
     try:
         purchase = models.Purchase.objects.get(id=purchase_id)
     except models.Purchase.DoesNotExist:
-        messages.error(request, 'Purchase not found.')
+        messages.error(request, _('Purchase not found.'))
         return redirect('/purchases')
 
     items = []
@@ -584,12 +584,12 @@ def purchase_return_create_view(request, purchase_id):
                 qty = 0
             if qty > 0:
                 if qty > entry['allowed_return_quantity']:
-                    messages.error(request, f'Cannot return {qty} of {pi.product.product_name}; only {entry["allowed_return_quantity"]} available to return.')
+                    messages.error(request, _('Cannot return %(qty)d of %(product)s; only %(allowed)d available to return.') % {'qty': qty, 'product': pi.product.product_name, 'allowed': entry['allowed_return_quantity']})
                     return redirect(request.path)
                 requested.append((pi, qty))
 
         if not requested:
-            messages.error(request, 'Please enter at least one quantity to return.')
+            messages.error(request, _('Please enter at least one quantity to return.'))
             return redirect(request.path)
 
         employee_id = request.session['employee_id']
@@ -612,7 +612,7 @@ def purchase_return_create_view(request, purchase_id):
                 last_r.total_amount = grand
                 last_r.save()
 
-        messages.success(request, 'Purchase return recorded.', extra_tags='return_purchase')
+        messages.success(request, _('Purchase return recorded.'), extra_tags='return_purchase')
         return redirect(f'/purchases/returns/{ last_r.id }')
 
     context = {
@@ -627,7 +627,7 @@ def purchase_return_detail_view(request, id):
     try:
         r = models.Return.objects.get(id=id)
     except models.Return.DoesNotExist:
-        messages.error(request, 'Return not found.')
+        messages.error(request, _('Return not found.'))
         return redirect('/purchases')
 
     items = r.return_items.select_related('product', 'original_item').all()
@@ -647,7 +647,7 @@ def add_product_to_purchase(request):
     errors = models.Purchase.objects.invoice_validator(request.POST)
     if len(errors) > 0:
         for key, value in errors.items():
-            messages.error(request, value)
+            messages.error(request, _(value))
         return redirect('/purchases')
     else:
         product_name = request.POST['product_name']
@@ -723,7 +723,7 @@ def scan_add_to_purchase(request):
 def submet_purchase_order(request):
     cart = _get_purchase_cart(request)
     if not cart:
-        messages.error(request, "Please add at least one product to purchase!")
+        messages.error(request, _("Please add at least one product to purchase!"))
         return redirect('/purchases')
     else:
         employee_id = request.session['employee_id']
@@ -751,7 +751,7 @@ def submet_purchase_order(request):
             pass
 
         _save_purchase_cart(request, [])
-        messages.success(request, "Purchased Successfully!", extra_tags = 'add_invoice')
+        messages.success(request, _("Purchased Successfully!"), extra_tags = 'add_invoice')
 
         return redirect('/purchases')
 #____________________________________PURCHASE___________________________________
@@ -759,7 +759,7 @@ def submet_purchase_order(request):
 def clear_purchases_list(request):
     cart = _get_purchase_cart(request)
     if not cart:
-        messages.error(request, "already empty!")
+        messages.error(request, _("already empty!"))
         return redirect('/purchases')
     _save_purchase_cart(request, [])
     return redirect('/purchases')
@@ -793,7 +793,7 @@ def add_product_to_return(request):
     errors = models.Purchase.objects.invoice_validator(request.POST)
     if len(errors) > 0:
         for key, value in errors.items():
-            messages.error(request, value)
+            messages.error(request, _(value))
         return redirect('/return_purchases')
     else:
         product_name = request.POST['product_name']
@@ -816,7 +816,7 @@ def add_product_to_return(request):
 
 def submet_return_order(request):
     if returns_order == []:
-        messages.error(request, "Please add at least one product to return!")
+        messages.error(request, _("Please add at least one product to return!"))
         return redirect('/return_purchases')
     else:
         employee_id = request.session['employee_id']
@@ -846,13 +846,13 @@ def submet_return_order(request):
             last_return.save()
 
         returns_order.clear()
-        messages.success(request, "Return Recorded Successfully!", extra_tags='add_return')
+        messages.success(request, _("Return Recorded Successfully!"), extra_tags='add_return')
         return redirect('/return_purchases')
 
 
 def clear_returns_list(request):
     if returns_order == []:
-        messages.error(request, "already empty!")
+        messages.error(request, _("already empty!"))
         return redirect('/return_purchases')
     else:
         # If user clears the list, we should restore quantities back to stock

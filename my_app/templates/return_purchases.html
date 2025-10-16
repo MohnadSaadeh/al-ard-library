@@ -5,230 +5,196 @@
 
 {% block content %}
 
-  {% block page_name %}{% trans "Return Purchases" %}{% endblock %}
-  {% block page_name2 %}{% trans "Return Purchases" %}{% endblock %}
+{% block page_name %}{% trans "Return Purchases" %}{% endblock %}
+{% block page_name2 %}{% trans "Return Purchases" %}{% endblock %}
+
 <!-- Form to open purchase return by invoice number -->
-<div class="row">
-    <div class="col-8">
-        <div class="card mb-4">
-          <div class="card-header pb-0">
-            
-              <form id="openPurchaseReturnForm" class="mb-3">
-                  <div class="d-flex align-items-center">
-                <label for="purchaseInvoiceNumber" class="me-2">{% trans "Enter Purchase Invoice Number:" %}</label>
-                  <input type="number" id="purchaseInvoiceNumber" name="purchaseInvoiceNumber" class="form-control me-2" placeholder="{% trans "Enter invoice number" %}" required>
-                  <button type="submit" class="btn btn-primary">{% trans "Open" %}</button>
-              </div>
-                </form>
-            
+<div class="row justify-content-center">
+  <div class="col-lg-10 col-md-12">
+    <div class="card shadow-sm border-0 mt-5">
+      <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between py-3">
+        <label for="purchaseInvoiceNumber" class="form-label">{% trans "Enter Purchase Invoice Number:" %}</label>
+        <form id="openPurchaseReturnForm" class="mb-3 w-100">
+
+          <div class="row d-flex gap-2 mt-3">
+            <div class="col-md-8">
+              <input type="number" id="purchaseInvoiceNumber" name="purchaseInvoiceNumber" class="form-control form-control-lg" placeholder="{% trans "Enter Purchase invoice number" %}" required>
+            </div>
+            <div class="col-md-2 col-lg-2 d-flex align-items-end">
+              <button type="submit" class="btn btn-danger">{% trans "Open Return" %}</button>
+            </div>
           </div>
-        </div>
+          <label for="purchaseInvoiceNumber" class="form-label text-danger">{% trans "* This will Open The Purchase Invoice To Make Return Purchases " %}</label>
+
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-    document.getElementById('openPurchaseReturnForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var invoiceNumber = document.getElementById('purchaseInvoiceNumber').value;
-        if (invoiceNumber) {
-            window.location.href = '/purchases/' + invoiceNumber + '/return/';
-        }
-    });
+document.getElementById('openPurchaseReturnForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var invoiceNumber = document.getElementById('purchaseInvoiceNumber').value;
+  if (invoiceNumber) {
+    window.location.href = '/purchases/' + invoiceNumber + '/return/';
+  }
+});
 </script>
-<div class="row">
-    <div class="col-8">
-      <div class="card mb-4">
-        <div class="card-header pb-0">
-          <form action="/add_order_to_return" method="post" id="add-form">
-            {% csrf_token %}
-            <div class="d-flex align-items-center">
-              <p class="mb-0 ">{% trans "New Return Invoice" %}</p>
-              
-              <button class="btn btn-danger btn-sm ms-auto">{% trans "Add product" %}</button>
+
+<div class="row justify-content-center">
+  <div class="col-lg-10 col-md-12">
+    <!-- deleted because its not logical -->
+    {% comment %} <div class="card shadow-sm border-0 mt-5">
+      <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between py-3">
+        <h2 class="mb-0" style="font-size:2rem; font-weight:600; color:#2d3748;">{% trans "New Return Invoice" %}</h2>
+      </div>
+      <div class="card-body">
+        <form action="/add_order_to_return" method="post" id="add-form" class="mb-4">
+          {% csrf_token %}
+          <div class="row g-3 align-items-end">
+            <div class="col-md-5 col-lg-4">
+              <label for="product_name" class="form-label">{% trans "Product Name" %}</label>
+              <select id="results-box" class="form-select form-select-lg" name="product_name">
+                <option value="- Select Product -">{% trans "- Select Product -" %}</option>
+                {% for product in products %}
+                  <option>{{product.product_name}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3 col-lg-2">
+              <label for="quantity" class="form-label">{% trans "Quantity" %}</label>
+              <input class="form-control form-control-lg" type="number" name="quantity" id="quantity" min="1" placeholder="1">
+            </div>
+
+            <!-- Add barcode/ISBN search if needed -->
+            <div class="col-md-2 col-lg-2 d-flex align-items-end">
+              <button class="btn btn-danger btn-lg" type="submit">{% trans "Add" %}</button>
             </div>
           </div>
-          <div class="card-body">
-            <p class="text-uppercase text-sm"></p>
-            <div class="row">
-              <div class="col-md-6">                
-                <label for="example-text-input" class="form-control-label">{% trans "Product Name" %}</label>
-                </div>
-                <div class="btn-group ">
-                  <div class="col-md-4">
-                    <div class="form-group">
-                      <select id="results-box"   class="form-control" name="product_name">
-                        <option value="- Select Product -">{% trans "- Select Product -" %}</option>
-                        {% for product in products %}
-                        <option>{{product.product_name}}</option>
-                        {% endfor %}
-                        </select>
+        </form>
 
-                    </div>
-                  </div>
-                  <div class="w-15 text-center">
-                    <div id="search-form"   outocomplete = "off">
-                        <input id="search-input" class="form-control me-2" type="search" placeholder="{% trans "Search" %}" aria-label="{% trans "Search" %}">
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="example-text-input" class="form-control-label">{% trans "Quantity" %}</label>
-                  <input class="form-control" type="number" name="quantity" >
-                </div>
-              </div>
-               
-            
-          </form>
-
-          <form action="/submet_return_order" method="post">
-              {% csrf_token %}
-              <p>{% trans "Return Summary" %}</p>
-              <div class="form-group">
-                  <label>{% trans "Payment Method" %}</label>
-                  <div>
-                      <input type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
-                      <label for="cash">{% trans "Cash" %}</label>
-                  </div>
-                  <div>
-                      <input type="radio" id="debts" name="invoice_pay_method" value="debts">
-                      <label for="debts">{% trans "Debts" %}</label>
-                  </div>
-              </div>
-              <table class="table">
-                <tr >
-                  <th class="ps-3">{% trans "id" %}</th>
+        <form action="/submet_return_order" method="post" class="mt-4">
+          {% csrf_token %}
+          <h4 class="mb-3" style="font-weight:500; color:#2d3748;">{% trans "Return Summary" %}</h4>
+          <div class="row g-3 align-items-center mb-3">
+            <div class="col-auto">
+              <label class="form-label mb-0">{% trans "Payment Method" %}</label>
+            </div>
+            <div class="col-auto">
+              <input type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
+              <label for="cash" class="me-2">{% trans "Cash" %}</label>
+              <input type="radio" id="debts" name="invoice_pay_method" value="debts">
+              <label for="debts">{% trans "Debts" %}</label>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle">
+              <thead class="table-dark">
+                <tr>
+                  <th class="ps-3">{% trans "ID" %}</th>
                   <th class="ps-3">{% trans "Product" %}</th>
                   <th>{% trans "Quantity" %}</th>
                   <th class="ps-3">{% trans "Unit Price" %}</th>
                   <th class="ps-3">{% trans "Total Price" %}</th>
                 </tr>
+              </thead>
+              <tbody>
                 {% for order in returns_order %}
                 <tr>
-                  <td class="ps-3"> {{order.product_id}} </td>
-                  <td class="ps-3"> {{order.product_name}} </td>
+                  <td class="ps-3">{{order.product_id}}</td>
+                  <td class="ps-3">{{order.product_name}}</td>
                   <td>{{order.quantity}}</td>
-                  <td class="ps-3"> {{order.unit_price}} </td>
-                  <td class="ps-3"> {{order.total_price}} </td>
+                  <td class="ps-3">{{order.unit_price}}</td>
+                  <td class="ps-3">{{order.total_price}}</td>
                 </tr>
                 {% endfor %}
                 <tr class="table-secondary fw-bold">
                   <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
                   <td class="ps-3">{{ grand_total }}</td>
                 </tr>
-              </table>
-              
-              <button type="submit" class="btn btn-danger btn-sm ms-auto mt-4">{% trans "Submit return" %}</button>
-              <a href="/clear_returns_list" class="btn btn-danger btn-sm ms-auto mt-4">{% trans "Clear return" %}</a>
-            </div>
-
-              {% if messages %}
-              <ul class="messages">    
-                {% for message in messages %}    
-                    {% if message.extra_tags == 'add_return' %}
-                    <p class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>    
-                    {% else %}
-                    <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p> 
-                    {% endif %}
-                  {% endfor %}
-              </ul>
-              {% endif %}
-          </form>
-        
-      </div>
-    </div> 
-  </div>
-  <div class="row">
-    <div class="col-12">
-      <div class="card mb-4">
-        <div class="card-header pb-0">
-          <h6>{% trans "Recent Returned Invoices" %}</h6>
-        </div>
-        <div class="card-body px-0 pt-0 pb-2">
-          <div class="table-responsive p-0">
-            <table class="table align-items-center justify-content-center mb-0">
-              <thead>
-                <tr>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">{% trans "Return No." %}</th>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">{% trans "Added by" %}</th>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2 ">{% trans "Added at" %}</th>
-                  <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2">{% trans "Action" %}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for invoice in return_invoices %}
-                <tr>
-                  <td>
-                    <p class="text-sm mb-0 font-weight-bold mb-0"> {{invoice.id}} </p>
-                  </td>
-                  <td>
-                    <p class="text-sm mb-0 font-weight-bold mb-0"> {{invoice.employee.first_name}} {{invoice.employee.last_name}} </p>
-                  </td>
-                  <td>
-                    <span class="text-sm mb-0 font-weight-bold">{{invoice.created_at}}</span>
-                  </td>
-                  <td>
-                    <span class="text-sm  mb-0 font-weight-bold"><a href="/view_return_invoice/{{invoice.id}}">{% trans "View" %}</a></span>
-                  </td>
-                </tr>
-                {% endfor %}
               </tbody>
             </table>
           </div>
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-danger btn-lg">{% trans "Submit return" %}</button>
+            <a href="/clear_returns_list" class="btn btn-outline-danger btn-lg">{% trans "Clear return" %}</a>
+          </div>
+          {% if messages %}
+            <ul class="messages mt-3">    
+              {% for message in messages %}    
+                {% if message.extra_tags == 'add_return' %}
+                  <p class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>    
+                {% else %}
+                  <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p> 
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </form>
+      </div>
+    </div> {% endcomment %}
+    <!-- deleted because its not logical -->
+
+    <div class="card mt-5 shadow-sm border-0">
+      <div class="card-header bg-white py-3">
+        <h4 class="mb-0" style="font-weight:600; color:#2d3748;">{% trans "Recent Returned Invoices" %}</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>{% trans "Return No." %}</th>
+                <th>{% trans "Added by" %}</th>
+                <th>{% trans "Added at" %}</th>
+                <th>{% trans "Action" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for invoice in return_invoices %}
+              <tr>
+                <td><span class="fw-bold">{{invoice.id}}</span></td>
+                <td>{{invoice.employee.first_name}} {{invoice.employee.last_name}}</td>
+                <td>{{invoice.created_at}}</td>
+                <td>
+                  <a href="/view_return_invoice/{{invoice.id}}" class="btn btn-outline-primary btn-sm me-1">{% trans "View" %}</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
+        {% if return_invoices.paginator.num_pages > 1 %}
+        <nav aria-label="Return Invoices pagination">
+          <ul class="pagination justify-content-center mt-3">
+            {% if return_invoices.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?return_invoices_page={{ return_invoices.previous_page_number }}" aria-label="Previous">&laquo;</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+            {% for num in return_invoices.paginator.page_range %}
+              {% if return_invoices.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+              {% else %}
+                <li class="page-item"><a class="page-link" href="?return_invoices_page={{ num }}">{{ num }}</a></li>
+              {% endif %}
+            {% endfor %}
+            {% if return_invoices.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?return_invoices_page={{ return_invoices.next_page_number }}" aria-label="Next">&raquo;</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
       </div>
     </div>
   </div>
-  <div class="pagination-container">
-  <nav aria-label="Page navigation">
-    <ul class="pagination justify-content-center">
-      {% if return_purchases.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?return_purchases_page={{ return_purchases.previous_page_number }}" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-        </li>
-      {% endif %}
-      {% for num in return_purchases.paginator.page_range %}
-        <li class="page-item {% if return_purchases.number == num %}active{% endif %}">
-          <a class="page-link" href="?return_purchases_page={{ num }}">{{ num }}</a>
-        </li>
-      {% endfor %}
-      {% if return_purchases.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?return_purchases_page={{ return_purchases.next_page_number }}" aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>
-      {% endif %}
-    </ul>
-  </nav>
-</div>
-<div class="pagination-container">
-  <nav aria-label="Page navigation">
-    <ul class="pagination justify-content-center">
-      {% if return_invoices.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?return_invoices_page={{ return_invoices.previous_page_number }}" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-        </li>
-      {% endif %}
-      {% for num in return_invoices.paginator.page_range %}
-        <li class="page-item {% if return_invoices.number == num %}active{% endif %}">
-          <a class="page-link" href="?return_invoices_page={{ num }}">{{ num }}</a>
-        </li>
-      {% endfor %}
-      {% if return_invoices.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?return_invoices_page={{ return_invoices.next_page_number }}" aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>
-      {% endif %}
-    </ul>
-  </nav>
 </div>
 
 {% endblock content %}
