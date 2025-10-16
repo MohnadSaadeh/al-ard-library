@@ -22,56 +22,82 @@
         </div>
       </div>
       <div class="card-body px-0 pt-0 pb-2">
-        <div class="invoice-footer mt-4 d-flex justify-content-between align-items-start">
-          <div class="vat-info small text-muted">
-            <div><strong>VAT / Tax No:</strong> 12345678</div>
-            <div><strong>Payment Terms:</strong> {{ invoice.invoice_pay_method|title }}</div>
+        <div id="printable-invoice" class="p-4">
+          <div class="text-center mb-3">
+            <img src="{% static 'img/al-ard-profile-Banner.png' %}" alt="Al Ard company logo banner" class="invoice-top-logo" />
           </div>
-          <div class="signatures text-end" style="min-width:300px;">
-            <div class="signature-block" style="margin-bottom:40px;">
-              <div class="small text-muted">_____________________________</div>
-              <div class="small">Authorized Signature</div>
+          <div class="text-center mb-3">
+            <h2 class="mb-0">{% trans "Sale Return Invoice" %}</h2>
+            <div class="small text-muted">{% trans "Invoice No:" %} <strong>#{{ invoice.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ invoice.created_at|date:'Y-m-d H:i' }}</strong></div>
+            <div class="small text-muted">{% trans "Added by:" %} <strong>{{ invoice.employee.first_name }} {{ invoice.employee.last_name }}</strong></div>
+          </div>
+          <div class="d-flex justify-content-between mb-3">
+            <div class="small text-muted">
+              <div><strong>{% trans "الأرض للنشر والتوزيع" %}</strong></div>
+              <div>{% trans "Address:" %} {% trans "البالوع , رام الله , فلسطين" %}</div>
+              <div>{% trans "Phone:" %} +972-599-966535</div>
+              <div>{% trans "Email:" %} info@al-ard.com</div>
             </div>
-            <div class="signature-block">
-              <div class="small text-muted">_____________________________</div>
-              <div class="small">Received by (Customer)</div>
+            <div class="text-end small text-muted">
+              <div>{% trans "Invoice No:" %} <strong>#{{ invoice.id }}</strong></div>
+              <div>{% trans "Date:" %} <strong>{{ invoice.created_at|date:'Y-m-d H:i' }}</strong></div>
+              <div>{% trans "Issued by:" %} <strong>{{ invoice.employee.first_name }} {{ invoice.employee.last_name }}</strong></div>
             </div>
           </div>
-        </div>
-        <div class="table-responsive p-0">
-          <table class="table table-sm table-striped">
-            <thead>
-              <tr>
-                <th>{% trans "#" %}</th>
-                <th>{% trans "Product" %}</th>
-                <th class="text-center">{% trans "Qty" %}</th>
-                <th class="text-end">{% trans "Unit Price" %}</th>
-                <th class="text-end">{% trans "Total" %}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% if return_products %}
-                {% for item in return_products %}
+          <div class="table-responsive">
+            <table class="table table-sm table-striped">
+              <thead>
                 <tr>
-                  <td>{{ forloop.counter }}</td>
-                  <td>{{ item.product.product_name }}</td>
-                  <td class="text-center">{{ item.quantity }}</td>
-                  <td class="text-end">{{ item.unit_price }}</td>
-                  <td class="text-end">{{ item.total_price }}</td>
+                  <th>#</th>
+                  <th>{% trans "Product" %}</th>
+                  <th class="text-center">{% trans "Qty" %}</th>
+                  <th class="text-end">{% trans "Unit Price" %}</th>
+                  <th class="text-end">{% trans "Total" %}</th>
                 </tr>
-                {% endfor %}
-              {% else %}
-                <tr><td colspan="5" class="text-center">{% trans "No products for this return." %}</td></tr>
-              {% endif %}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="3"></td>
-                <td class="text-end fw-bold">{% trans "Grand Total" %}</td>
-                <td class="text-end fw-bold">{{ invoice.grand_total }}</td>
-              </tr>
-            </tfoot>
-          </table>
+              </thead>
+              <tbody>
+                {% if return_products %}
+                  {% for item in return_products %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.product.product_name }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end">{{ item.unit_price }}</td>
+                    <td class="text-end">{{ item.total_price }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr><td colspan="5" class="text-center">{% trans "No products for this return." %}</td></tr>
+                {% endif %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3"></td>
+                  <td class="text-end fw-bold">{% trans "Grand Total" %}</td>
+                  <td class="text-end fw-bold">{{ invoice.grand_total }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div class="invoice-notes mt-4">
+            <p class="small text-muted">{% trans "This returned products invoice documents products returned to customer. Keep this invoice for your records." %}</p>
+          </div>
+          <div class="invoice-footer mt-4 d-flex justify-content-between align-items-start">
+            <div class="vat-info small text-muted">
+              <div><strong>{% trans "VAT / Tax No:" %}</strong> 12345678</div>
+              <div><strong>{% trans "Payment Terms:" %}</strong> {{ invoice.invoice_pay_method|title }}</div>
+            </div>
+            <div class="signatures text-end" style="min-width:300px;">
+              <div class="signature-block" style="margin-bottom:40px;">
+                <div class="small text-muted">_____________________________</div>
+                <div class="small">{% trans "Authorized Signature" %}</div>
+              </div>
+              <div class="signature-block">
+                <div class="small text-muted">_____________________________</div>
+                <div class="small">{% trans "Received by (Customer)" %}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from django.db.models import F, ExpressionWrapper, FloatField ,DecimalField, IntegerField
 import re
 from datetime import datetime , timedelta
@@ -7,8 +8,8 @@ from .validations import EmployeeManager , ManagerManager , ProductManager , Pur
 
 # Define pay_choices globally to avoid repetition and NameError
 pay_choices = [
-    ('cash', 'Cash'),
-    ('debts', 'Debts'),
+    ('cash', _('Cash')),
+    ('debts', _('Debts')),
 ]
 
 class Supplier(models.Model):
