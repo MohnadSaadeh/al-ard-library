@@ -43,13 +43,30 @@
               <input id="isbn-search-input" class="form-control form-control-lg" type="search" placeholder="{% trans "Type or scan ISBN" %}" aria-label="{% trans "Type or scan ISBN" %}" autocomplete="off">
             </div>
             <div class="col-md-2 col-lg-2 d-flex align-items-end">
-              <button class="btn btn-primary btn-lg" type="submit">{% trans "Add" %}</button>
+                <button class="btn btn-primary btn-lg" type="submit">{% trans "Add" %}</button>
             </div>
           </div>
         </form>
 
+          <!-- JS will hijack the add-form submission to POST via AJAX so page doesn't refresh -->
+
         <form action="/submet_purchase_order" method="post" class="mt-4">
           {% csrf_token %}
+          <div class="row g-3 mb-3 align-items-center">
+            <div class="col-md-6">
+              <label class="form-label">{% trans "Supplier" %}</label>
+              <div class="input-group">
+                <input id="supplier-search" class="form-control" list="supplier-list" placeholder="{% trans "Type or select a supplier" %}" aria-label="{% trans "Supplier" %}" autocomplete="off">
+                <input type="hidden" name="supplier_id" id="supplier-id" value="">
+                <datalist id="supplier-list" style="max-height: 5px; overflow-y: auto;">
+                  {% for sup in suppliers %}
+                  <option data-id="{{ sup.id }}" value="{{ sup.name }}{% if sup.phone %} - {{ sup.phone }}{% endif %}"></option>
+                  {% endfor %}
+                </datalist>
+              </div>
+              <div class="form-text small text-muted">{% trans "Start typing to search suppliers" %}</div>
+            </div>
+          </div>
           <h4 class="mb-3" style="font-weight:500; color:#2d3748;">{% trans "Order Summary" %}</h4>
           <div class="row g-3 align-items-center mb-3">
             <div class="col-auto">
@@ -401,6 +418,88 @@ function getCookie(name) {
   }
   return cookieValue;
 }
+</script>
+<script>
+// AJAX handler for add-product form so supplier selection is preserved
+document.addEventListener('DOMContentLoaded', function(){
+  const addForm = document.getElementById('add-form');
+  if(!addForm) return;
+  addForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    const formData = new FormData(addForm);
+    // send as fetch POST (form-encoded)
+    fetch(addForm.action, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: formData
+    }).then(r => r.json()).then(data => {
+      if(data.status === 'ok'){
+        const tbody = document.getElementById('purchase-cart-tbody');
+        if (tbody && Array.isArray(data.items)) {
+          // rebuild rows
+          let html = '';
+          data.items.forEach(item => {
+            html += `
+              <tr>
+                <td class="ps-3">${item.product_id}</td>
+                <td class="ps-3">${item.product_name}</td>
+                <td>${item.quantity}</td>
+                <td class="ps-3">${item.purchase_price}</td>
+                <td class="ps-3">${item.total_price}</td>
+              </tr>`;
+          });
+          html += `\n<tr class="table-secondary fw-bold">\n<td colspan="4" class="text-end">{% trans "Grand Total" %}</td>\n<td class="ps-3">${data.grand_total}</td>\n</tr>`;
+          tbody.innerHTML = html;
+        }
+        // clear quantity, keep selected supplier/product
+        const qty = document.getElementById('quantity'); if(qty) qty.value = '';
+      } else {
+        alert(data.message || 'Error adding product');
+      }
+    }).catch(err => {
+      alert('Error: ' + err);
+    });
+  });
+});
+</script>
+<script>
+// Sync datalist selection to hidden supplier_id input so form submits supplier id
+document.addEventListener('DOMContentLoaded', function(){
+  const search = document.getElementById('supplier-search');
+  const supplierId = document.getElementById('supplier-id');
+  const datalist = document.getElementById('supplier-list');
+  if(!search || !supplierId || !datalist) return;
+
+  // Build quick lookup from value -> id
+  const options = Array.from(datalist.options);
+  const valueToId = {};
+  options.forEach(opt => {
+    valueToId[opt.value] = opt.dataset.id;
+  });
+
+  function updateHidden(){
+    const v = search.value.trim();
+    if(!v){ supplierId.value = ''; return; }
+    // exact match first
+    if(valueToId[v]){
+      supplierId.value = valueToId[v];
+      return;
+    }
+    // try startsWith (case-insensitive)
+    const lower = v.toLowerCase();
+    const matched = options.filter(o => o.value.toLowerCase().startsWith(lower));
+    if(matched.length === 1){ supplierId.value = matched[0].dataset.id; return; }
+    // no unique match -> leave supplier_id blank
+    supplierId.value = '';
+  }
+
+  // update on input and on change (when user picks an option)
+  search.addEventListener('input', updateHidden);
+  search.addEventListener('change', updateHidden);
+});
 </script>
 {% endblock javascripts %}
 

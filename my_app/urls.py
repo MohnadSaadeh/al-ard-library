@@ -70,4 +70,10 @@ urlpatterns = [
     path('stock_products_report/', views.stock_products_report, name='stock_products_report'),
     path('empty_products_report/', views.empty_products_report, name='empty_products_report'),
     path('sales_products_report/', views.sales_products_report, name='sales_products_report'),
+    # Suppliers
+    path('suppliers', views.display_suppliers, name='suppliers_list'),
+    path('suppliers/create', views.add_supplier, name='suppliers_create'),
+    path('suppliers/<int:id>/edit', views.edit_supplier, name='suppliers_edit'),
+    path('suppliers/<int:id>/delete', views.delete_supplier, name='suppliers_delete'),
+    path('suppliers/<int:id>/', views.supplier_detail, name='supplier_detail'),
 ]

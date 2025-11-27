@@ -35,8 +35,13 @@
           <!-- Title and metadata -->
           <div class="text-center mb-3">
             <h2 class="mb-0">{% trans "Purchase Invoice" %}</h2>
+            {% if invoice.supplier %}
+              <div class="small text-muted">{% trans "Supplier" %} : <strong><a href="/suppliers/{{ invoice.supplier.id }}/">{{ invoice.supplier.name }}</a></strong></div>
+            {% else %}
+              <div class="small text-muted">{% trans "Supplier" %} : <strong>{% trans "(none)" %}</strong></div>
+            {% endif %}
             <div class="small text-muted">{% trans "Invoice No:" %} <strong>#{{ invoice.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ invoice.created_at|date:'Y-m-d H:i' }}</strong></div>
-            <div class="small text-muted">{% trans "Added by:" %} <strong>{{ invoice.employee.first_name }} {{ invoice.employee.last_name }}</strong></div>
+            {% comment %} <div class="small text-muted">{% trans "Added by:" %} <strong>{{ invoice.employee.first_name }} {{ invoice.employee.last_name }}</strong></div> {% endcomment %}
           </div>
 
           <!-- Company contact (left) and invoice meta (right) for screen view -->

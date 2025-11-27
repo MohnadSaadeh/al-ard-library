@@ -80,6 +80,7 @@ import bcrypt
 from datetime import datetime , timedelta
 import datetime
 from django.db.models import Sum
+from django.db.models import Q
 from django.db import transaction
 from django.db.models.functions import ExtractWeekDay
 from django.http import JsonResponse
@@ -336,8 +337,132 @@ def display_purchases(request):
             'employee': models.get_employee_by_id(request.session['employee_id']),#--------------------------------------------Mai
             'grand_total': grand_total,
             'invoices_paginator': invoices_paginator,
+            'suppliers': models.Supplier.objects.all(),
         }
     return render(request , 'purchase_invoices.html' ,context)
+
+
+def display_suppliers(request):
+    # List all suppliers and provide a simple add form on the same page
+    if 'employee_id' not in request.session:
+        return redirect('/index')
+    q = request.GET.get('q', '').strip()
+    suppliers_qs = models.Supplier.objects.all()
+    if q:
+        suppliers_qs = suppliers_qs.filter(
+            Q(name__icontains=q) |
+            Q(phone__icontains=q) |
+            Q(email__icontains=q) |
+            Q(contact_info__icontains=q)
+        )
+    suppliers_qs = suppliers_qs.order_by('-created_at')
+    # paginate results (12 per page)
+    page_number = request.GET.get('page')
+    paginator = Paginator(suppliers_qs, 12)
+    suppliers_page = paginator.get_page(page_number)
+
+    context = {
+        'suppliers': suppliers_page,
+        'employee': models.get_employee_by_id(request.session['employee_id']),
+        'suppliers_paginator': paginator,
+    }
+    return render(request, 'suppliers.html', context)
+
+
+def add_supplier(request):
+    # Simple POST handler to create a supplier
+    if request.method != 'POST':
+        return redirect('/suppliers')
+    name = request.POST.get('name', '').strip()
+    phone = request.POST.get('phone', '').strip()
+    email = request.POST.get('email', '').strip()
+    contact_info = request.POST.get('contact_info', '').strip()
+
+    if not name:
+        messages.error(request, _('Supplier name is required.'))
+        return redirect('/suppliers')
+
+    try:
+        models.Supplier.objects.create(name=name, phone=phone or None, email=email or None, contact_info=contact_info or None)
+        messages.success(request, _('Successfully added supplier.'), extra_tags='add_supplier')
+    except Exception as e:
+        messages.error(request, _('Failed to add supplier: %(err)s') % {'err': str(e)})
+
+    return redirect('/suppliers')
+
+
+def edit_supplier(request, id):
+    # Edit supplier (GET shows edit form, POST updates)
+    try:
+        supplier = models.Supplier.objects.get(id=id)
+    except models.Supplier.DoesNotExist:
+        messages.error(request, _('Supplier not found.'))
+        return redirect('/suppliers')
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        email = request.POST.get('email', '').strip()
+        contact_info = request.POST.get('contact_info', '').strip()
+
+        if not name:
+            messages.error(request, _('Supplier name is required.'))
+            return redirect(f'/suppliers/{id}/edit')
+
+        supplier.name = name
+        supplier.phone = phone or None
+        supplier.email = email or None
+        supplier.contact_info = contact_info or None
+        supplier.save()
+        messages.success(request, _('Supplier updated.'), extra_tags='edit_supplier')
+        return redirect('/suppliers')
+
+    # GET
+    context = {
+        'supplier': supplier,
+        'employee': models.get_employee_by_id(request.session.get('employee_id')) if request.session.get('employee_id') else None,
+    }
+    return render(request, 'suppliers_edit.html', context)
+
+
+def delete_supplier(request, id):
+    # Only accept POST for delete
+    if request.method != 'POST':
+        return redirect('/suppliers')
+    try:
+        supplier = models.Supplier.objects.get(id=id)
+        supplier.delete()
+        messages.success(request, _('Supplier deleted.'), extra_tags='delete_supplier')
+    except models.Supplier.DoesNotExist:
+        messages.error(request, _('Supplier not found.'))
+    except Exception as e:
+        messages.error(request, _('Failed to delete supplier: %(err)s') % {'err': str(e)})
+    return redirect('/suppliers')
+
+
+def supplier_detail(request, id):
+    # Show supplier info and list of purchases from this supplier
+    if 'employee_id' not in request.session:
+        return redirect('/index')
+    try:
+        supplier = models.Supplier.objects.get(id=id)
+    except models.Supplier.DoesNotExist:
+        messages.error(request, _('Supplier not found.'))
+        return redirect('/suppliers')
+
+    purchases_qs = models.Purchase.objects.filter(supplier=supplier).order_by('-created_at')
+    # paginate purchases
+    page_number = request.GET.get('page')
+    paginator = Paginator(purchases_qs, 10)
+    purchases_page = paginator.get_page(page_number)
+
+    context = {
+        'supplier': supplier,
+        'purchases': purchases_page,
+        'purchases_paginator': paginator,
+        'employee': models.get_employee_by_id(request.session['employee_id']),
+    }
+    return render(request, 'supplier_detail.html', context)
 
 def delete_product(request):
     models.delete_clicked_product(request)
@@ -644,19 +769,49 @@ def purchase_return_detail_view(request, id):
 # session-backed purchases_order is stored per-user in request.session via helpers above
 #____________________________________PURCHASE___________________________________
 def add_product_to_purchase(request):
-    errors = models.Purchase.objects.invoice_validator(request.POST)
-    if len(errors) > 0:
-        for key, value in errors.items():
-            messages.error(request, _(value))
+    # Support both normal POST and AJAX/JSON requests. When called via AJAX return JSON
+    data = None
+    if request.content_type == 'application/json':
+        import json
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            return JsonResponse({'status': 'error', 'message': _('Invalid payload')}, status=400)
+
+    # extract fields from either JSON payload or form POST
+    product_name = (data.get('product_name') if data else request.POST.get('product_name'))
+    quantity = int((data.get('quantity') if data else request.POST.get('quantity', 0)) or 0)
+
+    if not product_name or quantity <= 0:
+        msg = _('Product name and positive quantity are required.')
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        messages.error(request, msg)
         return redirect('/purchases')
-    else:
-        product_name = request.POST['product_name']
-        quantity = int(request.POST['quantity'])
+
+    try:
         prod = models.Product.objects.get(product_name=product_name)
-        product_id = prod.id
-        purchase_price = float(prod.purchasing_price) if prod.purchasing_price is not None else 0.0
-        total_price = quantity * purchase_price
-        cart = _get_purchase_cart(request)
+    except models.Product.DoesNotExist:
+        msg = _('Product not found')
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'status': 'not_found', 'message': msg})
+        messages.error(request, msg)
+        return redirect('/purchases')
+
+    product_id = prod.id
+    purchase_price = float(prod.purchasing_price) if prod.purchasing_price is not None else 0.0
+    total_price = quantity * purchase_price
+    cart = _get_purchase_cart(request)
+    # if product already in cart, increase quantity
+    for item in cart:
+        if int(item.get('product_id')) == int(product_id):
+            item['quantity'] = int(item.get('quantity', 0)) + quantity
+            try:
+                item['total_price'] = int(item['quantity']) * float(item.get('purchase_price', 0))
+            except Exception:
+                item['total_price'] = 0
+            break
+    else:
         cart.append({
             'product_name': product_name,
             'product_id': product_id,
@@ -664,8 +819,13 @@ def add_product_to_purchase(request):
             'purchase_price': purchase_price,
             'total_price': total_price,
         })
-        _save_purchase_cart(request, cart)
-        return redirect('/purchases')
+    _save_purchase_cart(request, cart)
+
+    # compute grand total
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+        return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+    return redirect('/purchases')
     
 
 def scan_add_to_purchase(request):
@@ -729,7 +889,9 @@ def submet_purchase_order(request):
         employee_id = request.session['employee_id']
         # Get payment method from form POST
         pay_method = request.POST.get('invoice_pay_method', 'cash')
-        purchase = models.create_purchase_order(employee_id)
+        supplier_id = request.POST.get('supplier_id')
+        # create purchase order with optional supplier
+        purchase = models.create_purchase_order(employee_id, supplier_id=supplier_id if supplier_id else None)
         purchase.invoice_pay_method = pay_method
         purchase.save()
         for key in cart:

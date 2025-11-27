@@ -233,6 +233,8 @@ def get_six_monthes_products():
 # (فاتورة)
 class Purchase(models.Model): #i changed from Purchasing_invoice to Purchase >
     employee = models.ForeignKey(Employee , related_name="Purchases", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
+    # link supplier to this purchase invoice (optional)
+    supplier = models.ForeignKey('Supplier', related_name='purchases', on_delete=models.CASCADE, null=True, blank=True)
     # إجمالي قيمة الفاتورة
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # the total amount of the invoice
     payment_method = models.CharField(max_length=10, choices=pay_choices, default='cash')
@@ -323,9 +325,15 @@ def today_purchases():#MAI******
 
 
 #--------------------purchase--------------------
-def create_purchase_order(employee_id):
+def create_purchase_order(employee_id, supplier_id=None):
     employee = Employee.objects.get(id=employee_id)
-    return Purchase.objects.create(employee = employee) # craete the invoice
+    supplier = None
+    if supplier_id:
+        try:
+            supplier = Supplier.objects.get(id=supplier_id)
+        except Supplier.DoesNotExist:
+            supplier = None
+    return Purchase.objects.create(employee=employee, supplier=supplier)  # create the invoice
 
 # def add_purchase_relation(product_id): #--------------------------- add the product to the invoice
 #     product = Product.objects.get(id=product_id)
