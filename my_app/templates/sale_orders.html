@@ -52,6 +52,18 @@
                     {% csrf_token %}
                     <h4 class="mb-3" style="font-weight:500; color:#2d3748;">{% trans "Order Summary" %}</h4>
                     <div class="row g-3 align-items-center mb-3">
+                        <div class="col-md-6 col-lg-4">
+                            <label for="customer-name-input" class="form-label">{% trans "Customer" %}</label>
+                            <input list="customers-datalist" id="customer-name-input" class="form-control" placeholder="{% trans "Select or type customer" %}" autocomplete="off">
+                            <datalist id="customers-datalist">
+                                {% for c in customers %}
+                                    <option value="{{ c.name|escapejs }}"></option>
+                                {% endfor %}
+                            </datalist>
+                            <input type="hidden" name="customer_id" id="customer-id-hidden" value="">
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center mb-3">
                         <div class="col-auto">
                             <label class="form-label mb-0">{% trans "Payment Method" %}</label>
                         </div>
@@ -239,6 +251,61 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert("Error adding product: " + error);
                 });
             }
+        });
+    }
+});
+// customers list and add-form interception
+document.addEventListener('DOMContentLoaded', function() {
+    // build customers JS lookup
+    const customersList = [
+        {% for c in customers %}
+            { id: {{ c.id }}, name: "{{ c.name|escapejs }}" }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    const customerNameInput = document.getElementById('customer-name-input');
+    const customerIdHidden = document.getElementById('customer-id-hidden');
+    if (customerNameInput && customerIdHidden) {
+        customerNameInput.addEventListener('input', function(e) {
+            const val = e.target.value;
+            const match = customersList.find(c => c.name === val);
+            customerIdHidden.value = match ? match.id : '';
+        });
+    }
+
+    const addForm = document.getElementById('add-form');
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const productName = document.querySelector('#results-box').value;
+            const quantity = document.getElementById('quantity').value || 1;
+            if (!productName) return;
+            fetch('/add_order_to_sale', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ product_name: productName, quantity: quantity })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    const tbody = document.querySelector('table.table tbody');
+                    if (tbody && Array.isArray(data.items)) {
+                        tbody.innerHTML = `\n                                <tr>\n                                    <th class="ps-3">ID</th>\n                                    <th class="ps-3">Product</th>\n                                    <th>Quantity</th>\n                                    <th class="ps-3">Sale Price</th>\n                                    <th class="ps-3">Total Price</th>\n                                </tr>\n                            `;
+                        data.items.forEach(item => {
+                            tbody.innerHTML += `\n                                <tr>\n                                    <td class="ps-3">${item.product_id}</td>\n                                    <td class="ps-3">${item.product_name}</td>\n                                    <td>${item.quantity}</td>\n                                    <td class="ps-3">${item.sale_price}</td>\n                                    <td class="ps-3">${item.total_price}</td>\n                                </tr>\n                            `;
+                        });
+                        tbody.innerHTML += `\n                            <tr class="table-secondary fw-bold">\n                                <td colspan="4" class="text-end">Grand Total</td>\n                                <td class="ps-3">${data.grand_total}</td>\n                            </tr>\n                        `;
+                    }
+                } else {
+                    alert(data.message || "Failed to add product");
+                }
+            })
+            .catch(err => {
+                alert('Error: ' + err);
+            });
         });
     }
 });

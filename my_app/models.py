@@ -268,6 +268,8 @@ def get_all_invoices():
 # (فاتورة)
 class Sale_order(models.Model):
     employee = models.ForeignKey(Employee , related_name="sale_orders", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
+    # link customer to this sale order (optional)
+    customer = models.ForeignKey('Customer', related_name='sales', on_delete=models.CASCADE, null=True, blank=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) #means the total amount of the order
     invoice_pay_method = models.CharField(max_length=10, choices=pay_choices, default='cash')  # Added field
     created_at = models.DateTimeField(auto_now_add=True)
@@ -288,9 +290,15 @@ class Sale_item(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 #---------------------Sale--------------------
 
-def create_sale_order(employee_id):
+def create_sale_order(employee_id, customer_id=None):
     employee = Employee.objects.get(id=employee_id)
-    return Sale_order.objects.create(employee = employee ) # create the invoice
+    customer = None
+    if customer_id:
+        try:
+            customer = Customer.objects.get(id=customer_id)
+        except Customer.DoesNotExist:
+            customer = None
+    return Sale_order.objects.create(employee=employee, customer=customer)
 
 # def add_sale_relation(product_id):#------------------------ add the product to the invoice
 #     product = Product.objects.get(id=product_id)

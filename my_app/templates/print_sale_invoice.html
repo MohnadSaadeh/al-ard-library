@@ -32,6 +32,14 @@
         </div>
 
   <h2 class="text-center">{% trans "Sales Invoice" %}</h2>
+  <div class="text-center small text-muted mb-2">
+    <strong>{% trans "Customer" %}:</strong>
+    {% if order.customer %}
+      <a href="/customers/{{ order.customer.id }}/">{{ order.customer.name }}</a>
+    {% else %}
+      <em>{% trans "(none)" %}</em>
+    {% endif %}
+  </div>
   <div class="text-center small text-muted mb-2">{% trans "Invoice No:" %} <strong>#{{ order.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong></div>
 
         <div class="table-responsive">

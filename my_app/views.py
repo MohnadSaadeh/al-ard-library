@@ -315,6 +315,7 @@ def display_sales(request):
             'products': models.get_all_products(),
             'orders' : orders_page,
             'employee': models.get_employee_by_id(request.session['employee_id']),
+            'customers': models.Customer.objects.all(),
             'grand_total': grand_total,
             'orders_paginator': orders_paginator,
         }
@@ -464,6 +465,106 @@ def supplier_detail(request, id):
     }
     return render(request, 'supplier_detail.html', context)
 
+def display_customers(request):
+    # List all customers and provide add form on the same page (mirrors suppliers)
+    if 'employee_id' not in request.session:
+        return redirect('/index')
+    q = request.GET.get('q', '').strip()
+    customers_qs = models.Customer.objects.all()
+    if q:
+        customers_qs = customers_qs.filter(
+            Q(name__icontains=q) |
+            Q(phone__icontains=q) |
+            Q(email__icontains=q) |
+            Q(contact_info__icontains=q)
+        )
+    customers_qs = customers_qs.order_by('-created_at')
+    page_number = request.GET.get('page')
+    paginator = Paginator(customers_qs, 12)
+    customers_page = paginator.get_page(page_number)
+
+    context = {
+        'customers': customers_page,
+        'employee': models.get_employee_by_id(request.session['employee_id']),
+        'customers_paginator': paginator,
+    }
+    return render(request, 'customers.html', context)
+
+
+def add_customer(request):
+    if request.method != 'POST':
+        return redirect('/customers')
+    name = request.POST.get('name', '').strip()
+    phone = request.POST.get('phone', '').strip()
+    email = request.POST.get('email', '').strip()
+    contact_info = request.POST.get('contact_info', '').strip()
+
+    if not name:
+        messages.error(request, _('Customer name is required.'))
+        return redirect('/customers')
+
+    try:
+        models.Customer.objects.create(name=name, phone=phone or None, email=email or None, contact_info=contact_info or None)
+        messages.success(request, _('Successfully added customer.'), extra_tags='add_customer')
+    except Exception as e:
+        messages.error(request, _('Failed to add customer: %(err)s') % {'err': str(e)})
+
+    return redirect('/customers')
+
+
+def edit_customer(request, id):
+    try:
+        customer = models.Customer.objects.get(id=id)
+    except models.Customer.DoesNotExist:
+        messages.error(request, _('Customer not found.'))
+        return redirect('/customers')
+
+    if request.method == 'POST':
+        customer.name = request.POST.get('name', '').strip() or customer.name
+        customer.phone = request.POST.get('phone', '').strip() or customer.phone
+        customer.email = request.POST.get('email', '').strip() or customer.email
+        customer.contact_info = request.POST.get('contact_info', '').strip() or customer.contact_info
+        customer.save()
+        messages.success(request, _('Customer updated successfully.'))
+        return redirect('/customers')
+
+    context = {
+        'customer': customer,
+        'employee': models.get_employee_by_id(request.session['employee_id']),
+    }
+    return render(request, 'customers_edit.html', context)
+
+
+def delete_customer(request, id):
+    try:
+        c = models.Customer.objects.get(id=id)
+        c.delete()
+        messages.success(request, _('Customer deleted successfully.'))
+    except Exception:
+        messages.error(request, _('Failed to delete customer.'))
+    return redirect('/customers')
+
+
+def customer_detail(request, id):
+    try:
+        customer = models.Customer.objects.get(id=id)
+    except models.Customer.DoesNotExist:
+        messages.error(request, _('Customer not found.'))
+        return redirect('/customers')
+
+    sales_qs = models.Sale_order.objects.filter(customer=customer).order_by('-created_at')
+    page_number = request.GET.get('page')
+    paginator = Paginator(sales_qs, 10)
+    sales_page = paginator.get_page(page_number)
+
+    context = {
+        'customer': customer,
+        'sales': sales_page,
+        'employee': models.get_employee_by_id(request.session['employee_id']),
+        'sales_paginator': paginator,
+    }
+    return render(request, 'customer_detail.html', context)
+
 def delete_product(request):
     models.delete_clicked_product(request)
     return redirect('/employye_dashboard')
@@ -472,25 +573,69 @@ def delete_product(request):
 # session-backed sale_order is stored per-user in request.session via helpers above
 #____________________________________SALE___________________________________
 def add_product_to_sale(request):
-    errors = models.Sale_order.objects.invoice_sale_validator(request.POST)
-    if len(errors) > 0:
-        for key, value in errors.items():
-            messages.error(request, _(value))
+    # Support both normal POST and AJAX/JSON requests. When called via AJAX return JSON
+    data = None
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            return JsonResponse({'status': 'error', 'message': _('Invalid payload')}, status=400)
+
+    # extract fields from either JSON payload or form POST
+    product_name = (data.get('product_name') if data else request.POST.get('product_name'))
+    quantity = int((data.get('quantity') if data else request.POST.get('quantity', 0)) or 0)
+
+    if not product_name or quantity <= 0:
+        msg = _('Product name and positive quantity are required.')
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        messages.error(request, msg)
         return redirect('/sales')
+
+    try:
+        prod = models.Product.objects.get(product_name=product_name)
+    except models.Product.DoesNotExist:
+        msg = _('Product not found')
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'status': 'not_found', 'message': msg})
+        messages.error(request, msg)
+        return redirect('/sales')
+
+    if prod.quantity <= 0:
+        msg = _('Cannot sell "%(product)s": out of stock.') % {'product': product_name}
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'status': 'error', 'message': msg})
+        messages.error(request, msg)
+        return redirect('/sales')
+
+    product_id = prod.id
+    sale_price = float(prod.sale_price) if prod.sale_price is not None else 0.0
+    total_price = quantity * sale_price
+    cart = _get_sale_cart(request)
+    # if product already in cart, increase quantity
+    for item in cart:
+        if int(item.get('product_id')) == int(product_id):
+            item['quantity'] = int(item.get('quantity', 0)) + quantity
+            try:
+                item['total_price'] = int(item['quantity']) * float(item.get('sale_price', 0))
+            except Exception:
+                item['total_price'] = 0
+            break
     else:
-        product_name = request.POST['product_name']
-        quantity = int(request.POST['quantity'])
-        product = models.Product.objects.get(product_name=product_name)
-        if product.quantity <= 0:
-            messages.error(request, _('Cannot sell "%(product)s": out of stock.') % {'product': product_name})
-            return redirect('/sales')
-        product_id = product.id
-        sale_price = float(product.sale_price) if product.sale_price is not None else 0.0
-        total_price = quantity * sale_price
-        cart = _get_sale_cart(request)
-        cart.append({'product_name': product_name, 'product_id': product_id, 'quantity': quantity, 'sale_price': sale_price, 'total_price': total_price})
-        _save_sale_cart(request, cart)
-        return redirect('/sales')
+        cart.append({
+            'product_name': product_name,
+            'product_id': product_id,
+            'quantity': quantity,
+            'sale_price': sale_price,
+            'total_price': total_price,
+        })
+    _save_sale_cart(request, cart)
+
+    # compute grand total
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+        return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+    return redirect('/sales')
     
 
 def scan_add_to_sale(request):
@@ -547,8 +692,15 @@ def submet_sale_order(request):
         employee_id = request.session['employee_id']
         # Get payment method from form POST
         pay_method = request.POST.get('invoice_pay_method', 'cash')
-        # Create sale order and set payment method
-        sale_order = models.create_sale_order(employee_id)
+        # Read optional customer_id from the form
+        customer_id = request.POST.get('customer_id') or None
+        if customer_id:
+            try:
+                customer_id = int(customer_id)
+            except Exception:
+                customer_id = None
+        # Create sale order and set payment method and customer
+        sale_order = models.create_sale_order(employee_id, customer_id)
         sale_order.invoice_pay_method = pay_method
         sale_order.save()
 

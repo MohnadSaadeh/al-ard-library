@@ -76,4 +76,10 @@ urlpatterns = [
     path('suppliers/<int:id>/edit', views.edit_supplier, name='suppliers_edit'),
     path('suppliers/<int:id>/delete', views.delete_supplier, name='suppliers_delete'),
     path('suppliers/<int:id>/', views.supplier_detail, name='supplier_detail'),
+    # Customers (mirror suppliers)
+    path('customers', views.display_customers, name='customers_list'),
+    path('customers/create', views.add_customer, name='customers_create'),
+    path('customers/<int:id>/edit', views.edit_customer, name='customers_edit'),
+    path('customers/<int:id>/delete', views.delete_customer, name='customers_delete'),
+    path('customers/<int:id>/', views.customer_detail, name='customer_detail'),
 ]
