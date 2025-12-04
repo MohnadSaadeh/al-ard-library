@@ -80,27 +80,31 @@
             <span class="nav-link-text ms-1" style="font-size:18px !important;"> <strong>{% trans "Customers" %}</strong></span>
             </a>
         </li>
-        <!-- <li class="nav-item">
+         {% comment %} <li class="nav-item">
             <a class="nav-link " href="../pages/rtl.html">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-world-2 text-danger text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">RTL</span>
             </a>
-        </li>
-        <li class="nav-item mt-3">
-            <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Account pages</h6>
+        </li> {% endcomment %}
+
+        <hr class="horizontal dark my-1">
+
+
+         <li class="nav-item mt-3">
+            <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">{% trans "Company Settings" %}</h6>
         </li>
         <li class="nav-item">
-            <a class="nav-link " href="../pages/profile.html">
+            <a class="nav-link btn btn-outline-dark {% if request.path == '/company_profile'   %} active me-2 {% endif %} " href="/company_profile">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
             </div>
-            <span class="nav-link-text ms-1">Profile</span>
+            <span class="nav-link-text ms-1">{% trans "Company Profile" %}</span>
             </a>
-        </li>-->
-        <li class="nav-item {% if request.path == '/employees'   %} bg-gradient-success {% endif %}">
-            <a class="nav-link " href="/employees">
+        </li>
+        <li class="nav-item">
+            <a class="nav-link btn btn-outline-dark  {% if request.path == '/employees'   %} active me-2 {% endif %}" href="/employees">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
             </div>

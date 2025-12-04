@@ -34,6 +34,47 @@ class Customer(models.Model):
     def __str__(self):
         return self.name
 
+
+class CompanyProfile(models.Model):
+    """Singleton-ish table to store company profile details used in invoices and headers."""
+    company_name = models.CharField(max_length=255)
+    registration_number = models.CharField(max_length=128, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    phone = models.CharField(max_length=32, blank=True, null=True)
+    email = models.EmailField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.company_name
+
+
+def get_company_profile():
+    """Return the single CompanyProfile instance if exists, else None."""
+    try:
+        return CompanyProfile.objects.all().first()
+    except Exception:
+        return None
+
+
+def set_company_profile(company_name, registration_number=None, address=None, phone=None, email=None):
+    cp = get_company_profile()
+    if cp:
+        cp.company_name = company_name or cp.company_name
+        cp.registration_number = registration_number or cp.registration_number
+        cp.address = address or cp.address
+        cp.phone = phone or cp.phone
+        cp.email = email or cp.email
+        cp.save()
+        return cp
+    return CompanyProfile.objects.create(
+        company_name=company_name or '',
+        registration_number=registration_number or None,
+        address=address or None,
+        phone=phone or None,
+        email=email or None,
+    )
+
 # class ProductAttribute(models.Model):
 #     attribute_name = models.CharField(max_length=255)
 #     attribute_value = models.CharField(max_length=255)

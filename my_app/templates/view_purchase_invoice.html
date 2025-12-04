@@ -47,10 +47,18 @@
           <!-- Company contact (left) and invoice meta (right) for screen view -->
           <div class="d-flex justify-content-between mb-3">
             <div class="small text-muted">
-              <div><strong>{% trans "الأرض للنشر والتوزيع" %}</strong></div>
-              <div>{% trans "Address:" %} {% trans "البالوع , رام الله , فلسطين" %}</div>
-              <div>{% trans "Phone:" %} +972-599-966535</div>
-              <div>{% trans "Email:" %} info@al-ard.com</div>
+              {% if company %}
+                <div><strong>{{ company.company_name }}</strong></div>
+                {% if company.address %}<div>{% trans "Address:" %} {{ company.address }}</div>{% endif %}
+                {% if company.registration_number %}<div>{% trans "Reg. No:" %} {{ company.registration_number }}</div>{% endif %}
+                {% if company.phone %}<div>{% trans "Phone:" %} {{ company.phone }}</div>{% endif %}
+                {% if company.email %}<div>{% trans "Email:" %} {{ company.email }}</div>{% endif %}
+              {% else %}
+                <div><strong>{% trans "الأرض للنشر والتوزيع" %}</strong></div>
+                <div>{% trans "Address:" %} {% trans "البالوع , رام الله , فلسطين" %}</div>
+                <div>{% trans "Phone:" %} +972-599-966535</div>
+                <div>{% trans "Email:" %} info@al-ard.com</div>
+              {% endif %}
             </div>
             <div class="text-end small text-muted">
               <div>{% trans "Invoice No:" %} <strong>#{{ invoice.id }}</strong></div>
@@ -104,7 +112,7 @@
           <!-- Financial footer: VAT and signatures -->
           <div class="invoice-footer mt-4 d-flex justify-content-between align-items-start">
             <div class="vat-info small text-muted">
-              <div><strong>{% trans "VAT / Tax No:" %}</strong> 12345678</div>
+              <div><strong>{% trans "VAT / Tax No:" %}</strong>  {{ company.registration_number }}</div>
               <div><strong>{% trans "Payment Terms:" %}</strong> {{ invoice.invoice_pay_method|title }}</div>
             </div>
             <div class="signatures text-end" style="min-width:300px;">

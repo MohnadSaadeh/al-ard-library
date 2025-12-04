@@ -51,6 +51,7 @@ urlpatterns = [
     path('signin', views.sign_in),
 
     path('about_us', views.about_us),
+    path('company_profile', views.display_company_profile),
     path('search', views.search_results , name='search'),# ajax
     path('clear_sales_list', views.clear_sales_list),
     path('clear_purchases_list', views.clear_purchases_list),

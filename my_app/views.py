@@ -1375,6 +1375,7 @@ def print_purchase_invoice(request, id):
     context = {
         'invoice': models.get_purchases(id),
         'purchase_products': models.purchase_invoices_products(id),
+        'company': models.get_company_profile(),
     }
     return render(request, 'print_purchase_invoice.html', context)
 
@@ -1396,6 +1397,44 @@ def display_employee_reports(request):
     }
     return render (request, 'employee_reports.html', context)
 
+
+def display_company_profile(request):
+    # Only allow logged-in employees to edit company profile
+    if 'employee_id' not in request.session:
+        return redirect('/index')
+
+    if request.method == 'POST':
+        company_name = request.POST.get('company_name', '').strip()
+        registration_number = request.POST.get('registration_number', '').strip()
+        address = request.POST.get('address', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        email = request.POST.get('email', '').strip()
+
+        if not company_name:
+            messages.error(request, _('Company name is required.'))
+            return redirect('/company_profile')
+
+        try:
+            models.set_company_profile(
+                company_name=company_name,
+                registration_number=registration_number or None,
+                address=address or None,
+                phone=phone or None,
+                email=email or None,
+            )
+            messages.success(request, _('Company profile saved.'))
+        except Exception as e:
+            messages.error(request, _('Failed to save company profile: %(err)s') % {'err': str(e)})
+
+        return redirect('/company_profile')
+
+    company = models.get_company_profile()
+    context = {
+        'company': company,
+        'employee': models.get_employee_by_id(request.session['employee_id'])
+    }
+    return render(request, 'company_profile.html', context)
+
 def view_sale_order(request, id):#--------------------------------------------Mai
     sale_qs = models.sale_orders_products(id)
     context={
@@ -1412,6 +1451,7 @@ def view_purchase_invoice(request,id):
         # 'order': models.get_sale_order(id),
         'invoice': models.get_purchases(id),
         'purchase_products':models.purchase_invoices_products(id),#MAI*****
+        'company': models.get_company_profile(),
     }
     return render(request, 'view_purchase_invoice.html',context)
 

@@ -1,0 +1,53 @@
+{% extends 'layouts/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Company Profile" %}{% endblock %}
+
+{% block content %}
+
+{% block page_name %}{% trans "Company Profile" %}{% endblock %}
+{% block page_name2 %}{% trans "Company Profile" %}{% endblock %}
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card mt-4">
+      <div class="card-header">
+        <h6 class="mb-0">{% trans "Company Profile" %}</h6>
+      </div>
+      <div class="card-body">
+        <form method="post" action="/company_profile">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">{% trans "Company Name" %}</label>
+            <input type="text" name="company_name" class="form-control" value="{{ company.company_name|default_if_none:'' }}" required />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{% trans "Registration Number" %}</label>
+            <input type="text" name="registration_number" class="form-control" value="{{ company.registration_number|default_if_none:'' }}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{% trans "Address (optional)" %}</label>
+            <textarea name="address" class="form-control" rows="3">{{ company.address|default_if_none:'' }}</textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">{% trans "Phone (optional)" %}</label>
+              <input type="text" name="phone" class="form-control" value="{{ company.phone|default_if_none:'' }}" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">{% trans "Email (optional)" %}</label>
+              <input type="email" name="email" class="form-control" value="{{ company.email|default_if_none:'' }}" />
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mt-3">
+            <a href="/index" class="btn btn-secondary">{% trans "Cancel" %}</a>
+            <button type="submit" class="btn btn-primary">{% trans "Save Company Profile" %}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

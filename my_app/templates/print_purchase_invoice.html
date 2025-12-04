@@ -42,6 +42,14 @@
       <div class="small text-muted text-center">{% trans "Supplier" %} : <strong>{% trans "(none)" %}</strong></div>
     {% endif %}
   <div class="text-center small text-muted mb-2">{% trans "Invoice No:" %} <strong>#{{ invoice.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ invoice.created_at|date:'Y-m-d H:i' }}</strong></div>
+  <div class="text-center small text-muted mb-2">
+    {% if company %}
+      <strong>{{ company.company_name }}</strong>
+      {% if company.address %} &nbsp; | &nbsp; {{ company.address }}{% endif %}
+      {% if company.registration_number %} &nbsp; | &nbsp; {{ _('Reg. No:') }} {{ company.registration_number }}{% endif %}
+    {% else %}
+    {% endif %}
+  </div>
 
         <div class="table-responsive">
           <table class="table table-sm table-bordered">
@@ -81,7 +89,7 @@
 
       <div class="mt-4 d-flex justify-content-between invoice-footer">
         <div class="small text-muted">
-          <div><strong>{% trans "VAT / Tax No:" %}</strong> 12345678</div>
+          <div><strong>{% trans "VAT / Tax No:" %}</strong>  {{ company.registration_number }}</div>
           <div><strong>{% trans "Payment Terms:" %}</strong> {{ invoice.invoice_pay_method|title }}</div>
         </div>
         <div style="min-width:300px; text-align:right;">
