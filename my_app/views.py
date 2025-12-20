@@ -1367,6 +1367,8 @@ def print_sale_invoice(request, id):
     context = {
         'order': models.get_sale_order(id),
         'sale_products': models.sale_orders_products(id),
+        'company': models.get_company_profile(),
+
     }
     return render(request, 'print_sale_invoice.html', context)
 
@@ -1443,6 +1445,8 @@ def view_sale_order(request, id):#--------------------------------------------Ma
         'sale_products_count': sale_qs.count(),
         'page_title': _("View Sale Order"),
         'no_products_message': _("No products found in this sale order."),
+        'company': models.get_company_profile(),
+
     }
     return render(request, 'view_sale_order.html',context)
 
