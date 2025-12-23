@@ -198,7 +198,12 @@ def sign_in(request):
                     if manager: # here we check if the MANAGER exist
                         manager_user = manager[0] # here we get the MANAGER from the list
                         #ADDING MANAGER FROME ADMIN
-                        if manager_password == manager_user.password :
+                        # Check password, handle both hashed and plain for backward compatibility
+                        try:
+                            password_matches = bcrypt.checkpw(manager_password.encode(), manager_user.password.encode())
+                        except:
+                            password_matches = manager_password == manager_user.password
+                        if password_matches:
                             request.session['manager_id'] = manager_user.id
                             return redirect('/index')
                         else:
@@ -219,6 +224,60 @@ def sign_in(request):
                 # messages.error(request, "Email is incorrect")
                 # return redirect('/')
     return redirect('/')
+
+def change_password(request):
+    if not ('employee_id' in request.session or 'manager_id' in request.session):
+        return redirect('/')
+    
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        if not old_password or not new_password or not confirm_password:
+            messages.error(request, _("All fields are required"))
+            return redirect('/change_password')
+        
+        if new_password != confirm_password:
+            messages.error(request, _("New passwords do not match"))
+            return redirect('/change_password')
+        
+        # Basic validation
+        if len(new_password) < 8:
+            messages.error(request, _("Password must be at least 8 characters"))
+            return redirect('/change_password')
+        
+        if 'employee_id' in request.session:
+            employee = models.Employee.objects.get(id=request.session['employee_id'])
+            if not bcrypt.checkpw(old_password.encode(), employee.password.encode()):
+                messages.error(request, _("Incorrect old password"))
+                return redirect('/change_password')
+            pw_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+            employee.password = pw_hash
+            employee.confirm_password = pw_hash
+            employee.save()
+        elif 'manager_id' in request.session:
+            manager = models.Manager.objects.get(id=request.session['manager_id'])
+            # For managers, check if password is hashed or plain
+            try:
+                if bcrypt.checkpw(old_password.encode(), manager.password.encode()):
+                    is_hashed = True
+                else:
+                    is_hashed = False
+            except:
+                is_hashed = False
+            if not is_hashed and manager.password != old_password:
+                messages.error(request, _("Incorrect old password"))
+                return redirect('/change_password')
+            pw_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+            manager.password = pw_hash
+            manager.confirm_password = pw_hash
+            manager.save()
+        
+        messages.success(request, _("Password changed successfully"))
+        return redirect('/index')
+    else:
+        return render(request, 'change_password.html')
 
 def logout(request):
     request.session.clear()

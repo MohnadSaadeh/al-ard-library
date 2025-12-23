@@ -59,7 +59,8 @@
                         <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white" href="javascript:;">{% trans "Pages" %}</a></li>
                         <li class="breadcrumb-item text-sm text-white active" aria-current="page"> {% block page_name %}{% endblock %}</li>
                     </ol>
-                    <h6 class="font-weight-bolder text-white mb-0"> {% block page_name2 %}{% endblock %}</h6>
+                    {% comment %}extra title او عنوان فرعي في العنوان الاساسي {% endcomment %} 
+                    <h6 class="font-weight-bolder text-white mb-0"> {% block page_name2 %}{% endblock %}</h6> 
                     </nav>
                     <!-- nav_content -->
                         <!-- Navbar -->
@@ -71,15 +72,13 @@
             <div class="container-fluid py-4">
 
             {% if messages %}
-                <ul class="messages mt-3">    
                 {% for message in messages %}    
                     {% if message.extra_tags == 'add_return' %}
-                    <p class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>    
+                    <span class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</span>{% if not forloop.last %} {% endif %}    
                     {% else %}
-                    <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p> 
+                    <span class="message_success"{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</span>{% if not forloop.last %} {% endif %} 
                     {% endif %}
                 {% endfor %}
-                </ul>
             {% endif %}
 
                 {% block content %}{% endblock content %}
