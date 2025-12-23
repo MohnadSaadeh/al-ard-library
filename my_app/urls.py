@@ -83,4 +83,6 @@ urlpatterns = [
     path('customers/<int:id>/edit', views.edit_customer, name='customers_edit'),
     path('customers/<int:id>/delete', views.delete_customer, name='customers_delete'),
     path('customers/<int:id>/', views.customer_detail, name='customer_detail'),
+    path('forget_password', views.forget_password, name='forget_password'),
+    path('reset_password/<str:token>', views.reset_password, name='reset_password'),
 ]

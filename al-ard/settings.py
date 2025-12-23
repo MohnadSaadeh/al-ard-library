@@ -131,6 +131,14 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Email settings for password reset
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'm.saadeh00@gmail.com'  # Replace with your Gmail
+EMAIL_HOST_PASSWORD = 'hnli shjh mppy apok'  # Replace with your app password
+
 # Add the languages your project supports:
 LANGUAGES = [
     ('en', 'English'),

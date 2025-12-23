@@ -563,3 +563,12 @@ def get_sale_return(id):
 def sale_return_products(id):
     sr = SaleReturn.objects.get(id=id)
     return sr.items.all()
+
+
+# Password Reset Token Model
+class PasswordResetToken(models.Model):
+    user_type = models.CharField(max_length=10, choices=[('employee', 'Employee'), ('manager', 'Manager')])
+    user_id = models.IntegerField()
+    token = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()

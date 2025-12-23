@@ -87,6 +87,10 @@ from django.http import JsonResponse
 from . import validations
 from django.core.paginator import Paginator
 from django.utils.translation import gettext as _
+import secrets
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 
@@ -278,6 +282,94 @@ def change_password(request):
         return redirect('/index')
     else:
         return render(request, 'change_password.html')
+
+def forget_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        if not email:
+            messages.error(request, _("Email is required"))
+            return redirect('/forget_password')
+        
+        # Check if employee or manager
+        employee = models.Employee.objects.filter(email=email).first()
+        manager = models.Manager.objects.filter(email=email).first()
+        
+        if not employee and not manager:
+            messages.error(request, _("Email not found"))
+            return redirect('/forget_password')
+        
+        user_type = 'employee' if employee else 'manager'
+        user_id = employee.id if employee else manager.id
+        
+        # Generate token
+        token = secrets.token_urlsafe(32)
+        expires_at = timezone.now() + timedelta(hours=1)
+        
+        models.PasswordResetToken.objects.create(
+            user_type=user_type,
+            user_id=user_id,
+            token=token,
+            expires_at=expires_at
+        )
+        
+        # Send email
+        reset_url = f"http://127.0.0.1:8000/reset_password/{token}"
+        subject = _("Password Reset Request")
+        message = _("Click the link to reset your password: ") + reset_url
+        from_email = settings.EMAIL_HOST_USER
+        
+        try:
+            send_mail(subject, message, from_email, [email])
+            messages.success(request, _("Reset link sent to your email"))
+        except Exception as e:
+            messages.error(request, _("Failed to send email: %(error)s") % {'error': str(e)})
+        
+        return redirect('/')
+    
+    return render(request, 'forget_password.html')
+
+def reset_password(request, token):
+    try:
+        reset_token = models.PasswordResetToken.objects.get(token=token, expires_at__gt=timezone.now())
+    except models.PasswordResetToken.DoesNotExist:
+        messages.error(request, _("Invalid or expired token"))
+        return redirect('/')
+    
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+        
+        if not new_password or not confirm_password:
+            messages.error(request, _("All fields are required"))
+            return redirect(request.path)
+        
+        if new_password != confirm_password:
+            messages.error(request, _("Passwords do not match"))
+            return redirect(request.path)
+        
+        if len(new_password) < 8:
+            messages.error(request, _("Password must be at least 8 characters"))
+            return redirect(request.path)
+        
+        # Hash and save
+        pw_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+        
+        if reset_token.user_type == 'employee':
+            employee = models.Employee.objects.get(id=reset_token.user_id)
+            employee.password = pw_hash
+            employee.confirm_password = pw_hash
+            employee.save()
+        else:
+            manager = models.Manager.objects.get(id=reset_token.user_id)
+            manager.password = pw_hash
+            manager.confirm_password = pw_hash
+            manager.save()
+        
+        reset_token.delete()
+        messages.success(request, _("Password reset successfully"))
+        return redirect('/')
+    
+    return render(request, 'reset_password.html')
 
 def logout(request):
     request.session.clear()
