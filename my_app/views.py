@@ -21,58 +21,61 @@ def add_product_to_sale_cart_by_isbn(request):
     AJAX endpoint: receive 'isbn' (POST, JSON) and add product to sale cart by ISBN.
     Returns JSON with status, grand_total, and updated cart items.
     """
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': _('Invalid method')}, status=405)
-
-    # Accept JSON or form POST
-    if request.content_type == 'application/json':
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            isbn = data.get('isbn', '').strip()
-        except Exception:
-            isbn = ''
-    else:
-        isbn = request.POST.get('isbn', '').strip()
-
-    if not isbn:
-        return JsonResponse({'status': 'error', 'message': _('No ISBN provided')}, status=400)
-
     try:
-        product = models.Product.objects.get(isbn=isbn)
-    except models.Product.DoesNotExist:
-        return JsonResponse({'status': 'not_found', 'message': _('Product not found')})
+        if request.method != 'POST':
+            return JsonResponse({'status': 'error', 'message': _('Invalid method')}, status=405)
 
-    # Use add_product_to_sale logic for validation and addition
-    if product.quantity <= 0:
-        return JsonResponse({'status': 'error', 'message': _('Cannot sell "%(product)s": out of stock.') % {'product': product.product_name}})
-
-    cart = _get_sale_cart(request)
-    for item in cart:
-        if int(item.get('product_id')) == int(product.id):
-            new_quantity = int(item.get('quantity', 0)) + 1
-            if new_quantity > product.quantity:
-                return JsonResponse({'status': 'error', 'message': _('Cannot sell more than available stock for "%(product)s".') % {'product': product.product_name}})
-            item['quantity'] = new_quantity
+        # Accept JSON or form POST
+        if request.content_type == 'application/json':
             try:
-                item['total_price'] = int(item['quantity']) * float(item.get('sale_price', 0))
+                data = json.loads(request.body.decode('utf-8'))
+                isbn = data.get('isbn', '').strip()
             except Exception:
-                item['total_price'] = 0
-            break
-    else:
-        if 1 > product.quantity:
-            return JsonResponse({'status': 'error', 'message': _('Cannot sell more than available stock for "%(product)s".') % {'product': product.product_name}})
-        sale_price = float(product.sale_price) if product.sale_price is not None else 0.0
-        cart.append({
-            'product_name': product.product_name,
-            'product_id': product.id,
-            'quantity': 1,
-            'sale_price': sale_price,
-            'total_price': sale_price,
-        })
+                isbn = ''
+        else:
+            isbn = request.POST.get('isbn', '').strip()
 
-    _save_sale_cart(request, cart)
-    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
-    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+        if not isbn:
+            return JsonResponse({'status': 'error', 'message': _('No ISBN provided')}, status=400)
+
+        try:
+            product = models.Product.objects.get(isbn=isbn)
+        except models.Product.DoesNotExist:
+            return JsonResponse({'status': 'not_found', 'message': _('Product not found')})
+
+        # Use add_product_to_sale logic for validation and addition
+        if product.quantity <= 0:
+            return JsonResponse({'status': 'error', 'message': _('Cannot sell "%(product)s": out of stock.') % {'product': product.product_name}})
+
+        cart = _get_sale_cart(request)
+        for item in cart:
+            if int(item.get('product_id')) == int(product.id):
+                new_quantity = int(item.get('quantity', 0)) + 1
+                if new_quantity > product.quantity:
+                    return JsonResponse({'status': 'error', 'message': _('Cannot sell more than available stock for "%(product)s".') % {'product': product.product_name}})
+                item['quantity'] = new_quantity
+                try:
+                    item['total_price'] = int(item['quantity']) * float(item.get('sale_price', 0))
+                except Exception:
+                    item['total_price'] = 0
+                break
+        else:
+            if product.quantity < 1:
+                return JsonResponse({'status': 'error', 'message': _('Cannot sell more than available stock for "%(product)s".') % {'product': product.product_name}})
+            sale_price = float(product.sale_price) if product.sale_price is not None else 0.0
+            cart.append({
+                'product_name': product.product_name,
+                'product_id': product.id,
+                'quantity': 1,
+                'sale_price': sale_price,
+                'total_price': sale_price,
+            })
+
+        _save_sale_cart(request, cart)
+        grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+        return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Internal error: {str(e)}'})
 from django.shortcuts import render ,redirect
 from . import models
 from django.contrib import messages
@@ -747,6 +750,8 @@ def add_product_to_sale(request):
         messages.error(request, msg)
         return redirect('/sales')
 
+    product_id = prod.id
+
     if prod.quantity <= 0:
         msg = _('Cannot sell "%(product)s": out of stock.') % {'product': product_name}
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
@@ -754,10 +759,28 @@ def add_product_to_sale(request):
         messages.error(request, msg)
         return redirect('/sales')
 
-    product_id = prod.id
+    # Check if adding this quantity would exceed available stock
+    cart = _get_sale_cart(request)
+    current_cart_quantity = 0
+    for item in cart:
+        if int(item.get('product_id')) == int(product_id):
+            current_cart_quantity = int(item.get('quantity', 0))
+            break
+
+    total_quantity_after_add = current_cart_quantity + quantity
+    if total_quantity_after_add > prod.quantity:
+        msg = _('Cannot sell more than available stock for "%(product)s". Available: %(available)d, requested total: %(total)d') % {
+            'product': product_name,
+            'available': prod.quantity,
+            'total': total_quantity_after_add
+        }
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'status': 'error', 'message': msg})
+        messages.error(request, msg)
+        return redirect('/sales')
+
     sale_price = float(prod.sale_price) if prod.sale_price is not None else 0.0
     total_price = quantity * sale_price
-    cart = _get_sale_cart(request)
     # if product already in cart, increase quantity
     for item in cart:
         if int(item.get('product_id')) == int(product_id):
@@ -801,17 +824,25 @@ def scan_add_to_sale(request):
     except Exception:
         return JsonResponse({'status': 'not_found', 'message': 'Product not found'})
 
+    if product.quantity <= 0:
+        return JsonResponse({'status': 'error', 'message': _('Cannot sell "%(product)s": out of stock.') % {'product': product.product_name}})
+
     # find existing session-backed sale_order list and increment or add
     cart = _get_sale_cart(request)
     for item in cart:
         if int(item.get('product_id')) == int(product.id):
-            item['quantity'] = int(item.get('quantity', 0)) + 1
+            new_quantity = int(item.get('quantity', 0)) + 1
+            if new_quantity > product.quantity:
+                return JsonResponse({'status': 'error', 'message': _('Cannot sell more than available stock for "%(product)s".') % {'product': product.product_name}})
+            item['quantity'] = new_quantity
             try:
                 item['total_price'] = int(item['quantity']) * float(item.get('sale_price', 0))
             except Exception:
                 item['total_price'] = 0
             break
     else:
+        if 1 > product.quantity:
+            return JsonResponse({'status': 'error', 'message': _('Cannot sell more than available stock for "%(product)s".') % {'product': product.product_name}})
         sale_price = float(product.sale_price) if product.sale_price is not None else 0.0
         cart.append({
             'product_name': product.product_name,
