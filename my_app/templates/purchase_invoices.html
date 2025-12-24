@@ -22,7 +22,7 @@
           {% csrf_token %}
           <div class="row g-3 align-items-end">
             <div class="col-md-5 col-lg-4">
-              <label for="product_name" class="form-label">{% trans "Product Name" %}</label>
+              <label for="product_name" class="form-label">{%  trans "Product Name" %}</label>
               <select id="results-box" class="form-select form-select-lg" name="product_name">
                 <option value="- Select Product -">{% trans "- Select Product -" %}</option>
                 {% for product in products %}

@@ -202,12 +202,7 @@ def sign_in(request):
                     if manager: # here we check if the MANAGER exist
                         manager_user = manager[0] # here we get the MANAGER from the list
                         #ADDING MANAGER FROME ADMIN
-                        # Check password, handle both hashed and plain for backward compatibility
-                        try:
-                            password_matches = bcrypt.checkpw(manager_password.encode(), manager_user.password.encode())
-                        except:
-                            password_matches = manager_password == manager_user.password
-                        if password_matches:
+                        if manager_password == manager_user.password :
                             request.session['manager_id'] = manager_user.id
                             return redirect('/index')
                         else:
