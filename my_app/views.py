@@ -1782,6 +1782,248 @@ def product_delete(request, pk):
     return render(request, 'products/product_confirm_delete.html', {'product': product})
 
 
+def import_products_excel(request):
+    """
+    Import products from Excel file (.xlsx)
+    Expected columns: product_name, quantity, purchasing_price, sale_price, category, expiry_date, isbn, production_date, author, supplier
+    """
+    def parse_date(value):
+        """Parse date from various formats: string, datetime object, number (Excel serial), or None"""
+        if not value:
+            return None
+        
+        # If it's already a date object, return it
+        if hasattr(value, 'date') and not isinstance(value, str):
+            return value.date()
+        
+        # If it's a number, check if it's a year or Excel serial date
+        if isinstance(value, (int, float)):
+            # If it's a reasonable year (1900-2100), treat as year
+            if 1900 <= value <= 2100:
+                try:
+                    from datetime import datetime
+                    return datetime(int(value), 1, 1).date()
+                except:
+                    return None
+            # Otherwise, treat as Excel serial date
+            else:
+                try:
+                    from datetime import datetime, timedelta
+                    # Excel serial date: 1 = 1900-01-01
+                    base_date = datetime(1899, 12, 30)  # Excel's base date
+                    return (base_date + timedelta(days=int(value))).date()
+                except:
+                    return None
+        
+        # If it's a string, try to parse it
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                return None
+            
+            # Try YYYY-MM-DD format first
+            try:
+                from datetime import datetime
+                return datetime.strptime(value, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+            
+            # Try other common formats (year parsing is handled above for numbers)
+            
+            # Try other common formats
+            formats_to_try = [
+                '%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d', '%d-%m-%Y', '%m-%d-%Y',
+                '%Y-%m-%d', '%d/%m/%y', '%m/%d/%y', '%y-%m-%d', '%y/%d/%m',
+                '%Y%m%d', '%d%m%Y', '%m%d%Y',
+                '%b %d, %Y', '%d %b %Y', '%B %d, %Y', '%d %B %Y',  # Jan 15, 2024
+                '%Y/%m/%d', '%d/%m/%Y', '%m/%d/%Y',  # with slashes
+            ]
+            
+            for fmt in formats_to_try:
+                try:
+                    return datetime.strptime(value, fmt).date()
+                except ValueError:
+                    continue
+            
+            # If all fail, return None (will cause error later)
+            return None
+        
+        # For any other type, try to convert to string and parse
+        try:
+            str_value = str(value).strip()
+            if str_value:
+                from datetime import datetime
+                return datetime.strptime(str_value, '%Y-%m-%d').date()
+        except:
+            pass
+        
+        return None
+    
+    if request.method == 'POST':
+        if 'excel_file' not in request.FILES:
+            messages.error(request, _('Please select an Excel file to upload.'))
+            return redirect('import_products_excel')
+        
+        excel_file = request.FILES['excel_file']
+        if not excel_file.name.endswith('.xlsx'):
+            messages.error(request, _('Please upload a valid Excel file (.xlsx).'))
+            return redirect('import_products_excel')
+        
+        try:
+            from openpyxl import load_workbook
+            wb = load_workbook(excel_file)
+            ws = wb.active
+            
+            # Skip header row
+            rows = list(ws.iter_rows(values_only=True))[1:]
+            
+            imported_count = 0
+            errors = []
+            
+            for row_num, row in enumerate(rows, start=2):  # Start from 2 because we skipped header
+                try:
+                    # Extract data from row
+                    product_name = row[0] if len(row) > 0 and row[0] else None
+                    quantity = row[1] if len(row) > 1 and row[1] is not None else 0
+                    purchasing_price = row[2] if len(row) > 2 and row[2] is not None else None
+                    sale_price = row[3] if len(row) > 3 and row[3] is not None else None
+                    category = row[4] if len(row) > 4 and row[4] else None
+                    expiry_date_raw = row[5] if len(row) > 5 and row[5] else None
+                    isbn = row[6] if len(row) > 6 and row[6] else None
+                    production_date_raw = row[7] if len(row) > 7 and row[7] else None
+                    author = row[8] if len(row) > 8 and row[8] else None
+                    supplier = row[9] if len(row) > 9 and row[9] else None
+                    
+                    # Validate required fields
+                    if not product_name :
+                        errors.append(_("Row %(row_num)d: Missing required fields (product_name)") % {'row_num': row_num})
+                        continue
+                    
+                    # Parse dates
+                    expiry_date = parse_date(expiry_date_raw)
+                    production_date = parse_date(production_date_raw)
+                    
+                    # If date parsing failed but value was provided, add error
+                    if expiry_date_raw and expiry_date is None:
+                        errors.append(_("Row %(row_num)d: Invalid expiry_date format (use YYYY-MM-DD, YYYY, or other common formats)") % {'row_num': row_num})
+                        continue
+                    if production_date_raw and production_date is None:
+                        errors.append(_("Row %(row_num)d: Invalid production_date format (use YYYY-MM-DD, YYYY, or other common formats)") % {'row_num': row_num})
+                        continue
+                    
+                    # Convert prices to decimal
+                    try:
+                        purchasing_price = float(purchasing_price)
+                    except (ValueError, TypeError):
+                        errors.append(_("Row %(row_num)d: Invalid purchasing_price") % {'row_num': row_num})
+                        continue
+                    
+                    if sale_price is not None:
+                        try:
+                            sale_price = float(sale_price)
+                        except (ValueError, TypeError):
+                            errors.append(_("Row %(row_num)d: Invalid sale_price") % {'row_num': row_num})
+                            continue
+                    
+                    # Convert quantity to int
+                    try:
+                        quantity = int(quantity)
+                    except (ValueError, TypeError):
+                        quantity = 0
+                    
+                    # Check if ISBN already exists
+                    if models.Product.objects.filter(isbn=isbn).exists():
+                        errors.append(_("Row %(row_num)d: Product with ISBN '%(isbn)s' already exists") % {'row_num': row_num, 'isbn': isbn})
+                        continue
+                    
+                    # Create product
+                    product = models.Product.objects.create(
+                        product_name=product_name,
+                        quantity=quantity,
+                        purchasing_price=purchasing_price,
+                        sale_price=sale_price,
+                        category=category,
+                        expiry_date=expiry_date,
+                        isbn=isbn,
+                        production_date=production_date,
+                        author=author,
+                        supplier=supplier,
+                        employee=request.session.get('employee_id') and models.Employee.objects.get(id=request.session['employee_id']) or None
+                    )
+                    
+                    imported_count += 1
+                    
+                except Exception as e:
+                    errors.append(_("Row %(row_num)d: %(error)s") % {'row_num': row_num, 'error': str(e)})
+                    continue
+            
+            # Show results
+            if imported_count > 0:
+                messages.success(request, _('Successfully imported %(count)d products.') % {'count': imported_count})
+            
+            if errors:
+                for error in errors[:10]:  # Show first 10 errors
+                    messages.warning(request, error)
+                if len(errors) > 10:
+                    messages.warning(request, _('... and %(count)d more errors.') % {'count': len(errors) - 10})
+            
+            return redirect('product_list')
+            
+        except Exception as e:
+            messages.error(request, _('Error processing Excel file: %(error)s') % {'error': str(e)})
+            return redirect('import_products_excel')
+    
+    # GET request - show upload form
+    return render(request, 'products/import_excel.html')
+
+
+def download_sample_excel(request):
+    """
+    Generate and download a sample Excel file for product import
+    """
+    from openpyxl import Workbook
+    from django.http import HttpResponse
+    from io import BytesIO
+    from openpyxl.styles import Font, PatternFill
+
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Products'
+
+    # Add headers
+    headers = ['Product Name', 'Quantity', 'Purchasing Price', 'Sale Price', 'Category', 'Expiry Date', 'ISBN', 'Production Date', 'Author', 'Supplier']
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+
+    # Add sample data
+    sample_data = [
+        ['Sample Book 1', 10, 15.50, 25.00, 'Fiction', '2025-12-31', '9781234567890', '2024-01-15', 'John Doe', 'ABC Publishers'],
+        ['Sample Book 2', 5, 12.75, 20.00, 'Non-Fiction', '', '9780987654321', '2024', 'Jane Smith', 'XYZ Books'],
+        ['Sample Magazine', 20, 5.00, 8.50, 'Magazine', '2024-12-31', '9781122334455', '2024-03-01', '', 'News Corp']
+    ]
+
+    for row_num, row_data in enumerate(sample_data, 2):
+        for col_num, value in enumerate(row_data, 1):
+            ws.cell(row=row_num, column=col_num, value=value)
+
+    # Save to BytesIO
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    # Create response
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="sample_products_import.xlsx"'
+
+    return response
+
+
 def sales_products_report(request):
 
     from_date = request.GET.get('from_date')

@@ -1,0 +1,57 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Import Products from Excel" %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">{% trans "Import Products from Excel" %}</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5>{% trans "Excel File Format Requirements:" %}</h5>
+                    <p>{% trans "Your Excel file should have the following columns in order:" %}</p>
+                    <ol>
+                        <li><strong>{% trans "Product Name" %}</strong> - {% trans "Required" %}</li>
+                        <li><strong>{% trans "Quantity" %}</strong> - {% trans "Optional (default: 0)" %}</li>
+                        <li><strong>{% trans "Purchasing Price" %}</strong> - {% trans "Required" %}</li>
+                        <li><strong>{% trans "Sale Price" %}</strong> - {% trans "Optional" %}</li>
+                        <li><strong>{% trans "Category" %}</strong> - {% trans "Optional" %}</li>
+                        <li><strong>{% trans "Expiry Date" %}</strong> - {% trans "Optional (various formats accepted: YYYY-MM-DD, YYYY, MM/DD/YYYY, etc.)" %}</li>
+                        <li><strong>{% trans "ISBN" %}</strong> - {% trans "Required, must be unique" %}</li>
+                        <li><strong>{% trans "Production Date" %}</strong> - {% trans "Optional (various formats accepted: YYYY-MM-DD, YYYY, MM/DD/YYYY, etc.)" %}</li>
+                        <li><strong>{% trans "Author" %}</strong> - {% trans "Optional" %}</li>
+                        <li><strong>{% trans "Supplier" %}</strong> - {% trans "Optional" %}</li>
+                    </ol>
+                    <p><strong>{% trans "Note:" %}</strong> {% trans "The first row should be headers and will be skipped during import." %}</p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="excel_file" class="form-label">{% trans "Select Excel File (.xlsx)" %}</label>
+                        <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx" required>
+                        <div class="form-text">{% trans "Only .xlsx files are supported." %}</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> {% trans "Import Products" %}
+                        </button>
+                        <a href="{% url 'product_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> {% trans "Back to Products" %}
+                        </a>
+                    </div>
+                </form>
+
+                <div class="mt-4">
+                    <h5>{% trans "Download Sample Excel File" %}</h5>
+                    <p>{% trans "Click the button below to download a sample Excel file with the correct format:" %}</p>
+                    <a href="{% url 'download_sample_excel' %}" class="btn btn-outline-info" target="_blank">
+                        <i class="fas fa-download"></i> {% trans "Download Sample Excel File" %}
+                    </a>
+                </div>
+{% endblock %}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-23 21:33+0200\n"
+"POT-Creation-Date: 2025-12-25 18:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,14 +21,16 @@ msgstr ""
 # Removed malformed duplicate block
 #: .\my_app\forms.py:15 .\my_app\templates\edit_product.html:27
 #: .\my_app\templates\empty_products_report.html:16
-#: .\my_app\templates\products\product_list.html:33
+#: .\my_app\templates\products\import_excel.html:18
+#: .\my_app\templates\products\product_list.html:38
 #: .\my_app\templates\purchase_invoices.html:25
 #: .\my_app\templates\sale_orders.html:25
 #: .\my_app\templates\stock_products_report.html:15
 msgid "Product Name"
 msgstr "اسم المنتج"
 
-#: .\my_app\forms.py:16 .\my_app\templates\products\product_list.html:37
+#: .\my_app\forms.py:16 .\my_app\templates\products\import_excel.html:24
+#: .\my_app\templates\products\product_list.html:42
 #: .\my_app\templates\purchase_invoices.html:42
 #: .\my_app\templates\sale_orders.html:42
 msgid "ISBN"
@@ -36,7 +38,8 @@ msgstr "ISBN"
 
 #: .\my_app\forms.py:17 .\my_app\templates\edit_product.html:33
 #: .\my_app\templates\empty_products_report.html:21
-#: .\my_app\templates\products\product_list.html:34
+#: .\my_app\templates\products\import_excel.html:19
+#: .\my_app\templates\products\product_list.html:39
 #: .\my_app\templates\purchase_invoices.html:34
 #: .\my_app\templates\purchase_invoices.html:88
 #: .\my_app\templates\sale_orders.html:34
@@ -46,12 +49,14 @@ msgid "Quantity"
 msgstr "الكمية"
 
 #: .\my_app\forms.py:18 .\my_app\templates\edit_product.html:39
+#: .\my_app\templates\products\import_excel.html:20
 msgid "Purchasing Price"
 msgstr "سعر الشراء"
 
 #: .\my_app\forms.py:19 .\my_app\templates\empty_products_report.html:19
 #: .\my_app\templates\print_sale_invoice.html:52
-#: .\my_app\templates\products\product_list.html:36
+#: .\my_app\templates\products\import_excel.html:21
+#: .\my_app\templates\products\product_list.html:41
 #: .\my_app\templates\sale_orders.html:84
 #: .\my_app\templates\sales_products_report.html:36
 #: .\my_app\templates\stock_products_report.html:18
@@ -61,7 +66,8 @@ msgstr "سعر البيع"
 #: .\my_app\forms.py:20 .\my_app\templates\edit_product.html:50
 #: .\my_app\templates\print_purchase_invoice.html:40
 #: .\my_app\templates\print_purchase_invoice.html:42
-#: .\my_app\templates\products\product_list.html:42
+#: .\my_app\templates\products\import_excel.html:27
+#: .\my_app\templates\products\product_list.html:48
 #: .\my_app\templates\purchase_invoices.html:57
 #: .\my_app\templates\purchase_invoices.html:59
 #: .\my_app\templates\supplier_detail.html:4
@@ -71,44 +77,52 @@ msgid "Supplier"
 msgstr "المورد"
 
 #: .\my_app\forms.py:21 .\my_app\templates\empty_products_report.html:20
-#: .\my_app\templates\products\product_list.html:38
+#: .\my_app\templates\products\import_excel.html:25
+#: .\my_app\templates\products\product_list.html:43
 #: .\my_app\templates\sales_products_report.html:37
 #: .\my_app\templates\stock_products_report.html:19
 msgid "Production Date"
 msgstr "تاريخ الإنتاج/النشر"
 
-#: .\my_app\forms.py:22 .\my_app\templates\empty_products_report.html:17
-#: .\my_app\templates\products\product_list.html:39
+#: .\my_app\forms.py:22 .\my_app\templates\products\import_excel.html:22
+#: .\my_app\templates\products\product_list.html:44
+msgid "Category"
+msgstr "التصنيف"
+
+#: .\my_app\forms.py:23 .\my_app\templates\empty_products_report.html:17
+#: .\my_app\templates\products\import_excel.html:26
+#: .\my_app\templates\products\product_list.html:45
 #: .\my_app\templates\sales_products_report.html:34
 #: .\my_app\templates\stock_products_report.html:16
 msgid "Author"
 msgstr "المؤلف"
 
-#: .\my_app\forms.py:23 .\my_app\templates\edit_product.html:45
+#: .\my_app\forms.py:24 .\my_app\templates\edit_product.html:45
+#: .\my_app\templates\products\import_excel.html:23
 msgid "Expiry Date"
 msgstr "تاريخ الانتهاء"
 
-#: .\my_app\forms.py:37
+#: .\my_app\forms.py:38
 msgid "Attribute Name"
 msgstr "اسم الخاصية"
 
-#: .\my_app\forms.py:38
+#: .\my_app\forms.py:39
 msgid "Value Type"
 msgstr "نوع البيانات"
 
-#: .\my_app\forms.py:39
+#: .\my_app\forms.py:40
 msgid "Attribute Value"
 msgstr "قيمة الخاصية"
 
-#: .\my_app\forms.py:42
+#: .\my_app\forms.py:43
 msgid "Enter the attribute name."
 msgstr "ادخل العنوان هنا"
 
-#: .\my_app\forms.py:43
+#: .\my_app\forms.py:44
 msgid "Select the value type."
 msgstr "نوع البيانات المدخلة"
 
-#: .\my_app\forms.py:44
+#: .\my_app\forms.py:45
 msgid "Enter the value for this attribute."
 msgstr "اخل القيمة الخاصة بعنوان الخاصية الاضافية"
 
@@ -177,7 +191,6 @@ msgstr "كل الميزات التي ستحتاجها لإدارة عملك"
 #: .\my_app\templates\change_password.html:26
 #: .\my_app\templates\change_password.html:40
 #: .\my_app\templates\includes\navigation_main.html:18
-
 msgid "Change Password"
 msgstr "تغيير كلمة المرور"
 
@@ -187,7 +200,6 @@ msgstr "كلمة المرور القديمة"
 
 #: .\my_app\templates\change_password.html:34
 #: .\my_app\templates\reset_password.html:31
-
 msgid "New Password"
 msgstr "كلمة المرور الجديدة"
 
@@ -365,7 +377,7 @@ msgid "Search customers"
 msgstr "بحث عن عميل"
 
 #: .\my_app\templates\customers.html:19 .\my_app\templates\customers.html:20
-#: .\my_app\templates\products\product_list.html:25
+#: .\my_app\templates\products\product_list.html:30
 #: .\my_app\templates\purchase_invoices.html:38
 #: .\my_app\templates\purchase_invoices.html:39
 #: .\my_app\templates\sale_orders.html:38
@@ -387,7 +399,7 @@ msgid "No contact info"
 msgstr "لا معلومات للتواصل"
 
 #: .\my_app\templates\customers.html:41
-#: .\my_app\templates\products\product_list.html:75
+#: .\my_app\templates\products\product_list.html:82
 #: .\my_app\templates\suppliers.html:41
 msgid "Edit"
 msgstr "تعديل"
@@ -397,7 +409,7 @@ msgid "Are you sure you want to delete this customer?"
 msgstr "هل انت متأكد من حذف العميل"
 
 #: .\my_app\templates\customers.html:44
-#: .\my_app\templates\products\product_list.html:76
+#: .\my_app\templates\products\product_list.html:83
 #: .\my_app\templates\suppliers.html:44
 msgid "Delete"
 msgstr "حذف"
@@ -577,7 +589,7 @@ msgstr "الموردون"
 
 #: .\my_app\templates\includes\aside.html:97
 msgid "Company Settings"
-msgstr ""
+msgstr "إعدادات الشركة"
 
 #: .\my_app\templates\includes\aside.html:112 .\my_app\templates\profile.html:4
 #: .\my_app\templates\profile.html:10
@@ -745,7 +757,7 @@ msgstr "فاتورة شراء"
 #: .\my_app\templates\view_sale_order.html:26
 #: .\my_app\templates\view_sale_order.html:50
 msgid "(none)"
-msgstr ""
+msgstr "لا يوجد"
 
 #: .\my_app\templates\print_purchase_invoice.html:44
 #: .\my_app\templates\print_return_invoice.html:34
@@ -766,7 +778,7 @@ msgstr "رقم الفاتورة:"
 #: .\my_app\templates\view_purchase_invoice.html:53
 #: .\my_app\templates\view_sale_order.html:63
 msgid "Reg. No:"
-msgstr ""
+msgstr "رقم التسجيل:"
 
 #: .\my_app\templates\print_purchase_invoice.html:58
 #: .\my_app\templates\print_return_invoice.html:40
@@ -924,6 +936,80 @@ msgstr "فاتورة مبيعات"
 msgid "No products for this sale."
 msgstr "لا توجد منتجات لهذا الإرجاع."
 
+#: .\my_app\templates\products\import_excel.html:4
+#: .\my_app\templates\products\import_excel.html:11
+msgid "Import Products from Excel"
+msgstr "استيراد المنتجات من Excel"
+
+#: .\my_app\templates\products\import_excel.html:15
+msgid "Excel File Format Requirements:"
+msgstr "متطلبات تنسيق ملف إكسل:"
+
+#: .\my_app\templates\products\import_excel.html:16
+msgid "Your Excel file should have the following columns in order:"
+msgstr "يجب أن يحتوي ملف Excel الخاص بك على الأعمدة التالية بالترتيب:"
+
+#: .\my_app\templates\products\import_excel.html:18
+#: .\my_app\templates\products\import_excel.html:20
+msgid "Required"
+msgstr "مطلوب"
+
+#: .\my_app\templates\products\import_excel.html:19
+msgid "Optional (default: 0)"
+msgstr "اختياري (الافتراضي: 0)"
+
+#: .\my_app\templates\products\import_excel.html:21
+#: .\my_app\templates\products\import_excel.html:22
+#: .\my_app\templates\products\import_excel.html:26
+#: .\my_app\templates\products\import_excel.html:27
+msgid "Optional"
+msgstr "اختياري"
+
+#: .\my_app\templates\products\import_excel.html:23
+#: .\my_app\templates\products\import_excel.html:25
+msgid "Optional (various formats accepted: YYYY-MM-DD, YYYY, MM/DD/YYYY, etc.)"
+msgstr "اختياري (يتم قبول تنسيقات مختلفة: YYYY-MM-DD، YYYY، MM/DD/YYYY، إلخ.)"
+
+#: .\my_app\templates\products\import_excel.html:24
+msgid "Required, must be unique"
+msgstr "مطلوب، ويجب أن يكون فريدًا"
+
+#: .\my_app\templates\products\import_excel.html:29
+msgid "Note:"
+msgstr "ملحوظة:"
+
+#: .\my_app\templates\products\import_excel.html:29
+msgid "The first row should be headers and will be skipped during import."
+msgstr "يجب أن يكون الصف الأول عبارة عن عناوين وسيتم تخطيه أثناء الاستيراد."
+
+#: .\my_app\templates\products\import_excel.html:35
+msgid "Select Excel File (.xlsx)"
+msgstr "حدد ملف إكسل (.xlsx)"
+
+#: .\my_app\templates\products\import_excel.html:37
+msgid "Only .xlsx files are supported."
+msgstr "يتم دعم ملفات .xlsx فقط."
+
+#: .\my_app\templates\products\import_excel.html:42
+msgid "Import Products"
+msgstr "استيراد المنتجات"
+
+#: .\my_app\templates\products\import_excel.html:45
+msgid "Back to Products"
+msgstr "العودة الى قائمة المنتجات"
+
+#: .\my_app\templates\products\import_excel.html:51
+#: .\my_app\templates\products\import_excel.html:54
+msgid "Download Sample Excel File"
+msgstr "تحميل نموذج ملف إكسل"
+
+#: .\my_app\templates\products\import_excel.html:52
+msgid ""
+"Click the button below to download a sample Excel file with the correct "
+"format:"
+msgstr ""
+"انقر على الزر أدناه لتنزيل ملف تجريبي , يحتوي على عينة البيانات الصحيحة"
+
 #: .\my_app\templates\products\product_confirm_delete.html:6
 msgid "Delete Product"
 msgstr "حذف المنتج"
@@ -965,36 +1051,40 @@ msgstr "المنتجات"
 msgid "Add / View products"
 msgstr "إضافة / عرض المنتجات"
 
-#: .\my_app\templates\products\product_list.html:19
+#: .\my_app\templates\products\product_list.html:21
+msgid "Import from Excel"
+msgstr "استيراد من إكسل"
+
+#: .\my_app\templates\products\product_list.html:23
 msgid "+ Add / Define New Product"
 msgstr "+ إضافة / تعريف منتج جديد"
 
-#: .\my_app\templates\products\product_list.html:24
+#: .\my_app\templates\products\product_list.html:29
 msgid "Search by name"
 msgstr "بحث بالاسم"
 
-#: .\my_app\templates\products\product_list.html:24
+#: .\my_app\templates\products\product_list.html:29
 msgid "Search products"
 msgstr "بحث عن المنتجات"
 
-#: .\my_app\templates\products\product_list.html:35
+#: .\my_app\templates\products\product_list.html:40
 #: .\my_app\templates\purchase_invoices.html:89
 msgid "Purchase Price"
 msgstr "سعر الشراء"
 
-#: .\my_app\templates\products\product_list.html:45
+#: .\my_app\templates\products\product_list.html:51
 msgid "Attributes"
 msgstr "الخصائص"
 
-#: .\my_app\templates\products\product_list.html:46
+#: .\my_app\templates\products\product_list.html:52
 msgid "Actions"
 msgstr "إجراءات"
 
-#: .\my_app\templates\products\product_list.html:70
+#: .\my_app\templates\products\product_list.html:77
 msgid "No attributes"
 msgstr "لا توجد خصائص"
 
-#: .\my_app\templates\products\product_list.html:81
+#: .\my_app\templates\products\product_list.html:88
 msgid "No products yet"
 msgstr "لا يوجد منتجات بعد"
 
@@ -1207,7 +1297,7 @@ msgstr "أحدث فواتير مرتجع مبيعات"
 
 #: .\my_app\templates\sale_orders.html:57
 msgid "Select or type customer"
-msgstr ""
+msgstr "حدد أو اكتب اسم العميل"
 
 #: .\my_app\templates\sale_orders.html:126
 msgid "Recent Sales Orders"
@@ -1404,7 +1494,7 @@ msgstr "محتوى الطباعة غير موجود"
 #: .\my_app\templates\view_purchase_invoice.html:192
 #: .\my_app\templates\view_return_invoice.html:175
 msgid "Please allow popups for this site to print the invoice."
-msgstr ""
+msgstr "يرجى السماح بالنوافذ المنبثقة لهذا الموقع لطباعة الفاتورة."
 
 #: .\my_app\templates\view_return_invoice.html:5
 #: .\my_app\templates\view_return_invoice.html:9
@@ -1469,7 +1559,7 @@ msgstr "يجب أن يكون التاريخ في الماضي"
 msgid "Password should be at least 8 characters"
 msgstr "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل"
 
-#: .\my_app\validations.py:27 .\my_app\validations.py:54 .\my_app\views.py:347
+#: .\my_app\validations.py:27 .\my_app\validations.py:54 .\my_app\views.py:345
 msgid "Passwords do not match"
 msgstr "كلمات المرور غير متطابقة"
 
@@ -1517,251 +1607,324 @@ msgstr "الكمية يجب ان تكون اكبر من صفر"
 msgid "⚠️ Out of stock."
 msgstr "إنتهى من المخزن"
 
-#: .\my_app\views.py:25
+#: .\my_app\views.py:26
 msgid "Invalid method"
-msgstr ""
+msgstr "طريقة غير صالحة"
 
-#: .\my_app\views.py:38
+#: .\my_app\views.py:39
 msgid "No ISBN provided"
 msgstr "No ISBN"
 
-#: .\my_app\views.py:43 .\my_app\views.py:749 .\my_app\views.py:1098
+#: .\my_app\views.py:44 .\my_app\views.py:747 .\my_app\views.py:1124
 msgid "Product not found"
 msgstr "المنتج غير موجود"
 
-#: .\my_app\views.py:47 .\my_app\views.py:756
+#: .\my_app\views.py:48 .\my_app\views.py:756 .\my_app\views.py:828
 #, python-format
 msgid "Cannot sell \"%(product)s\": out of stock."
 msgstr "لا يمكن بيع \"%(product)s\": فارغ من المخزون."
 
-#: .\my_app\views.py:54 .\my_app\views.py:63
-#, python-format
+#: .\my_app\views.py:55 .\my_app\views.py:64 .\my_app\views.py:836
+#: .\my_app\views.py:845
+#, fuzzy, python-format
+#| msgid "Cannot sell more than available stock for"
 msgid "Cannot sell more than available stock for \"%(product)s\"."
-msgstr ""
+msgstr "لا يمكن بيع أكثر من المخزون المتاح"
 
-#: .\my_app\views.py:185 .\my_app\views.py:214
+#: .\my_app\views.py:188 .\my_app\views.py:212
 msgid "Incorrect Password"
 msgstr "كلمة مرور غير صحيحه"
 
-#: .\my_app\views.py:188 .\my_app\views.py:217
+#: .\my_app\views.py:191 .\my_app\views.py:215
 msgid "Email is incorrect"
 msgstr "الايميل غير صحيح"
 
-#: .\my_app\views.py:242 .\my_app\views.py:343
+#: .\my_app\views.py:240 .\my_app\views.py:341
 msgid "All fields are required"
 msgstr "جميع الحقول مطلوبة"
 
-#: .\my_app\views.py:246
+#: .\my_app\views.py:244
 msgid "New passwords do not match"
 msgstr "كلمات المرور غير متطابقة"
 
-#: .\my_app\views.py:251 .\my_app\views.py:351
+#: .\my_app\views.py:249 .\my_app\views.py:349
 msgid "Password must be at least 8 characters"
 msgstr "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل"
 
-#: .\my_app\views.py:257 .\my_app\views.py:274
+#: .\my_app\views.py:255 .\my_app\views.py:272
 msgid "Incorrect old password"
 msgstr "كلمة مرور قديمة غير صحيحة"
 
-#: .\my_app\views.py:281
+#: .\my_app\views.py:279
 msgid "Password changed successfully"
 msgstr "تم تغيير كلمة المرور بنجاح"
 
-#: .\my_app\views.py:290
+#: .\my_app\views.py:288
 msgid "Email is required"
 msgstr "البريد الإلكتروني مطلوب"
 
-#: .\my_app\views.py:298
+#: .\my_app\views.py:296
 msgid "Email not found"
 msgstr "لم يتم العثور على البريد الإلكتروني"
 
-#: .\my_app\views.py:317
+#: .\my_app\views.py:315
 msgid "Password Reset Request"
 msgstr "طلب إعادة تعيين كلمة المرور"
 
-#: .\my_app\views.py:318
+#: .\my_app\views.py:316
 msgid "Click the link to reset your password: "
 msgstr "  انقر على الرابط لإعادة تعيين كلمة المرور الخاصة بك:   "
 
-#: .\my_app\views.py:323
+#: .\my_app\views.py:321
 msgid "Reset link sent to your email"
 msgstr "تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني"
 
-#: .\my_app\views.py:325
+#: .\my_app\views.py:323
 #, python-format
 msgid "Failed to send email: %(error)s"
-msgstr ""
+msgstr "فشل إرسال البريد الإلكتروني: %(error)s"
 
-#: .\my_app\views.py:335
+#: .\my_app\views.py:333
 msgid "Invalid or expired token"
-msgstr ""
+msgstr "رمز غير صالح أو منتهي الصلاحية"
 
-#: .\my_app\views.py:369
-
+#: .\my_app\views.py:367
 msgid "Password reset successfully"
 msgstr "تمت إعادة تعيين كلمة المرور بنجاح"
 
-#: .\my_app\views.py:414
+#: .\my_app\views.py:412
 msgid "Successfully added an employee!"
 msgstr "تم ادخال موظف بنجاح"
 
-#: .\my_app\views.py:449
+#: .\my_app\views.py:447
 msgid "Successfully added a product!"
 msgstr "تم ادخال منتج بنجاح"
 
-#: .\my_app\views.py:534 .\my_app\views.py:561
+#: .\my_app\views.py:532 .\my_app\views.py:559
 msgid "Supplier name is required."
 msgstr "اسم المورد مطلوب"
 
-#: .\my_app\views.py:539
+#: .\my_app\views.py:537
 msgid "Successfully added supplier."
 msgstr "تم ادخال موظف بنجاح"
 
-#: .\my_app\views.py:541
+#: .\my_app\views.py:539
 #, python-format
 msgid "Failed to add supplier: %(err)s"
-msgstr ""
+msgstr "فشل إضافة المورد: %(err)s"
 
-#: .\my_app\views.py:551 .\my_app\views.py:589 .\my_app\views.py:602
+#: .\my_app\views.py:549 .\my_app\views.py:587 .\my_app\views.py:600
 msgid "Supplier not found."
 msgstr "المورد غير موجود"
 
-#: .\my_app\views.py:569
+#: .\my_app\views.py:567
 msgid "Supplier updated."
 msgstr "تحديث معلومات المورد"
 
-#: .\my_app\views.py:587
+#: .\my_app\views.py:585
 msgid "Supplier deleted."
 msgstr "تم حذف المورد"
 
-#: .\my_app\views.py:591
+#: .\my_app\views.py:589
 #, python-format
 msgid "Failed to delete supplier: %(err)s"
-msgstr ""
+msgstr "فشل حذف المورد: %(err)s"
 
-#: .\my_app\views.py:654
+#: .\my_app\views.py:652
 msgid "Customer name is required."
 msgstr "اسم العميل مطلوب"
 
-#: .\my_app\views.py:659
+#: .\my_app\views.py:657
 msgid "Successfully added customer."
 msgstr "تم ادخال العميل بنجاح"
 
-#: .\my_app\views.py:661
+#: .\my_app\views.py:659
 #, python-format
 msgid "Failed to add customer: %(err)s"
-msgstr ""
+msgstr "فشل إضافة العميل: %(err)s"
 
-#: .\my_app\views.py:670 .\my_app\views.py:703
+#: .\my_app\views.py:668 .\my_app\views.py:701
 msgid "Customer not found."
 msgstr "العميل غير موجود"
 
-#: .\my_app\views.py:679
+#: .\my_app\views.py:677
 msgid "Customer updated successfully."
 msgstr "تم تعديل العميل بنجاح"
 
-#: .\my_app\views.py:693
+#: .\my_app\views.py:691
 msgid "Customer deleted successfully."
 msgstr "تم حذف العميل بنجاح"
 
-#: .\my_app\views.py:695
+#: .\my_app\views.py:693
 msgid "Failed to delete customer."
 msgstr "فشل حذف العميل"
 
-#: .\my_app\views.py:733 .\my_app\views.py:1082
+#: .\my_app\views.py:731 .\my_app\views.py:1108
 msgid "Invalid payload"
 msgstr "Invalid payload!"
 
-#: .\my_app\views.py:740 .\my_app\views.py:1089
+#: .\my_app\views.py:738 .\my_app\views.py:1115
 msgid "Product name and positive quantity are required."
 msgstr "المنتج والكمية مطلوبان !"
 
-#: .\my_app\views.py:840
+#: .\my_app\views.py:772
+#, fuzzy, python-format
+#| msgid ""
+#| "Cannot sell more than available stock for \"%(product)s\". Available: "
+msgid ""
+"Cannot sell more than available stock for \"%(product)s\". Available: "
+"%(available)d, requested total: %(total)d"
+msgstr "لا يمكن بيع أكثر من المخزون المتاح"
+
+#: .\my_app\views.py:866
 msgid "Please add at least one product to sale!"
 msgstr "ادخل منتج واحد على الاقل للبيع"
 
-#: .\my_app\views.py:874
+#: .\my_app\views.py:900
 msgid "Successfully Sold!"
 msgstr "تم البيع"
 
-#: .\my_app\views.py:884 .\my_app\views.py:982
+#: .\my_app\views.py:910 .\my_app\views.py:1008
 msgid "Please sign in to create a return."
-msgstr ""
+msgstr "يرجى تسجيل الدخول لإنشاء طلب إرجاع."
 
-#: .\my_app\views.py:890
+#: .\my_app\views.py:916
 msgid "Sale order not found."
 msgstr "سند البيع غير موجود"
 
-#: .\my_app\views.py:919 .\my_app\views.py:1015
+#: .\my_app\views.py:945 .\my_app\views.py:1041
 #, python-format
 msgid ""
 "Cannot return %(qty)d of %(product)s; only %(allowed)d available to return."
 msgstr "لا يمكن ارجاع %(qty)d من %(product)s; فقط %(allowed)d متوفر للارجاع."
 
-#: .\my_app\views.py:924 .\my_app\views.py:1020
+#: .\my_app\views.py:950 .\my_app\views.py:1046
 msgid "Please enter at least one quantity to return."
 msgstr "ادخل كمية للارجاع"
 
-#: .\my_app\views.py:951
+#: .\my_app\views.py:977
 msgid "Sale return recorded."
 msgstr "تسجيل إرجاع مبيعات"
 
-#: .\my_app\views.py:966
+#: .\my_app\views.py:992
 msgid "Sale return not found."
 msgstr "سند الإرجاع غير موجود"
 
-#: .\my_app\views.py:988
+#: .\my_app\views.py:1014
 msgid "Purchase not found."
 msgstr "سند الشراء غير موجود"
 
-#: .\my_app\views.py:1043
+#: .\my_app\views.py:1069
 msgid "Purchase return recorded."
 msgstr "تسجيل مرتجع شراء"
 
-#: .\my_app\views.py:1058
+#: .\my_app\views.py:1084
 msgid "Return not found."
 msgstr "إرجاع غير موجود"
 
-#: .\my_app\views.py:1189
+#: .\my_app\views.py:1215
 msgid "Please add at least one product to purchase!"
 msgstr "ادخل منتج على الاقل للشراء"
 
-#: .\my_app\views.py:1219
+#: .\my_app\views.py:1245
 msgid "Purchased Successfully!"
 msgstr "تم الشراء بنجاح"
 
-#: .\my_app\views.py:1227 .\my_app\views.py:1320
+#: .\my_app\views.py:1253 .\my_app\views.py:1346
 msgid "already empty!"
 msgstr "فارخ مسبقا"
 
-#: .\my_app\views.py:1284
+#: .\my_app\views.py:1310
 msgid "Please add at least one product to return!"
 msgstr "ادخل منتج للارجاع"
 
-#: .\my_app\views.py:1314
+#: .\my_app\views.py:1340
 msgid "Return Recorded Successfully!"
 msgstr "تم لارجاع بنجاح"
 
-#: .\my_app\views.py:1567
+#: .\my_app\views.py:1593
 msgid "Company name is required."
 msgstr "اسم الشركة مطلوب."
 
-#: .\my_app\views.py:1578
+#: .\my_app\views.py:1604
 msgid "Company profile saved."
 msgstr "تم حفظ ملف تعريف الشركة."
 
-#: .\my_app\views.py:1580
+#: .\my_app\views.py:1606
 #, python-format
 msgid "Failed to save company profile: %(err)s"
-msgstr ""
+msgstr "فشل حفظ ملف تعريف الشركة: %(err)s"
 
-#: .\my_app\views.py:1597
+#: .\my_app\views.py:1623
 msgid "View Sale Order"
 msgstr "عرض طلبات المبيعات"
 
-#: .\my_app\views.py:1598
+#: .\my_app\views.py:1624
 msgid "No products found in this sale order."
 msgstr "لا توجد منتجات لهذا الإرجاع."
+
+#: .\my_app\views.py:1864
+msgid "Please select an Excel file to upload."
+msgstr "يرجى اختيار ملف إكسل لتحميله."
+
+#: .\my_app\views.py:1869
+msgid "Please upload a valid Excel file (.xlsx)."
+msgstr "يرجى تحميل ملف Excel صالح (.xlsx)."
+
+#: .\my_app\views.py:1899
+#, python-format
+msgid "Row %(row_num)d: Missing required fields (product_name)"
+msgstr "سطر %(row_num)d: حقل ضروري مفقود (product_name)"
+
+
+#: .\my_app\views.py:1908
+#, python-format
+msgid ""
+"Row %(row_num)d: Invalid expiry_date format (use YYYY-MM-DD, YYYY, or other "
+"common formats)"
+msgstr "سطر %(row_num)d: تاريخ انتهاء غير صالح (use YYYY-MM-DD, YYYY, او اي تنسيق اخر) "
+
+#: .\my_app\views.py:1911
+#, python-format
+msgid ""
+"Row %(row_num)d: Invalid production_date format (use YYYY-MM-DD, YYYY, or "
+"other common formats)"
+msgstr "سطر %(row_num)d: تاريخ انتاج غير صالح (use YYYY-MM-DD, YYYY, او اي تنسيق اخر) "
+
+#: .\my_app\views.py:1918
+#, python-format
+msgid "Row %(row_num)d: Invalid purchasing_price"
+msgstr "سطر %(row_num)d: سعر الشراء غير صالح"
+
+#: .\my_app\views.py:1925
+#, python-format
+msgid "Row %(row_num)d: Invalid sale_price"
+msgstr "سطر %(row_num)d: سعر البيع غير صالح"
+
+#: .\my_app\views.py:1936
+#, python-format
+msgid "Row %(row_num)d: Product with ISBN '%(isbn)s' already exists"
+msgstr "سطر %(row_num)d ISBN المنتج '%(isbn)s' موجود مسبقا"
+
+#: .\my_app\views.py:1957
+#, python-format
+msgid "Row %(row_num)d: %(error)s"
+msgstr "سطر %(row_num)d: %(error)s"
+
+#: .\my_app\views.py:1962
+#, python-format
+msgid "Successfully imported %(count)d products."
+msgstr "تم بنجاح استيراد %(count)d منتج."
+
+#: .\my_app\views.py:1968
+#, python-format
+msgid "... and %(count)d more errors."
+msgstr "... و %(count)d من الأخطاء."
+
+#: .\my_app\views.py:1973
+#, python-format
+msgid "Error processing Excel file: %(error)s"
+msgstr "حدث خطأ أثناء معالجة ملف Excel: %(error)s"
 
 #~ msgid "Customer Details"
 #~ msgstr "معلومات العميل"

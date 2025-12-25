@@ -16,7 +16,12 @@
     <div class="card shadow-sm border-0 mt-5">
         <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between py-3">
             <h2 class="mb-0" style="font-size:2rem; font-weight:600; color:#2d3748;">{% trans "Product List" %}</h2>
-            <a href="{% url 'product_create' %}" class="btn btn-success ms-2">{% trans "+ Add / Define New Product" %}</a>
+            <div class="d-flex gap-2">
+                <a href="{% url 'import_products_excel' %}" class="btn btn-info">
+                    <i class="fas fa-file-excel"></i> {% trans "Import from Excel" %}
+                </a>
+                <a href="{% url 'product_create' %}" class="btn btn-success">{% trans "+ Add / Define New Product" %}</a>
+            </div>
         </div>
         <div class="card-body">
             <form method="get" action="" class="mb-4">
@@ -36,6 +41,7 @@
                             <th scope="col">{% trans "Sale Price" %}</th>
                             <th scope="col">{% trans "ISBN" %}</th>
                             <th scope="col">{% trans "Production Date" %}</th>
+                            <th scope="col">{% trans "Category" %}</th>
                             <th scope="col">{% trans "Author" %}</th>
                             {% comment %} <th scope="col">{% trans "Expiry Date" %}</th> {% endcomment %}
                             <th scope="col">{% trans "Supplier" %}</th>
@@ -54,6 +60,7 @@
                             <td>{{ product.sale_price }}</td>
                             <td>{{ product.isbn }}</td>
                             <td>{{ product.production_date }}</td>
+                            <td>{{ product.category }}</td>
                             <td>{{ product.author }}</td>
                             {% comment %} <td>{{ product.expiry_date }}</td> {% endcomment %}
                             <td>{{ product.supplier }}</td>

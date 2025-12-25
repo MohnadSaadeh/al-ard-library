@@ -150,7 +150,7 @@ class Product(models.Model):
     sale_price = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     category = models.CharField(max_length=100, blank=True, null=True)
     expiry_date = models.DateField(blank=True, null=True)
-    isbn = models.CharField(max_length=32, unique=True)
+    isbn = models.CharField(max_length=32, unique=True , null=True, blank=True)
     production_date = models.DateField(blank=True, null=True)
     author = models.CharField(max_length=255, blank=True, null=True)
     supplier = models.CharField(max_length=255, blank=True, null=True)#publisher
