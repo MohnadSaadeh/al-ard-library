@@ -953,6 +953,7 @@ def sale_return_create_view(request, sale_order_id):
         # create SaleReturn and items
         employee_id = request.session['employee_id']
         # use Django transaction when available
+        # to ensure ALL - OR - NOTHING OPERATION
         with transaction.atomic():
             # use helper to create return (keeps consistency with existing code)
             models.create_sale_return(employee_id, sale_order_id)
