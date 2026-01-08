@@ -78,6 +78,7 @@ def add_product_to_sale_cart_by_isbn(request):
         return JsonResponse({'status': 'error', 'message': f'Internal error: {str(e)}'})
 from django.shortcuts import render ,redirect
 from . import models
+from .models import Purchase, Sale_order
 from django.contrib import messages
 import bcrypt
 from datetime import datetime , timedelta
@@ -2021,6 +2022,215 @@ def download_sample_excel(request):
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     response['Content-Disposition'] = 'attachment; filename="sample_products_import.xlsx"'
+
+    return response
+
+
+def import_purchase_invoices_excel(request):
+    """
+    Import purchase invoices from Excel file (.xlsx)
+    Expected columns: supplier_name, employee_id, payment_method, product_isbn, quantity, unit_price
+    Each row represents one purchase invoice item. Multiple items with same supplier/employee will be grouped into one invoice.
+    """
+    if request.method == 'POST':
+        if 'excel_file' not in request.FILES:
+            messages.error(request, _('Please select an Excel file to upload.'))
+            return redirect('import_purchase_invoices_excel')
+        
+        excel_file = request.FILES['excel_file']
+        if not excel_file.name.endswith('.xlsx'):
+            messages.error(request, _('Please upload a valid Excel file (.xlsx).'))
+            return redirect('import_purchase_invoices_excel')
+        
+        try:
+            from openpyxl import load_workbook
+            wb = load_workbook(excel_file)
+            ws = wb.active
+            
+            # Skip header row
+            rows = list(ws.iter_rows(values_only=True))[1:]
+            
+            imported_invoices = 0
+            imported_items = 0
+            errors = []
+            
+            # Group items by invoice key (supplier + employee + payment_method)
+            invoice_groups = {}
+            
+            for row_num, row in enumerate(rows, start=2):  # Start from 2 because we skipped header
+                try:
+                    # Extract data from row
+                    supplier_name = row[0] if len(row) > 0 and row[0] else None
+                    employee_id = row[1] if len(row) > 1 and row[1] else None
+                    payment_method = row[2] if len(row) > 2 and row[2] else 'cash'
+                    product_isbn = row[3] if len(row) > 3 and row[3] else None
+                    quantity = row[4] if len(row) > 4 and row[4] is not None else None
+                    unit_price = row[5] if len(row) > 5 and row[5] is not None else None
+                    
+                    # Validate required fields
+                    if not supplier_name or not employee_id or not product_isbn or quantity is None or unit_price is None:
+                        errors.append(_("Row %(row_num)d: Missing required fields (supplier_name, employee_id, product_isbn, quantity, unit_price)") % {'row_num': row_num})
+                        continue
+                    
+                    # Validate payment method
+                    if payment_method not in ['cash', 'debts']:
+                        payment_method = 'cash'
+                    
+                    # Convert quantity and unit_price
+                    try:
+                        quantity = int(quantity)
+                        unit_price = float(unit_price)
+                        total_price = quantity * unit_price
+                    except (ValueError, TypeError):
+                        errors.append(_("Row %(row_num)d: Invalid quantity or unit_price") % {'row_num': row_num})
+                        continue
+                    
+                    # Check if product exists
+                    try:
+                        product = models.Product.objects.get(isbn=product_isbn)
+                    except models.Product.DoesNotExist:
+                        errors.append(_("Row %(row_num)d: Product with ISBN '%(isbn)s' not found") % {'row_num': row_num, 'isbn': product_isbn})
+                        continue
+                    
+                    # Check if employee exists
+                    try:
+                        employee = models.Employee.objects.get(id=employee_id)
+                    except models.Employee.DoesNotExist:
+                        errors.append(_("Row %(row_num)d: Employee with ID '%(id)s' not found") % {'row_num': row_num, 'id': employee_id})
+                        continue
+                    
+                    # Find or create supplier
+                    supplier = None
+                    if supplier_name:
+                        supplier, created = models.Supplier.objects.get_or_create(
+                            name=supplier_name,
+                            defaults={'phone': '', 'email': '', 'contact_info': ''}
+                        )
+                    
+                    # Create invoice key
+                    invoice_key = f"{supplier.id if supplier else 'none'}_{employee.id}_{payment_method}"
+                    
+                    if invoice_key not in invoice_groups:
+                        invoice_groups[invoice_key] = {
+                            'supplier': supplier,
+                            'employee': employee,
+                            'payment_method': payment_method,
+                            'items': []
+                        }
+                    
+                    invoice_groups[invoice_key]['items'].append({
+                        'product': product,
+                        'quantity': quantity,
+                        'unit_price': unit_price,
+                        'total_price': total_price
+                    })
+                    
+                except Exception as e:
+                    errors.append(_("Row %(row_num)d: %(error)s") % {'row_num': row_num, 'error': str(e)})
+                    continue
+            
+            # Process each invoice group
+            for invoice_key, invoice_data in invoice_groups.items():
+                try:
+                    with transaction.atomic():
+                        # Create purchase invoice
+                        purchase = models.Purchase.objects.create(
+                            employee=invoice_data['employee'],
+                            supplier=invoice_data['supplier'],
+                            payment_method=invoice_data['payment_method'],
+                            invoice_pay_method=invoice_data['payment_method']
+                        )
+                        
+                        total_amount = 0
+                        # Add items to invoice
+                        for item in invoice_data['items']:
+                            models.Purchase_item.objects.create(
+                                purchase_id=purchase,
+                                product=item['product'],
+                                quantity=item['quantity'],
+                                unit_price=item['unit_price'],
+                                total_price=item['total_price']
+                            )
+                            # Update product quantity
+                            item['product'].quantity += item['quantity']
+                            item['product'].save()
+                            total_amount += item['total_price']
+                            imported_items += 1
+                        
+                        # Update purchase totals
+                        purchase.total_amount = total_amount
+                        purchase.grand_total = total_amount
+                        purchase.save()
+                        
+                        imported_invoices += 1
+                        
+                except Exception as e:
+                    errors.append(_("Error creating invoice for %(key)s: %(error)s") % {'key': invoice_key, 'error': str(e)})
+                    continue
+            
+            # Show results
+            if imported_invoices > 0:
+                messages.success(request, _('Successfully imported %(invoices)d purchase invoices with %(items)d items.') % {'invoices': imported_invoices, 'items': imported_items})
+            
+            if errors:
+                for error in errors[:10]:  # Show first 10 errors
+                    messages.warning(request, error)
+                if len(errors) > 10:
+                    messages.warning(request, _('... and %(count)d more errors.') % {'count': len(errors) - 10})
+            
+            return redirect('display_purchases')
+            
+        except Exception as e:
+            messages.error(request, _('Error processing Excel file: %(error)s') % {'error': str(e)})
+            return redirect('import_purchase_invoices_excel')
+    
+    # GET request - show upload form
+    return render(request, 'purchases/import_excel.html')
+
+
+def download_sample_purchase_excel(request):
+    """
+    Generate and download a sample Excel file for purchase invoice import
+    """
+    from openpyxl import Workbook
+    from django.http import HttpResponse
+    from io import BytesIO
+    from openpyxl.styles import Font, PatternFill
+
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Purchase Invoices'
+
+    # Add headers
+    headers = ['Supplier Name', 'Employee ID', 'Payment Method', 'Product ISBN', 'Quantity', 'Unit Price']
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+
+    # Add sample data
+    sample_data = [
+        ['ABC Suppliers', 1, 'cash', '9781234567890', 10, 15.50],
+        ['ABC Suppliers', 1, 'cash', '9780987654321', 5, 12.75],
+        ['XYZ Distributors', 2, 'debts', '9781122334455', 20, 8.00],
+    ]
+
+    for row_num, row_data in enumerate(sample_data, 2):
+        for col_num, value in enumerate(row_data, 1):
+            ws.cell(row=row_num, column=col_num, value=value)
+
+    # Save to BytesIO
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    # Create response
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="sample_purchase_invoices_import.xlsx"'
 
     return response
 

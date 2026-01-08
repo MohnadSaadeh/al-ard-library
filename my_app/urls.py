@@ -11,7 +11,7 @@ urlpatterns = [
     path('add_employee', views.add_new_employee),
     path('add_product', views.add_new_product),
     path('sales', views.display_sales),
-    path('purchases', views.display_purchases),
+    path('purchases', views.display_purchases, name='display_purchases'),
     path('return_purchases', views.display_returns),
     path('return_sales', views.display_sale_returns),
     path('sales/<int:sale_order_id>/return/', views.sale_return_create_view, name='sale_return_create'),#sale return
@@ -85,6 +85,8 @@ urlpatterns = [
     path('customers/<int:id>/delete', views.delete_customer, name='customers_delete'),
     path('products/import/', views.import_products_excel, name='import_products_excel'),
     path('products/sample-excel/', views.download_sample_excel, name='download_sample_excel'),
+    path('purchases/import/', views.import_purchase_invoices_excel, name='import_purchase_invoices_excel'),
+    path('purchases/sample-excel/', views.download_sample_purchase_excel, name='download_sample_purchase_excel'),
     path('forget_password', views.forget_password, name='forget_password'),
     path('reset_password/<str:token>', views.reset_password, name='reset_password'),
 ]

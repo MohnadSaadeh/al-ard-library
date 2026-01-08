@@ -16,6 +16,11 @@
     <div class="card shadow-sm border-0 mt-5">
       <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between py-3">
         <h2 class="mb-0" style="font-size:2rem; font-weight:600; color:#2d3748;">{% trans "Purchase Invoices" %}</h2>
+        <div class="d-flex gap-2">
+          <a href="{% url 'import_purchase_invoices_excel' %}" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> {% trans "Import from Excel" %}
+          </a>
+        </div>
       </div>
       <div class="card-body">
         <form action="/add_order_to_purchase" method="post" id="add-form" class="mb-4">
