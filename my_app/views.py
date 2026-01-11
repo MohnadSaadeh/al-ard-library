@@ -1745,7 +1745,7 @@ def product_list(request):
     """
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
     search_query = request.GET.get('search', '').strip()
-    products_qs = Product.objects.all().prefetch_related('attributes')
+    products_qs = Product.objects.all().order_by('-id')
     if search_query:
         products_qs = products_qs.filter(product_name__icontains=search_query)
     paginator = Paginator(products_qs, 10)  # 10 products per page
@@ -2151,9 +2151,15 @@ def import_purchase_invoices_excel(request):
                                 unit_price=item['unit_price'],
                                 total_price=item['total_price']
                             )
-                            # Update product quantity
-                            item['product'].quantity += item['quantity']
-                            item['product'].save()
+                            # Update product quantity and purchasing price from imported unit price
+                            prod = item['product']
+                            prod.quantity += item['quantity']
+                            # update the product's purchasing price to the imported unit price
+                            try:
+                                prod.purchasing_price = float(item['unit_price'])
+                            except Exception:
+                                prod.purchasing_price = item['unit_price']
+                            prod.save()
                             total_amount += item['total_price']
                             imported_items += 1
                         
