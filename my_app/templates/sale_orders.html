@@ -260,6 +260,29 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 <script>
+// Prevent form submission on Enter for search inputs
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const isbnInput = document.getElementById('isbn-search-input');
+    
+    if (searchInput) {
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    if (isbnInput) {
+        isbnInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     var isbnInput = document.getElementById('isbn-search-input');
     if (isbnInput) {
