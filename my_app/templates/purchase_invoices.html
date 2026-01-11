@@ -418,6 +418,7 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   var isbnInput = document.getElementById('isbn-search-input');
   if (isbnInput) {
     isbnInput.addEventListener('keydown', function(e) {
@@ -478,6 +479,31 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 });
+</script>
+<script>
+// Prevent form submission on Enter for search inputs
+document.addEventListener('DOMContentLoaded', function() {
+    const supplierSearch = document.getElementById('supplier-search');
+    const isbnInput = document.getElementById('isbn-search-input');
+    
+    if (supplierSearch) {
+        supplierSearch.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    if (isbnInput) {
+        isbnInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+<script>
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
