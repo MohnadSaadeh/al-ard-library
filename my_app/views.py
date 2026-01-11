@@ -117,6 +117,40 @@ def _save_purchase_cart(request, cart):
     request.session.modified = True
 
 
+def delete_product_from_purchase(request):
+    """
+    AJAX endpoint: delete a product from purchase cart by product_id
+    Returns JSON with updated grand_total and cart items
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+    
+    product_id = request.POST.get('product_id')
+    if not product_id:
+        return JsonResponse({'status': 'error', 'message': 'No product_id provided'}, status=400)
+    
+    try:
+        product_id = int(product_id)
+    except (ValueError, TypeError):
+        return JsonResponse({'status': 'error', 'message': 'Invalid product_id'}, status=400)
+    
+    cart = _get_purchase_cart(request)
+    # Find and remove the item by product_id
+    original_length = len(cart)
+    cart = [item for item in cart if int(item.get('product_id')) != product_id]
+    
+    if len(cart) == original_length:
+        # Item not found
+        return JsonResponse({'status': 'error', 'message': 'Product not found in cart'}, status=404)
+    
+    _save_purchase_cart(request, cart)
+    
+    # Recalculate grand total
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+    
+    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+
+
 # to display the sign-in page
 def about_us(request):
     return render(request, 'about_us.html')
