@@ -57,6 +57,7 @@ urlpatterns = [
     path('clear_sales_list', views.clear_sales_list),
     path('clear_purchases_list', views.clear_purchases_list),
     path('delete-product-from-purchase', views.delete_product_from_purchase, name='delete_product_from_purchase'),
+    path('delete-product-from-sale', views.delete_product_from_sale, name='delete_product_from_sale'),
 
     path('view_purchase_invoice/<int:id>', views.view_purchase_invoice),
     path('add_product_to_sale_cart_by_isbn', views.add_product_to_sale_cart_by_isbn, name='add_product_to_sale_cart_by_isbn'),

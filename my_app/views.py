@@ -938,6 +938,70 @@ def submet_sale_order(request):
 #____________________________________SALE___________________________________
 
 
+def _get_sale_cart(request):
+    return request.session.get('sale_cart', [])
+
+
+def _save_sale_cart(request, cart):
+    request.session['sale_cart'] = cart
+    request.session.modified = True
+
+
+def _get_purchase_cart(request):
+    return request.session.get('purchase_cart', [])
+
+
+def _save_purchase_cart(request, cart):
+    request.session['purchase_cart'] = cart
+    request.session.modified = True
+
+
+def delete_product_from_sale(request):
+    """
+    AJAX endpoint: remove a product from the sale cart by product_id.
+    Recalculates grand total and returns updated cart items.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+    product_id = request.POST.get('product_id')
+    if not product_id:
+        return JsonResponse({'status': 'error', 'message': 'Product ID required'})
+
+    cart = _get_sale_cart(request)
+    # Remove the item with matching product_id
+    cart = [item for item in cart if str(item.get('product_id')) != str(product_id)]
+    _save_sale_cart(request, cart)
+
+    # Recalculate grand total
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+
+    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+
+
+def delete_product_from_purchase(request):
+    """
+    AJAX endpoint: remove a product from the purchase cart by product_id.
+    Recalculates grand total and returns updated cart items.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+    product_id = request.POST.get('product_id')
+    if not product_id:
+        return JsonResponse({'status': 'error', 'message': 'Product ID required'})
+
+    cart = _get_purchase_cart(request)
+    # Remove the item with matching product_id
+    cart = [item for item in cart if str(item.get('product_id')) != str(product_id)]
+    _save_purchase_cart(request, cart)
+
+    # Recalculate grand total
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+
+    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+
+
 # -------------------- Sales Return (customer returns) --------------------
 def sale_return_create_view(request, sale_order_id):
     # ensure employee logged in

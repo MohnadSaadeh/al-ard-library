@@ -83,21 +83,28 @@
                                     <th>{% trans "Quantity" %}</th>
                                     <th class="ps-3">{% trans "Sale Price" %}</th>
                                     <th class="ps-3">{% trans "Total Price" %}</th>
+                                    <th class="ps-3">{% trans "Action" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for order in sale_order %}
-                                <tr>
+                                <tr data-product-id="{{order.product_id}}" data-total-price="{{order.total_price}}">
                                     <td class="ps-3">{{order.product_id}}</td>
                                     <td class="ps-3">{{order.product_name}}</td>
                                     <td>{{order.quantity}}</td>
                                     <td class="ps-3">{{order.sale_price}}</td>
                                     <td class="ps-3">{{order.total_price}}</td>
+                                    <td class="ps-3">
+                                        <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="{{order.product_id}}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                                 <tr class="table-secondary fw-bold">
                                     <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
                                     <td class="ps-3">{{ grand_total }}</td>
+                                    <td></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -188,6 +195,71 @@
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
 <script>
+// Handle delete sale item
+document.addEventListener('DOMContentLoaded', function(){
+  const tbody = document.querySelector('table.table tbody');
+  if(!tbody) return;
+  
+  tbody.addEventListener('click', function(e){
+    const deleteBtn = e.target.closest('.delete-sale-item');
+    if(!deleteBtn) return;
+    
+    e.preventDefault();
+    const productId = deleteBtn.dataset.productId;
+    
+    if(!productId){
+      alert('Error: product_id not found');
+      return;
+    }
+    
+    // Send AJAX DELETE request
+    fetch('/delete-product-from-sale', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: new URLSearchParams({'product_id': productId})
+    })
+    .then(r => r.json())
+    .then(data => {
+      if(data.status === 'ok'){
+        // Rebuild cart table
+        if(Array.isArray(data.items)){
+          let html = '';
+          data.items.forEach(item => {
+            html += `
+              <tr data-product-id="${item.product_id}" data-total-price="${item.total_price}">
+                <td class="ps-3">${item.product_id}</td>
+                <td class="ps-3">${item.product_name}</td>
+                <td>${item.quantity}</td>
+                <td class="ps-3">${item.sale_price}</td>
+                <td class="ps-3">${item.total_price}</td>
+                <td class="ps-3">
+                  <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>`;
+          });
+          html += `<tr class="table-secondary fw-bold">
+                    <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
+                    <td class="ps-3">${data.grand_total}</td>
+                    <td></td>
+                  </tr>`;
+          tbody.innerHTML = html;
+        }
+      } else {
+        alert(data.message || 'Error deleting product');
+      }
+    })
+    .catch(err => {
+      alert('Error: ' + err);
+    });
+  });
+});
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     var isbnInput = document.getElementById('isbn-search-input');
     if (isbnInput) {
@@ -210,16 +282,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Update sale list table dynamically
                         const tbody = document.querySelector('table.table tbody');
                         if (tbody && Array.isArray(data.items)) {
-                            // Always render the table header row first
-                            tbody.innerHTML = `
-                                <tr>
-                                    <th class="ps-3">ID</th>
-                                    <th class="ps-3">Product</th>
-                                    <th>Quantity</th>
-                                    <th class="ps-3">Sale Price</th>
-                                    <th class="ps-3">Total Price</th>
-                                </tr>
-                            `;
+                            // Clear existing rows
+                            tbody.innerHTML = '';
                             data.items.forEach(item => {
                                 tbody.innerHTML += `
                                     <tr>
@@ -228,6 +292,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <td>${item.quantity}</td>
                                         <td class="ps-3">${item.sale_price}</td>
                                         <td class="ps-3">${item.total_price}</td>
+                                        <td class="ps-3">
+                                          <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">
+                                            <i class="fas fa-trash"></i>
+                                          </button>
+                                        </td>
                                     </tr>
                                 `;
                             });
@@ -236,6 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <tr class="table-secondary fw-bold">
                                     <td colspan="4" class="text-end">Grand Total</td>
                                     <td class="ps-3">${data.grand_total}</td>
+                                    <td></td>
                                 </tr>
                             `;
                         }
@@ -295,9 +365,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (tbody && Array.isArray(data.items)) {
                         tbody.innerHTML = `\n                                <tr>\n                                    <th class="ps-3">ID</th>\n                                    <th class="ps-3">Product</th>\n                                    <th>Quantity</th>\n                                    <th class="ps-3">Sale Price</th>\n                                    <th class="ps-3">Total Price</th>\n                                </tr>\n                            `;
                         data.items.forEach(item => {
-                            tbody.innerHTML += `\n                                <tr>\n                                    <td class="ps-3">${item.product_id}</td>\n                                    <td class="ps-3">${item.product_name}</td>\n                                    <td>${item.quantity}</td>\n                                    <td class="ps-3">${item.sale_price}</td>\n                                    <td class="ps-3">${item.total_price}</td>\n                                </tr>\n                            `;
+                            tbody.innerHTML += `\n                                <tr>\n                                    <td class="ps-3">${item.product_id}</td>\n                                    <td class="ps-3">${item.product_name}</td>\n                                    <td>${item.quantity}</td>\n                                    <td class="ps-3">${item.sale_price}</td>\n                                    <td class="ps-3">${item.total_price}</td>\n                                    <td class="ps-3">\n                                      <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">\n                                        <i class="fas fa-trash"></i>\n                                      </button>\n                                    </td>\n                                </tr>\n                            `;
                         });
-                        tbody.innerHTML += `\n                            <tr class="table-secondary fw-bold">\n                                <td colspan="4" class="text-end">Grand Total</td>\n                                <td class="ps-3">${data.grand_total}</td>\n                            </tr>\n                        `;
+                        tbody.innerHTML += `\n                            <tr class="table-secondary fw-bold">\n                                <td colspan="4" class="text-end">Grand Total</td>\n                                <td class="ps-3">${data.grand_total}</td>\n                                <td></td>\n                            </tr>\n                        `;
                     }
                 } else {
                     alert(data.message || "Failed to add product");
