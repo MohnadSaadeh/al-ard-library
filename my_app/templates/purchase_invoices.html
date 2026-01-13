@@ -127,9 +127,9 @@
             <ul class="messages mt-3">    
               {% for message in messages %}    
                 {% if message.extra_tags == 'add_invoice' %}
-                  <p class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>    
+                  <p class="{% if message.tags %}{{ message.tags }}{% else %}success{% endif %}">{{ message }}</p>    
                 {% else %}
-                  <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p> 
+                  <p class="{% if message.tags %}{{ message.tags }}{% else %}success{% endif %}">{{ message }}</p> 
                 {% endif %}
               {% endfor %}
             </ul>

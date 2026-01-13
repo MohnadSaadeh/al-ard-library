@@ -2,15 +2,49 @@
 .messages {
     color: red;
 }
-.message_success {
-    /* width: min-content; */
-    /* margin: 10px; */
-    /* margin-left: 10%; */
-    /* padding: 10px; */
+.success {
     background-color: rgb(5, 172, 5);
     color: rgb(8, 24, 8);
-    /* border: 2px solid rgb(191, 236, 191); */
     border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.error {
+    background-color: rgb(220, 53, 69);
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.warning {
+    background-color: rgb(255, 193, 7);
+    color: rgb(33, 37, 41);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.info {
+    background-color: rgb(13, 110, 253);
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.debug {
+    background-color: rgb(108, 117, 125);
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
 }
 
 .center{

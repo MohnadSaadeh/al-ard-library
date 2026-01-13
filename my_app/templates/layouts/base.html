@@ -73,11 +73,7 @@
 
             {% if messages %}
                 {% for message in messages %}    
-                    {% if message.extra_tags == 'add_return' %}
-                    <span class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</span>{% if not forloop.last %} {% endif %}    
-                    {% else %}
-                    <span class="message_success"{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</span>{% if not forloop.last %} {% endif %} 
-                    {% endif %}
+                    <span class="{% if message.tags %}{{ message.tags }}{% else %}success{% endif %}">{{ message }}</span>{% if not forloop.last %} {% endif %} 
                 {% endfor %}
             {% endif %}
 

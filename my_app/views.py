@@ -2227,7 +2227,14 @@ def import_purchase_invoices_excel(request):
                     errors.append(_("Row %(row_num)d: %(error)s") % {'row_num': row_num, 'error': str(e)})
                     continue
             
-            # Process each invoice group
+            # Check for errors - reject entire file if any errors found
+            if errors:
+                messages.error(request, _('Import failed due to errors in the Excel file. Please fix the following issues and try again:'))
+                for error in errors:
+                    messages.error(request, error)
+                return redirect('import_purchase_invoices_excel')
+            
+            # Process each invoice group only if no errors
             for invoice_key, invoice_data in invoice_groups.items():
                 try:
                     with transaction.atomic():
@@ -2272,7 +2279,7 @@ def import_purchase_invoices_excel(request):
                     errors.append(_("Error creating invoice for %(key)s: %(error)s") % {'key': invoice_key, 'error': str(e)})
                     continue
             
-            # Show results
+            # Show results only if no errors during processing
             if imported_invoices > 0:
                 messages.success(request, _('Successfully imported %(invoices)d purchase invoices with %(items)d items.') % {'invoices': imported_invoices, 'items': imported_items})
             

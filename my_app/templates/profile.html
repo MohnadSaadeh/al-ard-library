@@ -114,9 +114,9 @@
                 <ul class="messages">    
                   {% for message in messages %}    
                       {% if message.extra_tags == 'add_employee' %}
-                      <li class="message_success" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>    
+                      <li class="{% if message.tags %}{{ message.tags }}{% else %}success{% endif %}">{{ message }}</li>    
                       {% else %}
-                      <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li> 
+                      <li class="{% if message.tags %}{{ message.tags }}{% else %}success{% endif %}">{{ message }}</li> 
                       {% endif %}
                     {% endfor %}
                 </ul>
