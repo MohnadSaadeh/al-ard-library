@@ -2057,15 +2057,16 @@ def import_products_excel(request):
                     errors.append(_("Row %(row_num)d: %(error)s") % {'row_num': row_num, 'error': str(e)})
                     continue
             
-            # Show results
+            # Check for errors - reject entire file if any errors found
+            if errors:
+                messages.error(request, _('Import failed due to errors in the Excel file. Please fix the following issues and try again:'))
+                for error in errors:
+                    messages.error(request, error)
+                return redirect('import_products_excel')
+            
+            # Show results only if no errors
             if imported_count > 0:
                 messages.success(request, _('Successfully imported %(count)d products.') % {'count': imported_count})
-            
-            if errors:
-                for error in errors[:10]:  # Show first 10 errors
-                    messages.warning(request, error)
-                if len(errors) > 10:
-                    messages.warning(request, _('... and %(count)d more errors.') % {'count': len(errors) - 10})
             
             return redirect('product_list')
             
