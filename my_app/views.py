@@ -2093,13 +2093,15 @@ def download_sample_excel(request):
     ws.title = 'Products'
 
     # Add headers
-    headers = ['Product Name', 'Quantity', 'Purchasing Price', 'Sale Price', 'Category', 'Expiry Date', 'ISBN', 'Production Date', 'Author', 'Supplier']
+    headers = [_('Product Name'), _('Quantity'), _('Purchasing Price'), _('Sale Price'), _('Category'), _('Expiry Date'), _('ISBN'), _('Production Date'), _('Author'), _('Supplier')]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
         cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
 
-    # Add sample data
+    # Set column widths
+    for col in range(1, len(headers) + 1):
+        ws.column_dimensions[chr(64 + col)].width = 15
     sample_data = [
         ['Sample Book 1', 10, 15.50, 25.00, 'Fiction', '2025-12-31', '9781234567890', '2024-01-15', 'John Doe', 'ABC Publishers'],
         ['Sample Book 2', 5, 12.75, 20.00, 'Non-Fiction', '', '9780987654321', '2024', 'Jane Smith', 'XYZ Books'],
@@ -2121,6 +2123,106 @@ def download_sample_excel(request):
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     response['Content-Disposition'] = 'attachment; filename="sample_products_import.xlsx"'
+
+    return response
+
+
+def download_empty_products_excel(request):
+    """
+    Generate and download Excel file for empty products report
+    """
+    from openpyxl import Workbook
+    from django.http import HttpResponse
+    from io import BytesIO
+    from openpyxl.styles import Font, PatternFill
+
+    # Get empty products
+    products = models.Product.objects.filter(quantity=0)
+
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Empty Products'
+
+    # Add headers
+    headers = [_('Product Name'), _('Author'), _('Supplier/Publisher'), _('Sale Price'), _('Production Date'), _('Quantity')]
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+
+    # Set column widths
+    for col in range(1, len(headers) + 1):
+        ws.column_dimensions[chr(64 + col)].width = 15
+    for row_num, product in enumerate(products, 2):
+        ws.cell(row=row_num, column=1, value=product.product_name)
+        ws.cell(row=row_num, column=2, value=product.author)
+        ws.cell(row=row_num, column=3, value=product.supplier)
+        ws.cell(row=row_num, column=4, value=float(product.sale_price) if product.sale_price else 0)
+        ws.cell(row=row_num, column=5, value=product.production_date.strftime('%Y-%m-%d') if product.production_date else '')
+        ws.cell(row=row_num, column=6, value=product.quantity)
+
+    # Save to BytesIO
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    # Create response
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="empty_products_report.xlsx"'
+
+    return response
+
+
+def download_stock_products_excel(request):
+    """
+    Generate and download Excel file for stock products report
+    """
+    from openpyxl import Workbook
+    from django.http import HttpResponse
+    from io import BytesIO
+    from openpyxl.styles import Font, PatternFill
+
+    # Get stock products
+    products = models.Product.objects.filter(quantity__gt=0).order_by('-updated_at')
+
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Stock Products'
+
+    # Add headers
+    headers = [_('Product Name'), _('Author'), _('Supplier/Publisher'), _('Sale Price'), _('Production Date'), _('Quantity')]
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid", )
+
+    # Set column widths
+    for col in range(1, len(headers) + 1):
+        ws.column_dimensions[chr(64 + col)].width = 15
+    for row_num, product in enumerate(products, 2):
+        ws.cell(row=row_num, column=1, value=product.product_name)
+        ws.cell(row=row_num, column=2, value=product.author)
+        ws.cell(row=row_num, column=3, value=product.supplier)
+        ws.cell(row=row_num, column=4, value=float(product.sale_price) if product.sale_price else 0)
+        ws.cell(row=row_num, column=5, value=product.production_date.strftime('%Y-%m-%d') if product.production_date else '')
+        ws.cell(row=row_num, column=6, value=product.quantity)
+
+    # Save to BytesIO
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    # Create response
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="stock_products_report.xlsx"'
 
     return response
 
@@ -2315,13 +2417,15 @@ def download_sample_purchase_excel(request):
     ws.title = 'Purchase Invoices'
 
     # Add headers
-    headers = ['Supplier Name', 'Employee ID', 'Payment Method', 'Product ISBN', 'Quantity', 'Unit Price']
+    headers = [_('Supplier Name'), _('Employee ID'), _('Payment Method'), _('Product ISBN'), _('Quantity'), _('Unit Price')]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
         cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
 
-    # Add sample data
+    # Set column widths
+    for col in range(1, len(headers) + 1):
+        ws.column_dimensions[chr(64 + col)].width = 15
     sample_data = [
         ['ABC Suppliers', 1, 'cash', '9781234567890', 10, 15.50],
         ['ABC Suppliers', 1, 'cash', '9780987654321', 5, 12.75],
@@ -2370,7 +2474,7 @@ def sales_products_report(request):
             production_date = getattr(product, 'production_date', '')
             sold_quantity = sale.quantity
             # Get return sale quantity for this sale item
-            return_sale_quantity = getattr(sale, 'return_quantity', 0)
+            return_sale_quantity = models.SaleReturnItem.objects.filter(original_item=sale).aggregate(total=Sum('quantity'))['total'] or 0
             remain_sold_quantity = sold_quantity - return_sale_quantity
             money_should_received = remain_sold_quantity * sale_price
 
@@ -2418,3 +2522,102 @@ def sales_products_report(request):
         'error_message': error_message,
     }
     return render(request, 'sales_products_report.html', context)
+
+
+def download_sales_products_report_excel(request):
+    """
+    Generate and download Excel file for sales products report
+    """
+    from openpyxl import Workbook
+    from django.http import HttpResponse
+    from io import BytesIO
+    from openpyxl.styles import Font, PatternFill
+
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+
+    if not from_date or not to_date:
+        from django.contrib import messages
+        messages.error(request, "Please provide both From Date and To Date.")
+        return redirect('sales_products_report')
+
+    # Generate report data (same logic as sales_products_report)
+    report_data = []
+    sales = models.Sale_item.objects.filter(created_at__date__gte=from_date, created_at__date__lte=to_date)
+    for sale in sales:
+        product = sale.product
+        product_name = product.product_name
+        author_name = getattr(product, 'author', '')
+        supplier_name = getattr(product, 'supplier', '')
+        sale_price = sale.unit_price
+        production_date = getattr(product, 'production_date', '')
+        sold_quantity = sale.quantity
+        # Get return sale quantity for this sale item
+        return_sale_quantity = models.SaleReturnItem.objects.filter(original_item=sale).aggregate(total=Sum('quantity'))['total'] or 0
+        remain_sold_quantity = sold_quantity - return_sale_quantity
+        money_should_received = remain_sold_quantity * sale_price
+
+        report_data.append({
+            'product_name': product_name,
+            'author_name': author_name,
+            'supplier_name': supplier_name,
+            'sale_price': sale_price,
+            'production_date': production_date,
+            'sold_quantity': sold_quantity,
+            'return_sale_quantity': return_sale_quantity,
+            'remain_sold_quantity': remain_sold_quantity,
+            'money_should_received': money_should_received,
+        })
+
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Sales Products Report'
+
+    # Add headers
+    headers = [
+        _('Product Name'), _('Author'), _('Supplier'), _('Sale Price'),
+        _('Production Date'), _('Sold Quantity'), _('Return Quantity'),
+        _('Remaining Quantity'), _('Money Should Received')
+    ]
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+
+    # Set column widths
+    for col in range(1, len(headers) + 1):
+        ws.column_dimensions[chr(64 + col)].width = 15
+
+    # Add data
+    for row_num, item in enumerate(report_data, 2):
+        ws.cell(row=row_num, column=1, value=item['product_name'])
+        ws.cell(row=row_num, column=2, value=item['author_name'])
+        ws.cell(row=row_num, column=3, value=item['supplier_name'])
+        ws.cell(row=row_num, column=4, value=float(item['sale_price']) if item['sale_price'] else 0)
+        ws.cell(row=row_num, column=5, value=str(item['production_date']) if item['production_date'] else '')
+        ws.cell(row=row_num, column=6, value=item['sold_quantity'])
+        ws.cell(row=row_num, column=7, value=item['return_sale_quantity'])
+        ws.cell(row=row_num, column=8, value=item['remain_sold_quantity'])
+        ws.cell(row=row_num, column=9, value=float(item['money_should_received']) if item['money_should_received'] else 0)
+
+    # Add grand total row
+    grand_total_row = len(report_data) + 2
+    ws.cell(row=grand_total_row, column=8, value=_('Grand Total')).fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+    ws.cell(row=grand_total_row, column=8).font = Font(bold=True)
+    ws.cell(row=grand_total_row, column=9, value=sum(float(item['money_should_received']) if item['money_should_received'] else 0 for item in report_data)).fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+    ws.cell(row=grand_total_row, column=9).font = Font(bold=True)
+
+    # Save to BytesIO
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    # Create response
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="sales_products_report_{from_date}_to_{to_date}.xlsx"'
+
+    return response
