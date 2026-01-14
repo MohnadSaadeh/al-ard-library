@@ -2199,6 +2199,7 @@ def download_stock_products_excel(request):
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
+        cell.alignment = cell.alignment.copy(horizontal='center')
         cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid", )
 
     # Set column widths
@@ -2208,7 +2209,7 @@ def download_stock_products_excel(request):
         ws.cell(row=row_num, column=1, value=product.product_name)
         ws.cell(row=row_num, column=2, value=product.author)
         ws.cell(row=row_num, column=3, value=product.supplier)
-        ws.cell(row=row_num, column=4, value=float(product.sale_price) if product.sale_price else 0)
+        ws.cell(row=row_num, column=4, value=float(product.sale_price) if product.sale_price else 0).font = Font(bold=True)
         ws.cell(row=row_num, column=5, value=product.production_date.strftime('%Y-%m-%d') if product.production_date else '')
         ws.cell(row=row_num, column=6, value=product.quantity)
 
