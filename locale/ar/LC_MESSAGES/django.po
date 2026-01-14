@@ -88,7 +88,7 @@ msgstr "المورد"
 #: .\my_app\templates\stock_products_report.html:24 .\my_app\views.py:2096
 #: .\my_app\views.py:2148 .\my_app\views.py:2198 .\my_app\views.py:2580
 msgid "Production Date"
-msgstr "تاريخ الإنتاج/النشر"
+msgstr "تاريخ النشر"
 
 #: .\my_app\forms.py:22 .\my_app\templates\products\import_excel.html:22
 #: .\my_app\templates\products\product_list.html:44 .\my_app\views.py:2096
@@ -547,7 +547,7 @@ msgstr "تحميل ملف إكسل"
 #: .\my_app\templates\stock_products_report.html:22 .\my_app\views.py:2148
 #: .\my_app\views.py:2198
 msgid "Supplier/Publisher"
-msgstr "المزود/الناشر"
+msgstr "الناشر"
 
 #: .\my_app\templates\forget_password.html:4
 #: .\my_app\templates\forget_password.html:25
