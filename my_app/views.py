@@ -1842,6 +1842,7 @@ def product_list(request):
     عرض قائمة المنتجات مع خصائصها
     """
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    all_products = Product.objects.all().count()
     search_query = request.GET.get('search', '').strip()
     products_qs = Product.objects.all().order_by('-id')
     if search_query:
@@ -1854,7 +1855,7 @@ def product_list(request):
         products = paginator.page(1)
     except EmptyPage:
         products = paginator.page(paginator.num_pages)
-    return render(request, 'products/product_list.html', {'products': products, 'search_query': search_query})
+    return render(request, 'products/product_list.html', {'products': products, 'search_query': search_query , 'all_products': all_products})
 
 
 
@@ -1968,6 +1969,7 @@ def import_products_excel(request):
         if not excel_file.name.endswith('.xlsx'):
             messages.error(request, _('Please upload a valid Excel file (.xlsx).'))
             return redirect('import_products_excel')
+        
         
         try:
             from openpyxl import load_workbook
