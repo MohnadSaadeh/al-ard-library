@@ -16,9 +16,9 @@
                     <p>{% trans "Your Excel file should have the following columns in order:" %}</p>
                     <ol>
                         <li><strong>{% trans "Supplier Name" %}</strong> - {% trans "Required (will be created if doesn't exist)" %}</li>
-                        <li><strong>{% trans "Employee ID" %}</strong> - {% trans "Required (must exist in system)" %}</li>
                         <li><strong>{% trans "Payment Method" %}</strong> - {% trans "Optional (cash or debts, default: cash)" %}</li>
                         <li><strong>{% trans "Product ISBN" %}</strong> - {% trans "Required (product must exist)" %}</li>
+                        <li><strong>{% trans "Product Name" %}</strong> - {% trans "Required (product must exist)" %}</li>
                         <li><strong>{% trans "Quantity" %}</strong> - {% trans "Required" %}</li>
                         <li><strong>{% trans "Unit Price" %}</strong> - {% trans "Required" %}</li>
                     </ol>
@@ -33,6 +33,7 @@
                         <div class="form-text">{% trans "Only .xlsx files are supported." %}</div>
                         <div class="form-text">{% trans "new Supplier will be defined if it not already defined." %}</div>
                         <div class="form-text">{% trans "An invoice will be created for each supplier." %}</div>
+                        <div class="form-text">{% trans "The purchase price of the product will be updated according to the invoice." %}</div>
 
 
                     </div>

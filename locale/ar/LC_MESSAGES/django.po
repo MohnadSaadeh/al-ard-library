@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-15 09:39+0200\n"
+"POT-Creation-Date: 2026-01-15 11:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,8 @@ msgstr ""
 #: .\my_app\templates\purchase_invoices.html:30
 #: .\my_app\templates\sale_orders.html:25
 #: .\my_app\templates\stock_products_report.html:20 .\my_app\views.py:2098
-#: .\my_app\views.py:2150 .\my_app\views.py:2200 .\my_app\views.py:2582
+#: .\my_app\views.py:2150 .\my_app\views.py:2200 .\my_app\views.py:2431
+#: .\my_app\views.py:2590
 msgid "Product Name"
 msgstr "اسم المنتج"
 
@@ -47,7 +48,7 @@ msgstr "ISBN"
 #: .\my_app\templates\sale_orders.html:34
 #: .\my_app\templates\sale_orders.html:83
 #: .\my_app\templates\stock_products_report.html:25 .\my_app\views.py:2098
-#: .\my_app\views.py:2150 .\my_app\views.py:2200 .\my_app\views.py:2423
+#: .\my_app\views.py:2150 .\my_app\views.py:2200 .\my_app\views.py:2431
 msgid "Quantity"
 msgstr "الكمية"
 
@@ -63,7 +64,7 @@ msgstr "سعر الشراء"
 #: .\my_app\templates\sale_orders.html:84
 #: .\my_app\templates\sales_products_report.html:41
 #: .\my_app\templates\stock_products_report.html:23 .\my_app\views.py:2098
-#: .\my_app\views.py:2150 .\my_app\views.py:2200 .\my_app\views.py:2582
+#: .\my_app\views.py:2150 .\my_app\views.py:2200 .\my_app\views.py:2590
 msgid "Sale Price"
 msgstr "سعر البيع"
 
@@ -77,7 +78,7 @@ msgstr "سعر البيع"
 #: .\my_app\templates\supplier_detail.html:4
 #: .\my_app\templates\view_purchase_invoice.html:38
 #: .\my_app\templates\view_purchase_invoice.html:40 .\my_app\views.py:2098
-#: .\my_app\views.py:2582
+#: .\my_app\views.py:2590
 msgid "Supplier"
 msgstr "المورد"
 
@@ -86,7 +87,7 @@ msgstr "المورد"
 #: .\my_app\templates\products\product_list.html:43
 #: .\my_app\templates\sales_products_report.html:42
 #: .\my_app\templates\stock_products_report.html:24 .\my_app\views.py:2098
-#: .\my_app\views.py:2150 .\my_app\views.py:2200 .\my_app\views.py:2583
+#: .\my_app\views.py:2150 .\my_app\views.py:2200 .\my_app\views.py:2591
 msgid "Production Date"
 msgstr "تاريخ النشر"
 
@@ -100,7 +101,7 @@ msgstr "التصنيف"
 #: .\my_app\templates\products\product_list.html:45
 #: .\my_app\templates\sales_products_report.html:39
 #: .\my_app\templates\stock_products_report.html:21 .\my_app\views.py:2098
-#: .\my_app\views.py:2150 .\my_app\views.py:2200 .\my_app\views.py:2582
+#: .\my_app\views.py:2150 .\my_app\views.py:2200 .\my_app\views.py:2590
 msgid "Author"
 msgstr "المؤلف"
 
@@ -847,7 +848,7 @@ msgstr "الكمية"
 #: .\my_app\templates\view_purchase_invoice.html:77
 #: .\my_app\templates\view_return_invoice.html:60
 #: .\my_app\templates\view_return_sale.html:53
-#: .\my_app\templates\view_sale_order.html:87 .\my_app\views.py:2423
+#: .\my_app\templates\view_sale_order.html:87 .\my_app\views.py:2431
 msgid "Unit Price"
 msgstr "سعر الوحدة"
 
@@ -869,7 +870,7 @@ msgstr "لا توجد منتجات لهذا الإرجاع."
 #: .\my_app\templates\view_purchase_invoice.html:101
 #: .\my_app\templates\view_return_invoice.html:84
 #: .\my_app\templates\view_return_sale.html:75
-#: .\my_app\templates\view_sale_order.html:111 .\my_app\views.py:2609
+#: .\my_app\templates\view_sale_order.html:111 .\my_app\views.py:2617
 msgid "Grand Total"
 msgstr "الإجمالي الكلي"
 
@@ -1030,13 +1031,13 @@ msgstr "العودة الى قائمة المنتجات"
 
 #: .\my_app\templates\products\import_excel.html:51
 #: .\my_app\templates\products\import_excel.html:54
-#: .\my_app\templates\purchases\import_excel.html:51
-#: .\my_app\templates\purchases\import_excel.html:54
+#: .\my_app\templates\purchases\import_excel.html:52
+#: .\my_app\templates\purchases\import_excel.html:55
 msgid "Download Sample Excel File"
 msgstr "تحميل نموذج ملف إكسل"
 
 #: .\my_app\templates\products\import_excel.html:52
-#: .\my_app\templates\purchases\import_excel.html:52
+#: .\my_app\templates\purchases\import_excel.html:53
 msgid ""
 "Click the button below to download a sample Excel file with the correct "
 "format:"
@@ -1198,7 +1199,7 @@ msgstr "ملخص الطلب"
 #: .\my_app\templates\purchases\import_excel.html:20
 #: .\my_app\templates\purchases\purchase_return_form.html:25
 #: .\my_app\templates\sale_orders.html:68
-#: .\my_app\templates\sales\sale_return_form.html:25 .\my_app\views.py:2423
+#: .\my_app\templates\sales\sale_return_form.html:25 .\my_app\views.py:2431
 msgid "Payment Method"
 msgstr "طريقة الدفع:"
 
@@ -1252,7 +1253,7 @@ msgstr "شراء"
 msgid "Import Purchase Invoices from Excel"
 msgstr "استيراد المنتجات الشراء من Excel"
 
-#: .\my_app\templates\purchases\import_excel.html:18 .\my_app\views.py:2423
+#: .\my_app\templates\purchases\import_excel.html:18 .\my_app\views.py:2431
 msgid "Supplier Name"
 msgstr "المورد"
 
@@ -1260,7 +1261,7 @@ msgstr "المورد"
 msgid "Required (will be created if doesn't exist)"
 msgstr "مطلوب (سيتم إنشاؤه إذا لم يكن موجودًا)"
 
-#: .\my_app\templates\purchases\import_excel.html:19 .\my_app\views.py:2423
+#: .\my_app\templates\purchases\import_excel.html:19
 msgid "Employee ID"
 msgstr "رمز الموظفون"
 
@@ -1273,7 +1274,7 @@ msgid "Optional (cash or debts, default: cash)"
 msgstr "اختياري (نقدي او ذمم)"
 
 # Removed malformed duplicate block
-#: .\my_app\templates\purchases\import_excel.html:21 .\my_app\views.py:2423
+#: .\my_app\templates\purchases\import_excel.html:21 .\my_app\views.py:2431
 msgid "Product ISBN"
 msgstr "ISBN"
 
@@ -1286,7 +1287,7 @@ msgid ""
 "The first row should be headers and will be skipped during import. Multiple "
 "rows with the same supplier, employee, and payment method will be grouped "
 "into a single invoice."
-msgstr ""
+msgstr "يجب أن يحتوي الصف الأول على العناوين وسيتم تخطيه أثناء الاستيراد. سيتم تجميع الصفوف المتعددة التي تحتوي على نفس المورد والموظف وطريقة الدفع في فاتورة واحدة."
 
 #: .\my_app\templates\purchases\import_excel.html:34
 msgid "new Supplier will be defined if it not already defined."
@@ -1296,11 +1297,15 @@ msgstr "سيتم انشاء المورد الجديد اذا لم يكم معر�
 msgid "An invoice will be created for each supplier."
 msgstr "سيتم انشاء فاتورة لكل مورد"
 
-#: .\my_app\templates\purchases\import_excel.html:42
+#: .\my_app\templates\purchases\import_excel.html:36
+msgid "The purchase price of the product will be updated according to the invoice."
+msgstr "سيتم تحديث سعر الشراء للمنتج حسب الفاتوره"
+
+#: .\my_app\templates\purchases\import_excel.html:43
 msgid "Import Purchase Invoices"
 msgstr "استيراد سند مشتريات"
 
-#: .\my_app\templates\purchases\import_excel.html:45
+#: .\my_app\templates\purchases\import_excel.html:46
 msgid "Back to Purchases"
 msgstr "العودة الى قائمة المشتريات"
 
@@ -1336,7 +1341,7 @@ msgid "Allowed to Return"
 msgstr "المسموح بإرجاعه"
 
 #: .\my_app\templates\purchases\purchase_return_form.html:43
-#: .\my_app\templates\sales\sale_return_form.html:43 .\my_app\views.py:2583
+#: .\my_app\templates\sales\sale_return_form.html:43 .\my_app\views.py:2591
 msgid "Return Quantity"
 msgstr "كمية الإرجاع"
 
@@ -1408,7 +1413,7 @@ msgid "Return for Sale"
 msgstr "إرجاع عن عملية بيع"
 
 #: .\my_app\templates\sales\sale_return_form.html:41
-#: .\my_app\templates\sales_products_report.html:43 .\my_app\views.py:2583
+#: .\my_app\templates\sales_products_report.html:43 .\my_app\views.py:2591
 msgid "Sold Quantity"
 msgstr "الكمية المباعة"
 
@@ -1954,11 +1959,11 @@ msgstr "عرض طلبات المبيعات"
 msgid "No products found in this sale order."
 msgstr "لا توجد منتجات لهذا الإرجاع."
 
-#: .\my_app\views.py:1965 .\my_app\views.py:2241
+#: .\my_app\views.py:1965 .\my_app\views.py:2242
 msgid "Please select an Excel file to upload."
 msgstr "يرجى اختيار ملف إكسل لتحميله."
 
-#: .\my_app\views.py:1970 .\my_app\views.py:2246
+#: .\my_app\views.py:1970 .\my_app\views.py:2247
 msgid "Please upload a valid Excel file (.xlsx)."
 msgstr "يرجى تحميل ملف Excel صالح (.xlsx)."
 
@@ -2000,75 +2005,82 @@ msgstr "سطر %(row_num)d: سعر البيع غير صالح"
 msgid "Row %(row_num)d: Product with ISBN '%(isbn)s' already exists"
 msgstr "سطر %(row_num)d ISBN المنتج '%(isbn)s' موجود مسبقا"
 
-#: .\my_app\views.py:2059 .\my_app\views.py:2333
+#: .\my_app\views.py:2059 .\my_app\views.py:2341
 #, python-format
 msgid "Row %(row_num)d: %(error)s"
 msgstr "سطر %(row_num)d: %(error)s"
 
-#: .\my_app\views.py:2064 .\my_app\views.py:2338
+#: .\my_app\views.py:2064 .\my_app\views.py:2346
 msgid ""
 "Import failed due to errors in the Excel file. Please fix the following "
 "issues and try again:"
-msgstr ""
-"فشلت عملية الاستيراد بسبب أخطاء في ملف Excel. يرجى تصحيح المشكلات التالية ثم "
-"المحاولة مرة أخرى:"
+msgstr "فشلت عملية , يرجى تصحيح المشكلات التالية ثم المحاولة مرة أخرى:"
 
 #: .\my_app\views.py:2071
 #, python-format
 msgid "Successfully imported %(count)d products."
 msgstr "تم بنجاح استيراد %(count)d منتج."
 
-#: .\my_app\views.py:2076 .\my_app\views.py:2401
+#: .\my_app\views.py:2076 .\my_app\views.py:2409
 #, python-format
 msgid "Error processing Excel file: %(error)s"
 msgstr "حدث خطأ أثناء معالجة ملف Excel: %(error)s"
 
-#: .\my_app\views.py:2276
+#: .\my_app\views.py:2277
+#, fuzzy, python-format
+msgid ""
+"Row %(row_num)d: Missing required fields (supplier_name, payment_method, "
+"product_isbn, product_name, quantity, unit_price)"
+msgstr ""
+"السطر %(row_num)d: توجد حقول مطلوبة مفقودة (اسم المورّد، طريقة الدفع، رقم "
+"المنتج ISBN، اسم المنتج، الكمية، سعر الوحدة)"
+
+#: .\my_app\views.py:2283
 #, python-format
 msgid ""
-"Row %(row_num)d: Missing required fields (supplier_name, employee_id, "
-"product_isbn, quantity, unit_price)"
+"Row %(row_num)d: Product name '%(pname)s' does not match the name "
+"'%(expected)s' for ISBN '%(isbn)s'"
 msgstr ""
-"السطر %(row_num)d: توجد حقول مطلوبة مفقودة (اسم المورّد، رقم الموظف، رقم "
-"المنتج، الكمية، سعر الوحدة)"
+"السطر %(row_num)d: اسم المنتج '%(pname)s' لا يتطابق مع الاسم '%(expected)s' "
+"للرقم ISBN '%(isbn)s'"
 
-#: .\my_app\views.py:2289
+#: .\my_app\views.py:2296
 #, python-format
 msgid "Row %(row_num)d: Invalid quantity or unit_price"
 msgstr "سطر %(row_num)d:الكمية او سعر الشراء غير صالح"
 
-#: .\my_app\views.py:2296
+#: .\my_app\views.py:2303
 #, python-format
 msgid "Row %(row_num)d: Product with ISBN '%(isbn)s' not found"
 msgstr "سطر %(row_num)d ISBN المنتج '%(isbn)s'غير موجود "
 
-#: .\my_app\views.py:2303
+#: .\my_app\views.py:2311
 #, fuzzy, python-format
 #| msgid "Row %(row_num)d: Employee with ID '%(id)s' not found"
 msgid "Row %(row_num)d: Employee with ID '%(id)s' not found"
 msgstr "سطر %(row_num)d ISBN الموظف '%(isbn)s' غير موجود"
 
-#: .\my_app\views.py:2385
+#: .\my_app\views.py:2393
 #, python-format
 msgid "Error creating invoice for %(key)s: %(error)s"
 msgstr "حدث خطأ أثناء انشاء الفاتورة %(key)s: %(error)s"
 
-#: .\my_app\views.py:2390
+#: .\my_app\views.py:2398
 #, python-format
 msgid ""
 "Successfully imported %(invoices)d purchase invoices with %(items)d items."
 msgstr "تم استيراد %(invoices)d فواتير شراء بنجاح، بإجمالي %(items)d عناصر."
 
-#: .\my_app\views.py:2396
+#: .\my_app\views.py:2404
 #, python-format
 msgid "... and %(count)d more errors."
 msgstr "... و %(count)d من الأخطاء."
 
-#: .\my_app\views.py:2584
+#: .\my_app\views.py:2592
 msgid "Remaining Quantity"
 msgstr "كمية المتبقية"
 
-#: .\my_app\views.py:2584
+#: .\my_app\views.py:2592
 msgid "Money Should Received"
 msgstr "الاموال المستلمة"
 

@@ -2233,8 +2233,9 @@ def download_stock_products_excel(request):
 def import_purchase_invoices_excel(request):
     """
     Import purchase invoices from Excel file (.xlsx)
-    Expected columns: supplier_name, employee_id, payment_method, product_isbn, quantity, unit_price
+    Expected columns: supplier_name, payment_method, product_isbn, product_name, quantity, unit_price
     Each row represents one purchase invoice item. Multiple items with same supplier/employee will be grouped into one invoice.
+    Employee is taken from the logged-in user's session.
     """
     if request.method == 'POST':
         if 'excel_file' not in request.FILES:
@@ -2265,17 +2266,23 @@ def import_purchase_invoices_excel(request):
                 try:
                     # Extract data from row
                     supplier_name = row[0] if len(row) > 0 and row[0] else None
-                    employee_id = row[1] if len(row) > 1 and row[1] else None
-                    payment_method = row[2] if len(row) > 2 and row[2] else 'cash'
-                    product_isbn = row[3] if len(row) > 3 and row[3] else None
+                    payment_method = row[1] if len(row) > 1 and row[1] else 'cash'
+                    product_isbn = row[2] if len(row) > 2 and row[2] else None
+                    product_name = row[3] if len(row) > 3 and row[3] else None
                     quantity = row[4] if len(row) > 4 and row[4] is not None else None
                     unit_price = row[5] if len(row) > 5 and row[5] is not None else None
                     
                     # Validate required fields
-                    if not supplier_name or not employee_id or not product_isbn or quantity is None or unit_price is None:
-                        errors.append(_("Row %(row_num)d: Missing required fields (supplier_name, employee_id, product_isbn, quantity, unit_price)") % {'row_num': row_num})
+                    if not supplier_name or not product_isbn or not product_name or quantity is None or unit_price is None:
+                        errors.append(_("Row %(row_num)d: Missing required fields (supplier_name, payment_method, product_isbn, product_name, quantity, unit_price)") % {'row_num': row_num})
                         continue
                     
+                    # valedate product_name matches the product_isbn
+                    product = models.Product.objects.get(isbn=product_isbn)
+                    if product.product_name != product_name:
+                        errors.append(_("Row %(row_num)d: Product name '%(pname)s' does not match the name '%(expected)s' for ISBN '%(isbn)s'") % {'row_num': row_num, 'pname': product_name, 'expected': product.product_name, 'isbn': product_isbn})
+                        continue
+                        
                     # Validate payment method
                     if payment_method not in ['cash', 'debts']:
                         payment_method = 'cash'
@@ -2297,6 +2304,7 @@ def import_purchase_invoices_excel(request):
                         continue
                     
                     # Check if employee exists
+                    employee_id = request.session.get('employee_id')
                     try:
                         employee = models.Employee.objects.get(id=employee_id)
                     except models.Employee.DoesNotExist:
@@ -2346,7 +2354,7 @@ def import_purchase_invoices_excel(request):
                     with transaction.atomic():
                         # Create purchase invoice
                         purchase = models.Purchase.objects.create(
-                            employee=invoice_data['employee'],
+                            employee= employee  ,
                             supplier=invoice_data['supplier'],
                             payment_method=invoice_data['payment_method'],
                             invoice_pay_method=invoice_data['payment_method']
@@ -2420,7 +2428,7 @@ def download_sample_purchase_excel(request):
     ws.title = 'Purchase Invoices'
 
     # Add headers
-    headers = [_('Supplier Name'), _('Employee ID'), _('Payment Method'), _('Product ISBN'), _('Quantity'), _('Unit Price')]
+    headers = [_('Supplier Name'), _('Payment Method'), _('Product ISBN'), _('Product Name'), _('Quantity'), _('Unit Price')]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
@@ -2430,9 +2438,9 @@ def download_sample_purchase_excel(request):
     for col in range(1, len(headers) + 1):
         ws.column_dimensions[chr(64 + col)].width = 15
     sample_data = [
-        ['ABC Suppliers', 1, 'cash', '9781234567890', 10, 15.50],
-        ['ABC Suppliers', 1, 'cash', '9780987654321', 5, 12.75],
-        ['XYZ Distributors', 2, 'debts', '9781122334455', 20, 8.00],
+        ['ABC Suppliers', 'cash', '9781234567890', 'Sample Book 1', 10, 15.50],
+        ['ABC Suppliers', 'cash', '9780987654321', 'Sample Book 2', 5, 12.75],
+        ['XYZ Distributors', 'debts', '9781122334455', 'Sample Magazine', 20, 8.00],
     ]
 
     for row_num, row_data in enumerate(sample_data, 2):
