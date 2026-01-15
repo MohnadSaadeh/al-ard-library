@@ -2265,15 +2265,15 @@ def import_purchase_invoices_excel(request):
             for row_num, row in enumerate(rows, start=2):  # Start from 2 because we skipped header
                 try:
                     # Extract data from row
-                    supplier_name = row[0] if len(row) > 0 and row[0] else None
-                    payment_method = row[1] if len(row) > 1 and row[1] else 'cash'
-                    product_isbn = row[2] if len(row) > 2 and row[2] else None
-                    product_name = row[3] if len(row) > 3 and row[3] else None
-                    quantity = row[4] if len(row) > 4 and row[4] is not None else None
-                    unit_price = row[5] if len(row) > 5 and row[5] is not None else None
+                    product_name = row[0] if len(row) > 0 and row[0] else None
+                    quantity = row[1] if len(row) > 1 and row[1] is not None else None
+                    unit_price = row[2] if len(row) > 2 and row[2] is not None else None
+                    product_isbn = row[3] if len(row) > 3 and row[3] else None
+                    supplier_name = row[4] if len(row) > 4 and row[4] else None
+                    payment_method = row[5] if len(row) > 5 and row[5] else 'cash'
                     
                     # Validate required fields
-                    if not supplier_name or not product_isbn or not product_name or quantity is None or unit_price is None:
+                    if  not supplier_name or quantity is None or unit_price is None or not product_name:
                         errors.append(_("Row %(row_num)d: Missing required fields (supplier_name, payment_method, product_isbn, product_name, quantity, unit_price)") % {'row_num': row_num})
                         continue
                     
@@ -2428,7 +2428,7 @@ def download_sample_purchase_excel(request):
     ws.title = 'Purchase Invoices'
 
     # Add headers
-    headers = [_('Supplier Name'), _('Payment Method'), _('Product ISBN'), _('Product Name'), _('Quantity'), _('Unit Price')]
+    headers = [ _('Product Name'),_('Quantity'),_('Unit Price'),_('Product ISBN'),_('Supplier Name'), _('Payment Method')]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
@@ -2438,9 +2438,9 @@ def download_sample_purchase_excel(request):
     for col in range(1, len(headers) + 1):
         ws.column_dimensions[chr(64 + col)].width = 15
     sample_data = [
-        ['ABC Suppliers', 'cash', '9781234567890', 'Sample Book 1', 10, 15.50],
-        ['ABC Suppliers', 'cash', '9780987654321', 'Sample Book 2', 5, 12.75],
-        ['XYZ Distributors', 'debts', '9781122334455', 'Sample Magazine', 20, 8.00],
+        ['Sample Book 1',10,15.50,'9781234567890','ABC Suppliers', 'cash'],
+        ['Sample Book 2',5,12.75,'9780987654321','ABC Suppliers',  'cash'],
+        ['Sample Magazine',20,8.00,'9781122334455','XYZ Distributors',  'debts'],
     ]
 
     for row_num, row_data in enumerate(sample_data, 2):
