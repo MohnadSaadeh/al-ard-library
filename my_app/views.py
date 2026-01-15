@@ -1990,11 +1990,11 @@ def import_products_excel(request):
                     purchasing_price = row[2] if len(row) > 2 and row[2] is not None else None
                     sale_price = row[3] if len(row) > 3 and row[3] is not None else None
                     category = row[4] if len(row) > 4 and row[4] else None
-                    expiry_date_raw = row[5] if len(row) > 5 and row[5] else None
-                    isbn = row[6] if len(row) > 6 and row[6] else None
-                    production_date_raw = row[7] if len(row) > 7 and row[7] else None
-                    author = row[8] if len(row) > 8 and row[8] else None
-                    supplier = row[9] if len(row) > 9 and row[9] else None
+                    # expiry_date_raw = row[5] if len(row) > 5 and row[5] else None
+                    isbn = row[5] if len(row) > 5 and row[5] else None
+                    production_date_raw = row[6] if len(row) > 6 and row[6] else None
+                    author = row[7] if len(row) > 7 and row[7] else None
+                    supplier = row[8] if len(row) > 8 and row[8] else None
                     
                     # Validate required fields
                     if not product_name :
@@ -2002,13 +2002,15 @@ def import_products_excel(request):
                         continue
                     
                     # Parse dates
-                    expiry_date = parse_date(expiry_date_raw)
+                    
+                    # expiry_date = parse_date(expiry_date_raw)
                     production_date = parse_date(production_date_raw)
                     
                     # If date parsing failed but value was provided, add error
-                    if expiry_date_raw and expiry_date is None:
-                        errors.append(_("Row %(row_num)d: Invalid expiry_date format (use YYYY-MM-DD, YYYY, or other common formats)") % {'row_num': row_num})
-                        continue
+                    
+                    # if expiry_date_raw and expiry_date is None:
+                    #     errors.append(_("Row %(row_num)d: Invalid expiry_date format (use YYYY-MM-DD, YYYY, or other common formats)") % {'row_num': row_num})
+                    #     continue
                     if production_date_raw and production_date is None:
                         errors.append(_("Row %(row_num)d: Invalid production_date format (use YYYY-MM-DD, YYYY, or other common formats)") % {'row_num': row_num})
                         continue
@@ -2045,7 +2047,7 @@ def import_products_excel(request):
                         purchasing_price=purchasing_price,
                         sale_price=sale_price,
                         category=category,
-                        expiry_date=expiry_date,
+                        # expiry_date=expiry_date,
                         isbn=isbn,
                         production_date=production_date,
                         author=author,
@@ -2095,7 +2097,8 @@ def download_sample_excel(request):
     ws.title = 'Products'
 
     # Add headers
-    headers = [_('Product Name'), _('Quantity'), _('Purchasing Price'), _('Sale Price'), _('Category'), _('Expiry Date'), _('ISBN'), _('Production Date'), _('Author'), _('Supplier')]
+    #  _('Expiry Date'), was removed from headers and sample data
+    headers = [_('Product Name'), _('Quantity'), _('Purchasing Price'), _('Sale Price'), _('Category'), _('ISBN'), _('Production Date'), _('Author'), _('Supplier')]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
@@ -2105,9 +2108,9 @@ def download_sample_excel(request):
     for col in range(1, len(headers) + 1):
         ws.column_dimensions[chr(64 + col)].width = 15
     sample_data = [
-        ['Sample Book 1', 10, 15.50, 25.00, 'Fiction', '2025-12-31', '9781234567890', '2024-01-15', 'John Doe', 'ABC Publishers'],
-        ['Sample Book 2', 5, 12.75, 20.00, 'Non-Fiction', '', '9780987654321', '2024', 'Jane Smith', 'XYZ Books'],
-        ['Sample Magazine', 20, 5.00, 8.50, 'Magazine', '2024-12-31', '9781122334455', '2024-03-01', '', 'News Corp']
+        ['Sample Book 1', 10, 15.50, 25.00, 'Fiction', '9781234567890', '2024-01-15', 'John Doe', 'ABC Publishers'],
+        ['Sample Book 2', 5, 12.75, 20.00, 'Non-Fiction', '9780987654321', '2024', 'Jane Smith', 'XYZ Books'],
+        ['Sample Magazine', 20, 5.00, 8.50, 'Magazine', '9781122334455', '2024-03-01', '', 'News Corp']
     ]
 
     for row_num, row_data in enumerate(sample_data, 2):

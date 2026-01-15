@@ -20,7 +20,7 @@
                         <li><strong>{% trans "Purchasing Price" %}</strong> - {% trans "Required" %}</li>
                         <li><strong>{% trans "Sale Price" %}</strong> - {% trans "Optional" %}</li>
                         <li><strong>{% trans "Category" %}</strong> - {% trans "Optional" %}</li>
-                        <li><strong>{% trans "Expiry Date" %}</strong> - {% trans "Optional (various formats accepted: YYYY-MM-DD, YYYY, MM/DD/YYYY, etc.)" %}</li>
+                        {% comment %} <li><strong>{% trans "Expiry Date" %}</strong> - {% trans "Optional (various formats accepted: YYYY-MM-DD, YYYY, MM/DD/YYYY, etc.)" %}</li> {% endcomment %}
                         <li><strong>{% trans "ISBN" %}</strong> - {% trans "Required, must be unique" %}</li>
                         <li><strong>{% trans "Production Date" %}</strong> - {% trans "Optional (various formats accepted: YYYY-MM-DD, YYYY, MM/DD/YYYY, etc.)" %}</li>
                         <li><strong>{% trans "Author" %}</strong> - {% trans "Optional" %}</li>
@@ -35,6 +35,7 @@
                         <label for="excel_file" class="form-label">{% trans "Select Excel File (.xlsx)" %}</label>
                         <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx" required>
                         <div class="form-text">{% trans "Only .xlsx files are supported." %}</div>
+                        <div class="form-text">{% trans "if error appears in any product, means that this product have not been imported." %}</div>
                     </div>
 
                     <div class="d-flex gap-2">
