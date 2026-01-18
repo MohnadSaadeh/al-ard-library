@@ -56,16 +56,16 @@
                         <tr>
                             <td>{{ forloop.counter }}</td>
                             <td style="font-weight:500; color:#2d3748;">{{ product.product_name }}</td>
-                            <td>{{ product.quantity }}</td>
-                            <td>{{ product.purchasing_price }}</td>
-                            <td>{{ product.sale_price }}</td>
+                            <td>{{ product.quantity|default:"" }}</td>
+                            <td>{{ product.purchasing_price|default:"" }}</td>
+                            <td>{{ product.sale_price|default:"" }}</td>
                             <td>{{ product.isbn }}</td>
-                            <td>{{ product.publisher }}</td>      <!-- publisher name -->
+                            <td>{{ product.publisher|default:"" }}</td>      <!-- publisher name -->
                             <td>{{ product.production_date|date:"Y"}}</td> <!-- publishing date -->
-                            <td>{{ product.category }}</td>
-                            <td>{{ product.author }}</td>
+                            <td>{{ product.category|default:"" }}</td>
+                            <td>{{ product.author|default:"" }}</td>
                             {% comment %} <td>{{ product.expiry_date }}</td> {% endcomment %}
-                            <td>{{ product.supplier }}</td>
+                            <td>{{ product.supplier|default:"" }}</td>
                             {% comment %} <td>{{ product.employee.first_name }}</td> {% endcomment %}
                             <td>
                                 <ul class="list-unstyled mb-0">

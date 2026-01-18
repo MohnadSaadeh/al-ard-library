@@ -30,13 +30,13 @@
         <tbody>
             {% for product in products %}
             <tr>
-                <td>{{ product.product_name }}</td>
-                <td>{{ product.author }}</td>
-                <td>{{ product.supplier }}</td>
-                <td>{{ product.sale_price }}</td>
-                <td>{{ product.publisher }}</td>
-                <td>{{ product.production_date|date:"Y"}}</td>
-                <td>{{ product.quantity }}</td>
+                <td>{{ product.product_name|default:"" }}</td>
+                <td>{{ product.author|default:"" }}</td>
+                <td>{{ product.supplier|default:"" }}</td>
+                <td>{{ product.sale_price|default:"" }}</td>
+                <td>{{ product.publisher|default:"" }}</td>
+                <td>{{ product.production_date|date:"Y"|default:"" }}</td>
+                <td>{{ product.quantity|default:"" }}</td>
             </tr>
             {% endfor %}
         </tbody>

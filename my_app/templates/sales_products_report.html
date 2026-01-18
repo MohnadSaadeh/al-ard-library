@@ -49,15 +49,15 @@
         <tbody>
             {% for item in report_data %}
             <tr>
-            <td>{{ item.product_name }}</td>
-            <td>{{ item.author_name }}</td>
-            <td>{{ item.supplier_name }}</td>
-            <td>{{ item.sale_price }}</td>
-            <td>{{ item.production_date |date:"Y"}}</td>
-            <td>{{ item.sold_quantity }}</td>
-            <td>{{ item.return_sale_quantity }}</td>
-            <td>{{ item.remain_sold_quantity }}</td>
-            <td>{{ item.money_should_received }}</td>
+            <td>{{ item.product_name|default:"" }}</td>
+            <td>{{ item.author_name|default:"" }}</td>
+            <td>{{ item.supplier_name|default:"" }}</td>
+            <td>{{ item.sale_price|default:"" }}</td>
+            <td>{{ item.production_date |date:"Y"|default:"" }}</td>
+            <td>{{ item.sold_quantity|default:"" }}</td>
+            <td>{{ item.return_sale_quantity|default:"" }}</td>
+            <td>{{ item.remain_sold_quantity|default:"" }}</td>
+            <td>{{ item.money_should_received|default:"" }}</td>
             </tr>
             {% endfor %}
         </tbody>
