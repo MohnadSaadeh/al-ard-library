@@ -37,7 +37,7 @@
             <tr>
             <th>{% trans "Product" %}</th>
             <th>{% trans "Author" %}</th>
-            <th>{% trans "Supplier/Publisher." %}</th>
+            <th>{% trans "Supplier" %}</th>
             <th>{% trans "Sale Price" %}</th>
             <th>{% trans "Production Date" %}</th>
             <th>{% trans "Sold Quantity" %}</th>
@@ -53,7 +53,7 @@
             <td>{{ item.author_name }}</td>
             <td>{{ item.supplier_name }}</td>
             <td>{{ item.sale_price }}</td>
-            <td>{{ item.production_date }}</td>
+            <td>{{ item.production_date |date:"Y"}}</td>
             <td>{{ item.sold_quantity }}</td>
             <td>{{ item.return_sale_quantity }}</td>
             <td>{{ item.remain_sold_quantity }}</td>

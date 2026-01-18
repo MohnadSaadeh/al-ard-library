@@ -20,11 +20,12 @@
                 <tr>
                     <th>{% trans "Product Name" %}</th>
                     <th>{% trans "Author" %}</th>
-                <th>{% trans "Supplier/Publisher" %}</th>
-                <th>{% trans "Sale Price" %}</th>
-                <th>{% trans "Production Date" %}</th>
-                <th>{% trans "Quantity" %}</th>
-            </tr>
+                    <th>{% trans "Supplier" %}</th>
+                    <th>{% trans "Sale Price" %}</th>
+                    <th>{% trans "Publisher" %}</th>
+                    <th>{% trans "Production Date" %}</th>
+                    <th>{% trans "Quantity" %}</th>
+                </tr>
         </thead>
         <tbody>
             {% for product in products %}
@@ -33,7 +34,8 @@
                 <td>{{ product.author }}</td>
                 <td>{{ product.supplier }}</td>
                 <td>{{ product.sale_price }}</td>
-                <td>{{ product.production_date }}</td>
+                <td>{{ product.publisher }}</td>
+                <td>{{ product.production_date|date:"Y"}}</td>
                 <td>{{ product.quantity }}</td>
             </tr>
             {% endfor %}

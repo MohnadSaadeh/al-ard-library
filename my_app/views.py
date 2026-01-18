@@ -1992,9 +1992,10 @@ def import_products_excel(request):
                     category = row[4] if len(row) > 4 and row[4] else None
                     # expiry_date_raw = row[5] if len(row) > 5 and row[5] else None
                     isbn = row[5] if len(row) > 5 and row[5] else None
-                    production_date_raw = row[6] if len(row) > 6 and row[6] else None
-                    author = row[7] if len(row) > 7 and row[7] else None
-                    supplier = row[8] if len(row) > 8 and row[8] else None
+                    publisher = row[6] if len(row) > 6 and row[6] else None
+                    production_date_raw = row[7] if len(row) > 7 and row[7] else None
+                    author = row[8] if len(row) > 8 and row[8] else None
+                    supplier = row[9] if len(row) > 9 and row[9] else None
                     
                     # Validate required fields
                     if not product_name :
@@ -2049,6 +2050,7 @@ def import_products_excel(request):
                         category=category,
                         # expiry_date=expiry_date,
                         isbn=isbn,
+                        publisher=publisher,
                         production_date=production_date,
                         author=author,
                         supplier=supplier,
@@ -2098,19 +2100,20 @@ def download_sample_excel(request):
 
     # Add headers
     #  _('Expiry Date'), was removed from headers and sample data
-    headers = [_('Product Name'), _('Quantity'), _('Purchasing Price'), _('Sale Price'), _('Category'), _('ISBN'), _('Production Date'), _('Author'), _('Supplier')]
+    headers = [_('Product Name'), _('Quantity'), _('Purchasing Price'), _('Sale Price'), _('Category'), _('ISBN'), _('Publisher'), _('Production Date'), _('Author'), _('Supplier')]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
+        cell.alignment = cell.alignment.copy(horizontal='center')
         cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
 
     # Set column widths
     for col in range(1, len(headers) + 1):
         ws.column_dimensions[chr(64 + col)].width = 15
     sample_data = [
-        ['Sample Book 1', 10, 15.50, 25.00, 'Fiction', '9781234567890', '2024-01-15', 'John Doe', 'ABC Publishers'],
-        ['Sample Book 2', 5, 12.75, 20.00, 'Non-Fiction', '9780987654321', '2024', 'Jane Smith', 'XYZ Books'],
-        ['Sample Magazine', 20, 5.00, 8.50, 'Magazine', '9781122334455', '2024-03-01', '', 'News Corp']
+        ['Sample Book 1', 10, 15.50, 25.00, 'Fiction', '9781234567890', 'ABC Publishers', '2024-01-15', 'John Doe', 'ABC Publishers'],
+        ['Sample Book 2', 5, 12.75, 20.00, 'Non-Fiction', '9780987654321', 'XYZ Books', '2024-01-15', 'Jane Smith', 'XYZ Books'],
+        ['Sample Magazine', 20, 5.00, 8.50, 'Magazine', '9781122334455', 'News Corp', '2024-03-01', '', 'News Corp']
     ]
 
     for row_num, row_data in enumerate(sample_data, 2):
@@ -2131,7 +2134,9 @@ def download_sample_excel(request):
 
     return response
 
+#-------------------- Excel reports downloads ----------------------------
 
+# Empty products report
 def download_empty_products_excel(request):
     """
     Generate and download Excel file for empty products report
@@ -2150,10 +2155,11 @@ def download_empty_products_excel(request):
     ws.title = 'Empty Products'
 
     # Add headers
-    headers = [_('Product Name'), _('Author'), _('Supplier/Publisher'), _('Sale Price'), _('Production Date'), _('Quantity')]
+    headers = [_('Product Name'), _('Author'), _('Supplier'), _('Sale Price'),_('Publisher'), _('Production Date'), _('Quantity')]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
+        cell.alignment = cell.alignment.copy(horizontal='center')
         cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
 
     # Set column widths
@@ -2164,8 +2170,9 @@ def download_empty_products_excel(request):
         ws.cell(row=row_num, column=2, value=product.author)
         ws.cell(row=row_num, column=3, value=product.supplier)
         ws.cell(row=row_num, column=4, value=float(product.sale_price) if product.sale_price else 0)
-        ws.cell(row=row_num, column=5, value=product.production_date.strftime('%Y-%m-%d') if product.production_date else '')
-        ws.cell(row=row_num, column=6, value=product.quantity)
+        ws.cell(row=row_num, column=5, value=product.publisher)
+        ws.cell(row=row_num, column=6, value=product.production_date.strftime('%Y') if product.production_date else '')
+        ws.cell(row=row_num, column=7, value=product.quantity)
 
     # Save to BytesIO
     buffer = BytesIO()
@@ -2181,7 +2188,7 @@ def download_empty_products_excel(request):
 
     return response
 
-
+# Available products excel report
 def download_stock_products_excel(request):
     """
     Generate and download Excel file for stock products report
@@ -2200,7 +2207,7 @@ def download_stock_products_excel(request):
     ws.title = 'Stock Products'
 
     # Add headers
-    headers = [_('Product Name'), _('Author'), _('Supplier/Publisher'), _('Sale Price'), _('Production Date'), _('Quantity')]
+    headers = [_('Product Name'), _('Author'), _('Supplier'), _('Sale Price'),_('Publisher'), _('Production Date'), _('Quantity')]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
@@ -2215,8 +2222,9 @@ def download_stock_products_excel(request):
         ws.cell(row=row_num, column=2, value=product.author)
         ws.cell(row=row_num, column=3, value=product.supplier)
         ws.cell(row=row_num, column=4, value=float(product.sale_price) if product.sale_price else 0).font = Font(bold=True)
-        ws.cell(row=row_num, column=5, value=product.production_date.strftime('%Y-%m-%d') if product.production_date else '')
-        ws.cell(row=row_num, column=6, value=product.quantity)
+        ws.cell(row=row_num, column=5, value=product.publisher)
+        ws.cell(row=row_num, column=6, value=product.production_date.strftime('%Y') if product.production_date else '')
+        ws.cell(row=row_num, column=7, value=product.quantity)
 
     # Save to BytesIO
     buffer = BytesIO()
@@ -2435,6 +2443,7 @@ def download_sample_purchase_excel(request):
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
+        cell.alignment = cell.alignment.copy(horizontal='center')
         cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
 
     # Set column widths
@@ -2597,6 +2606,7 @@ def download_sales_products_report_excel(request):
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
+        cell.alignment = cell.alignment.copy(horizontal='center')
         cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
 
     # Set column widths
@@ -2609,7 +2619,7 @@ def download_sales_products_report_excel(request):
         ws.cell(row=row_num, column=2, value=item['author_name'])
         ws.cell(row=row_num, column=3, value=item['supplier_name'])
         ws.cell(row=row_num, column=4, value=float(item['sale_price']) if item['sale_price'] else 0)
-        ws.cell(row=row_num, column=5, value=str(item['production_date']) if item['production_date'] else '')
+        ws.cell(row=row_num, column=5, value=str(item['production_date'].strftime('%Y')) if item['production_date'] else '')
         ws.cell(row=row_num, column=6, value=item['sold_quantity'])
         ws.cell(row=row_num, column=7, value=item['return_sale_quantity'])
         ws.cell(row=row_num, column=8, value=item['remain_sold_quantity'])

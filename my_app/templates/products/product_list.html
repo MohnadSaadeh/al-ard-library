@@ -40,6 +40,7 @@
                             <th scope="col">{% trans "Purchase Price" %}</th>
                             <th scope="col">{% trans "Sale Price" %}</th>
                             <th scope="col">{% trans "ISBN" %}</th>
+                            <th scope="col">{% trans "Publisher" %}</th>
                             <th scope="col">{% trans "Production Date" %}</th>
                             <th scope="col">{% trans "Category" %}</th>
                             <th scope="col">{% trans "Author" %}</th>
@@ -59,7 +60,8 @@
                             <td>{{ product.purchasing_price }}</td>
                             <td>{{ product.sale_price }}</td>
                             <td>{{ product.isbn }}</td>
-                            <td>{{ product.production_date }}</td>
+                            <td>{{ product.publisher }}</td>      <!-- publisher name -->
+                            <td>{{ product.production_date|date:"Y"}}</td> <!-- publishing date -->
                             <td>{{ product.category }}</td>
                             <td>{{ product.author }}</td>
                             {% comment %} <td>{{ product.expiry_date }}</td> {% endcomment %}

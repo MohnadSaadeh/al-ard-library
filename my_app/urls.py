@@ -85,6 +85,9 @@ urlpatterns = [
     path('customers/create', views.add_customer, name='customers_create'),
     path('customers/<int:id>/edit', views.edit_customer, name='customers_edit'),
     path('customers/<int:id>/delete', views.delete_customer, name='customers_delete'),
+    path('customers/<int:id>/', views.customer_detail, name='customer_detail'),
+    
+    # Excel Import/Export
     path('products/import/', views.import_products_excel, name='import_products_excel'),
     path('products/sample-excel/', views.download_sample_excel, name='download_sample_excel'),
     path('stock-products/excel/', views.download_stock_products_excel, name='download_stock_products_excel'),

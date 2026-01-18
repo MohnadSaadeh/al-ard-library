@@ -9,7 +9,7 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = [
             'product_name','isbn', 'quantity', 'purchasing_price', 'sale_price', 'supplier',
-            'production_date', 'category', 'author'#, 'expiry_date'
+             'publisher', 'production_date', 'category', 'author'#, 'expiry_date'
         ]
         labels = {
             'product_name': _('Product Name'),
@@ -18,6 +18,7 @@ class ProductForm(forms.ModelForm):
             'purchasing_price': _('Purchasing Price'),
             'sale_price': _('Sale Price'),
             'supplier': _('Supplier'),
+            'publisher': _('Publisher'),
             'production_date': _('Production Date'),
             'category': _('Category'),
             'author': _('Author'),

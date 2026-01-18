@@ -153,7 +153,8 @@ class Product(models.Model):
     isbn = models.CharField(max_length=32, unique=True , null=True, blank=True)
     production_date = models.DateField(blank=True, null=True)
     author = models.CharField(max_length=255, blank=True, null=True)
-    supplier = models.CharField(max_length=255, blank=True, null=True)#publisher
+    publisher = models.CharField(max_length=255, blank=True, null=True)#publisher
+    supplier = models.CharField(max_length=255, blank=True, null=True)
     employee = models.ForeignKey(Employee, related_name="products", on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
