@@ -57,10 +57,11 @@
 
         <form action="/submet_purchase_order" method="post" class="mt-4">
           {% csrf_token %}
-          <div class="row g-3 mb-3 align-items-center">
-            <div class="col-md-6">
+          <div class="row g-3 align-items-end">
+
+            <div class="col-md-5 col-lg-4">
               <label class="form-label">{% trans "Supplier" %}</label>
-              <div class="input-group">
+              {% comment %} <div class="col-md-6"> {% endcomment %}
                 <input id="supplier-search" class="form-control" list="supplier-list" placeholder="{% trans "Type or select a supplier" %}" aria-label="{% trans "Supplier" %}" autocomplete="off">
                 <input type="hidden" name="supplier_id" id="supplier-id" value="">
                 <datalist id="supplier-list" style="max-height: 5px; overflow-y: auto;">
@@ -68,25 +69,43 @@
                   <option data-id="{{ sup.id }}" value="{{ sup.name }}{% if sup.phone %} - {{ sup.phone }}{% endif %}"></option>
                   {% endfor %}
                 </datalist>
-              </div>
-              <div class="form-text small text-muted">{% trans "Start typing to search suppliers" %}</div>
+              {% comment %} </div> {% endcomment %}
+
+              {% comment %} <div class="form-text small text-muted">{% trans "Start typing to search suppliers" %}</div> {% endcomment %}
             </div>
-          </div>
-          <h4 class="mb-3" style="font-weight:500; color:#2d3748;">{% trans "Order Summary" %}</h4>
-          <div class="row g-3 align-items-center mb-3">
+            <div class="col-md-5 col-lg-4">
+              <label for="currency_id" class="form-label">{% trans "Currency" %}</label>
+              <select name="currency_id" id="currency_id" class="form-select">
+                <option value="">{% trans "- Select Currency -" %}</option>
+                {% for currency in currencies %}
+                  <option value="{{ currency.id }}">{{ currency.code }} - {{ currency.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-5 col-lg-4">
+              <p style="color: #c53030; font-size: 0.8rem;">{% trans "Exchange rate will be applied automatically." %}</p>
+            </div>
             <div class="col-auto">
               <label class="form-label mb-0">{% trans "Payment Method" %}</label>
+              <div class="col-auto">
+                <input type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
+                <label for="cash" class="me-2">{% trans "Cash" %}</label>
+                <input type="radio" id="debts" name="invoice_pay_method" value="debts">
+                <label for="debts">{% trans "Debts" %}</label>
+              </div>
             </div>
-            <div class="col-auto">
-              <input type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
-              <label for="cash" class="me-2">{% trans "Cash" %}</label>
-              <input type="radio" id="debts" name="invoice_pay_method" value="debts">
-              <label for="debts">{% trans "Debts" %}</label>
-            </div>
-          </div>
+
+          <div class="row g-3 align-items-center mb-3">
+
+            {% comment %} <div class="form-text text-danger small"> {% endcomment %}
+            {% comment %} <p>يتم تحويل أسعار شراء المنتجات التي تتم بعملة مختلفة عن العملة الأساسية تلقائيًا إلى العملة الأساسية وفقًا لسعر الصرف المعتمد.</p> {% endcomment %}
+            {% comment %} </div>  {% endcomment %}
           <div class="table-responsive">
+            
             <table class="table table-hover table-bordered align-middle">
               <thead class="table-dark">
+                                                                <p style="color: #c53030; font-size: 0.8rem;">{% trans "Products purchased in a currency different from the base currency are automatically converted to the base currency based on the applicable exchange rate." %}</p>
                 <tr>
                   <th class="ps-3">{% trans "ID" %}</th>
                   <th class="ps-3">{% trans "Product" %}</th>
@@ -97,15 +116,19 @@
                 </tr>
               </thead>
               <tbody id="purchase-cart-tbody">
-                {% for order in purchases_order %}
-                <tr data-product-id="{{order.product_id}}" data-total-price="{{order.total_price}}">
-                  <td class="ps-3">{{order.product_id}}</td>
-                  <td class="ps-3">{{order.product_name}}</td>
-                  <td>{{order.quantity}}</td>
-                  <td class="ps-3">{{order.purchase_price}}</td>
-                  <td class="ps-3">{{order.total_price}}</td>
+                {% for item in purchases_order %}
+                <tr data-product-id="{{item.product_id}}" data-total-price="{{item.total_price}}">
+                  <td class="ps-3">{{item.product_id}}</td>
+                  <td class="ps-3">{{item.product_name}}</td>
+                  <td>
+                    <input type="number" min="1" class="form-control form-control-sm purchase-qty-input" value="{{item.quantity}}" data-product-id="{{item.product_id}}">
+                  </td>
                   <td class="ps-3">
-                    <button type="button" class="btn btn-sm btn-danger delete-purchase-item" data-product-id="{{order.product_id}}">
+                    <input type="number" min="0" step="0.01" class="form-control form-control-sm purchase-price-input" value="{{item.purchase_price}}" data-product-id="{{item.product_id}}">
+                  </td>
+                  <td class="ps-3 total-price-cell" data-product-id="{{item.product_id}}">{{item.total_price}}</td>
+                  <td class="ps-3">
+                    <button type="button" class="btn btn-sm btn-danger delete-purchase-item" data-product-id="{{item.product_id}}">
                       <i class="fas fa-trash"></i>
                     </button>
                   </td>
@@ -150,6 +173,7 @@
                 <th>{% trans "Order No." %}</th>
                 <th>{% trans "Added by" %}</th>
                 <th>{% trans "Added at" %}</th>
+                <th>{% trans "Currency" %}</th>
                 <th>{% trans "Action" %}</th>
               </tr>
             </thead>
@@ -159,6 +183,7 @@
                 <td><span class="fw-bold">{{invoice.id}}</span></td>
                 <td>{{invoice.employee.first_name}} {{invoice.employee.last_name}}</td>
                 <td>{{invoice.created_at}}</td>
+                <td>{{ invoice.currency.code|default:"-" }}</td>
                 <td>
                   <a href="/view_purchase_invoice/{{invoice.id}}" class="btn btn-outline-primary btn-sm me-1">{% trans "View" %}</a>
                   <a href="{% url 'purchase_return_create' invoice.id %}" class="btn btn-outline-danger btn-sm">{% trans "Return" %}</a>
@@ -242,76 +267,6 @@
                   </td>
                 </tr>
                 {% endfor %}
-                <!-- <tr>
-                  <td>
-                    <div class="d-flex px-2">
-                      <div>
-                        <img src="../assets/img/small-logos/logo-invision.svg" class="avatar avatar-sm rounded-circle me-2" alt="invision">
-                      </div>
-                      <div class="my-auto">
-                        <h6 class="mb-0 text-sm">Invision</h6>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <p class="text-sm font-weight-bold mb-0">$5,000</p>
-                  </td>
-                  <td>
-                    <span class="text-xs font-weight-bold">done</span>
-                  </td>
-                  <td class="align-middle text-center">
-                    <div class="d-flex align-items-center justify-content-center">
-                      <span class="me-2 text-xs font-weight-bold">20%</span>
-                      <div>
-                        <div class="progress">
-                          <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="align-middle">
-                    <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                      <i class="fa fa-ellipsis-v text-xs"></i>
-                    </button>
-                  </td>
-                </tr>
-                
-                
-                
-
-                <tr>
-                  <td>
-                    <div class="d-flex px-2">
-                      <div>
-                        <img src="{#{% static 'img/small-logos/logo-xd.svg' %}#}" class="avatar avatar-sm rounded-circle me-2" alt="xd">
-                      </div>
-                      <div class="my-auto">
-                        <h6 class="mb-0 text-sm">Adobe XD</h6>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <p class="text-sm font-weight-bold mb-0">$2,300</p>
-                  </td>
-                  <td>
-                    <span class="text-xs font-weight-bold">done</span>
-                  </td>
-                  <td class="align-middle text-center">
-                    <div class="d-flex align-items-center justify-content-center">
-                      <span class="me-2 text-xs font-weight-bold">100%</span>
-                      <div>
-                        <div class="progress">
-                          <div class="progress-bar bg-gradient-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="align-middle">
-                    <button class="btn btn-link text-secondary mb-0" aria-haspopup="true" aria-expanded="false">
-                      <i class="fa fa-ellipsis-v text-xs"></i>
-                    </button>
-                  </td>
-                </tr> -->
               </tbody>
             </table>
           </div>
@@ -353,24 +308,51 @@
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
 <script>
-// Handle delete purchase item
-document.addEventListener('DOMContentLoaded', function(){
+document.addEventListener('DOMContentLoaded', function() {
   const tbody = document.getElementById('purchase-cart-tbody');
-  if(!tbody) return;
-  
+
+  function recalculateRow(productId) {
+    const qtyInput = tbody.querySelector(`.purchase-qty-input[data-product-id="${productId}"]`);
+    const priceInput = tbody.querySelector(`.purchase-price-input[data-product-id="${productId}"]`);
+    const totalCell = tbody.querySelector(`.total-price-cell[data-product-id="${productId}"]`);
+    if (qtyInput && priceInput && totalCell) {
+      const qty = parseFloat(qtyInput.value) || 0;
+      const price = parseFloat(priceInput.value) || 0;
+      const total = (qty * price).toFixed(2);
+      totalCell.textContent = total;
+    }
+    recalculateGrandTotal();
+  }
+
+  function recalculateGrandTotal() {
+    let grandTotal = 0;
+    tbody.querySelectorAll('.total-price-cell').forEach(cell => {
+      grandTotal += parseFloat(cell.textContent) || 0;
+    });
+    const grandTotalCell = tbody.querySelector('tr.table-secondary.fw-bold td.ps-3');
+    if (grandTotalCell) {
+      grandTotalCell.textContent = grandTotal.toFixed(2);
+    }
+  }
+
+  tbody.addEventListener('input', function(e) {
+    if (e.target.classList.contains('purchase-qty-input') || e.target.classList.contains('purchase-price-input')) {
+      const productId = e.target.dataset.productId;
+      recalculateRow(productId);
+    }
+  });
+
+  // Keep your delete handler as is
   tbody.addEventListener('click', function(e){
     const deleteBtn = e.target.closest('.delete-purchase-item');
     if(!deleteBtn) return;
-    
     e.preventDefault();
     const productId = deleteBtn.dataset.productId;
-    
     if(!productId){
       alert('Error: product_id not found');
       return;
     }
-    
-    // Send AJAX DELETE request
+    // Send AJAX DELETE request (as before)
     fetch('/delete-product-from-purchase', {
       method: 'POST',
       headers: {
@@ -382,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function(){
     .then(r => r.json())
     .then(data => {
       if(data.status === 'ok'){
-        // Rebuild cart table
+        // Rebuild cart table (use the new editable row structure)
         if(Array.isArray(data.items)){
           let html = '';
           data.items.forEach(item => {
@@ -390,9 +372,13 @@ document.addEventListener('DOMContentLoaded', function(){
               <tr data-product-id="${item.product_id}" data-total-price="${item.total_price}">
                 <td class="ps-3">${item.product_id}</td>
                 <td class="ps-3">${item.product_name}</td>
-                <td>${item.quantity}</td>
-                <td class="ps-3">${item.purchase_price}</td>
-                <td class="ps-3">${item.total_price}</td>
+                <td>
+                  <input type="number" min="1" class="form-control form-control-sm purchase-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
+                </td>
+                <td class="ps-3">
+                  <input type="number" min="0" step="0.01" class="form-control form-control-sm purchase-price-input" value="${item.purchase_price}" data-product-id="${item.product_id}">
+                </td>
+                <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>
                 <td class="ps-3">
                   <button type="button" class="btn btn-sm btn-danger delete-purchase-item" data-product-id="${item.product_id}">
                     <i class="fas fa-trash"></i>
@@ -444,19 +430,22 @@ document.addEventListener('DOMContentLoaded', function() {
               tbody.innerHTML = '';
               data.items.forEach(item => {
                 tbody.innerHTML += `
-                  <tr>
+                  <tr data-product-id="${item.product_id}" data-total-price="${item.total_price}">
                     <td class="ps-3">${item.product_id}</td>
                     <td class="ps-3">${item.product_name}</td>
-                    <td>${item.quantity}</td>
-                    <td class="ps-3">${item.purchase_price}</td>
-                    <td class="ps-3">${item.total_price}</td>
+                    <td>
+                      <input type="number" min="1" class="form-control form-control-sm purchase-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
+                    </td>
+                    <td class="ps-3">
+                      <input type="number" min="0" step="0.01" class="form-control form-control-sm purchase-price-input" value="${item.purchase_price}" data-product-id="${item.product_id}">
+                    </td>
+                    <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>
                     <td class="ps-3">
                       <button type="button" class="btn btn-sm btn-danger delete-purchase-item" data-product-id="${item.product_id}">
                         <i class="fas fa-trash"></i>
                       </button>
                     </td>
-                  </tr>
-                `;
+                  </tr>`;
               });
               // Always render the Grand Total row at the end
               tbody.innerHTML += `
@@ -543,12 +532,16 @@ document.addEventListener('DOMContentLoaded', function(){
           let html = '';
           data.items.forEach(item => {
             html += `
-              <tr>
+              <tr data-product-id="${item.product_id}" data-total-price="${item.total_price}">
                 <td class="ps-3">${item.product_id}</td>
                 <td class="ps-3">${item.product_name}</td>
-                <td>${item.quantity}</td>
-                <td class="ps-3">${item.purchase_price}</td>
-                <td class="ps-3">${item.total_price}</td>
+                <td>
+                  <input type="number" min="1" class="form-control form-control-sm purchase-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
+                </td>
+                <td class="ps-3">
+                  <input type="number" min="0" step="0.01" class="form-control form-control-sm purchase-price-input" value="${item.purchase_price}" data-product-id="${item.product_id}">
+                </td>
+                <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>
                 <td class="ps-3">
                   <button type="button" class="btn btn-sm btn-danger delete-purchase-item" data-product-id="${item.product_id}">
                     <i class="fas fa-trash"></i>

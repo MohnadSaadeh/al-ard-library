@@ -1,3 +1,5 @@
+from django.utils.translation import gettext as _
+
 def stock_products_report(request):
     products = models.Product.objects.filter(quantity__gt=0)
     context = {
@@ -12,6 +14,7 @@ def empty_products_report(request):
     }
     return render(request, 'empty_products_report.html', context)
 # AJAX endpoint: add product to sale cart by ISBN
+from itertools import product
 from django.views.decorators.csrf import csrf_exempt
 import json
 
@@ -500,6 +503,7 @@ def display_sales(request):
             'orders' : orders_page,
             'employee': models.get_employee_by_id(request.session['employee_id']),
             'customers': models.Customer.objects.all(),
+            'currencies': models.Currency.objects.all(),
             'grand_total': grand_total,
             'orders_paginator': orders_paginator,
         }
@@ -514,6 +518,7 @@ def display_purchases(request):
     invoices_page_number = request.GET.get('invoices_page')
     invoices_paginator = Paginator(invoices_qs, 10)  # 10 invoices per page
     invoices_page = invoices_paginator.get_page(invoices_page_number)
+    
 
     context = {
             'purchases_order': p_cart,
@@ -523,6 +528,7 @@ def display_purchases(request):
             'grand_total': grand_total,
             'invoices_paginator': invoices_paginator,
             'suppliers': models.Supplier.objects.all(),
+            'currencies': models.Currency.objects.all(),
         }
     return render(request , 'purchase_invoices.html' ,context)
 
@@ -911,24 +917,100 @@ def submet_sale_order(request):
                 customer_id = int(customer_id)
             except Exception:
                 customer_id = None
-        # Create sale order and set payment method and customer
+         
+         
+        
+        
+        # Get and validate currency
+        currency_id = request.POST.get('currency_id')
+        if not currency_id:
+            messages.error(request, _("Please select a currency before submitting the sale!"))
+            return redirect('/sales')
+        
+        
+        # # product.currency
+        # for pro_curr in cart:
+            
+        #     product_id = pro_curr.get('product_id')
+            
+        #     print(currency_id)
+        #     product_currency = models.Product.objects.get(id=product_id).currency
+        #     print(product_currency)
+        #     # if product_currency and product_currency.id != int(currency_id):
+        #     if product_currency and (product_currency.id != (models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() else None)):
+                
+        #         messages.error(request, _("اسف عملة المنتج لا تساوي عملة البيع!"))
+        #         return redirect('/sales')
+                
+        
+        # Create sale order and set payment method, customer, and currency
         sale_order = models.create_sale_order(employee_id, customer_id)
         sale_order.invoice_pay_method = pay_method
+        
+        # Set currency and calculate exchange rate if currency is selected
+        if currency_id:
+            try:
+                sale_order.currency_id = currency_id
+                # Get exchange rate for selected currency to base currency
+                from datetime import date
+                # Get exchange rate for selected currency ()
+                
+                # means: true if you defined an exchange_rate in your ExchangeRate TABLE in your company profile from currency to curency 
+                # means: is there an ExchangeRate from (purchased currenct to BASE_currency) ?
+                # ----EXAMBLE----
+                # if you didnt add in (ExchangeRate TABLE) USD to USD :
+                # if PURCHASE_CURRENCT == USD
+                # and BASE_CURRENCY == USD
+                # USD to USD : exchange_rate_obj == False
+                exchange_rate_obj = models.ExchangeRate.objects.filter(
+                    from_currency_id=currency_id,
+                    to_currency__id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None,
+                    date=date.today()
+                ).first()
+                
+                # if found a record in the table (ExchangeRate)
+                # git that rate 
+                # put it in purchase.exchange_rate_to_base
+                if exchange_rate_obj:
+                    sale_order.exchange_rate_to_base = exchange_rate_obj.rate
+                elif currency_id != (models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() else None):
+                    # If no rate found and it's not the base currency, set rate to 1.0 as fallback
+                    sale_order.exchange_rate_to_base = 1.0
+            except Exception as e:
+                messages.warning(request, _("Could not set exchange rate: %(err)s") % {'err': str(e)})
+
         sale_order.save()
+        
 
         for key in cart:
             product_id = key.get('product_id')
             quantity = int(key.get('quantity'))
-            models.add_item_to_invoice(product_id, quantity)
+            sale_price = float(key.get('sale_price') or 0)
+            total_price = float(key.get('total_price') or 0)
+            models.add_item_to_invoice(product_id, quantity, sale_price, total_price)
             models.add_product_to_sale(product_id, quantity)
 
-        # update the created Sale_order total_amount by summing sale items
+        # update the created Purchase total (grand_total and total_amount)
         try:
+            
             last_sale = models.Sale_order.objects.last()
             total_sum = models.Sale_item.objects.filter(sale_order=last_sale).aggregate(total=Sum('total_price'))['total'] or 0
-            last_sale.total_amount = total_sum
-            last_sale.save()
-        except Exception:
+            last_sale.grand_total = total_sum
+            last_sale.total_amount = total_sum            
+            
+            #_#_#_#_#_#_#_#_# (exchange_rate_to_base)
+            # Calculate total_price_base if currency and exchange rate are set
+            if last_sale.currency_id and last_sale.exchange_rate_to_base:
+                last_sale.total_amount_base = total_sum * last_sale.exchange_rate_to_base
+                # Also update (sale_items) with total_price_base
+                for item in models.Sale_item.objects.filter(sale_order=last_sale):
+                    item.currency_id = last_sale.currency_id
+                    item.exchange_rate_to_base = last_sale.exchange_rate_to_base
+                    item.total_price_base = item.total_price * last_sale.exchange_rate_to_base
+                    item.save()
+                    
+            last_sale.save() 
+        except Exception as e:
             pass
 
         _save_sale_cart(request, [])
@@ -1308,43 +1390,115 @@ def scan_add_to_purchase(request):
     cart = _get_purchase_cart(request)
     grand_total = sum(float(item.get('total_price', 0)) for item in cart)
     return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
-    
+
+#_#_#_#_#_#_#_#_#_#_#_#_#_#_#_#_# --- Puchase ---_#_#_#_#_#_#_#_#_#_#_#_#_#_#
 def submet_purchase_order(request):
     cart = _get_purchase_cart(request)
     if not cart:
         messages.error(request, _("Please add at least one product to purchase!"))
         return redirect('/purchases')
-    else:
-        employee_id = request.session['employee_id']
-        # Get payment method from form POST
-        pay_method = request.POST.get('invoice_pay_method', 'cash')
-        supplier_id = request.POST.get('supplier_id')
-        # create purchase order with optional supplier
-        purchase = models.create_purchase_order(employee_id, supplier_id=supplier_id if supplier_id else None)
-        purchase.invoice_pay_method = pay_method
-        purchase.save()
-        for key in cart:
-            product_id = key.get('product_id')
-            quantity = int(key.get('quantity'))
-            purchase_price = float(key.get('purchase_price') or 0)
-            total_price = float(key.get('total_price') or 0)
-            models.add_item_to_purchase_invoice(product_id, quantity, purchase_price, total_price)
-            models.add_product_to_purchase(product_id, quantity)
-
-        # update the created Purchase total (grand_total and total_amount)
-        try:
-            last_purchase = models.Purchase.objects.last()
-            total_sum = models.Purchase_item.objects.filter(purchase_id=last_purchase).aggregate(total=Sum('total_price'))['total'] or 0
-            last_purchase.grand_total = total_sum
-            last_purchase.total_amount = total_sum
-            last_purchase.save()
-        except Exception:
-            pass
-
-        _save_purchase_cart(request, [])
-        messages.success(request, _("Purchased Successfully!"), extra_tags = 'add_invoice')
-
+    
+    # Validate currency selection
+    currency_id = request.POST.get('currency_id')
+    if not currency_id:
+        messages.error(request, _("Please select a currency before submitting the purchase!"))
         return redirect('/purchases')
+    
+    employee_id = request.session['employee_id']
+    # Get payment method from form POST
+    pay_method = request.POST.get('invoice_pay_method', 'cash')
+    supplier_id = request.POST.get('supplier_id')
+    
+    # create purchase order with optional supplier
+    # sala_order for sales
+    purchase = models.create_purchase_order(employee_id, supplier_id=supplier_id if supplier_id else None)
+    purchase.invoice_pay_method = pay_method
+    
+    # Set currency and calculate exchange rate if currency is selected
+    if currency_id:
+        try:
+            purchase.currency_id = currency_id
+            # Get exchange rate for selected currency to base currency
+            from datetime import date
+            # Get exchange rate for selected currency ()
+            
+            # means: true if you defined an exchange_rate in your ExchangeRate TABLE in your company profile from currency to curency 
+            # means: is there an ExchangeRate from (purchased currenct to BASE_currency) ?
+            # ----EXAMBLE----
+            # if you didnt add in (ExchangeRate TABLE) USD to USD :
+            # if PURCHASE_CURRENCT == USD
+            # and BASE_CURRENCY == USD
+            # USD to USD : exchange_rate_obj == False
+            exchange_rate_obj = models.ExchangeRate.objects.filter(
+                from_currency_id=currency_id,
+                to_currency__id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None,
+                date=date.today()
+            ).first()
+            
+            # if found a record in the table (ExchangeRate)
+            # git that rate 
+            # put it in purchase.exchange_rate_to_base
+            if exchange_rate_obj:
+                purchase.exchange_rate_to_base = exchange_rate_obj.rate
+            elif currency_id != (models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() else None):
+                # If no rate found and it's not the base currency, set rate to 1.0 as fallback
+                purchase.exchange_rate_to_base = 1.0
+        except Exception as e:
+            messages.warning(request, _("Could not set exchange rate: %(err)s") % {'err': str(e)})
+    
+    purchase.save()
+    
+    for key in cart:
+        product_id = key.get('product_id')
+        quantity = int(key.get('quantity'))
+        purchase_price = float(key.get('purchase_price') or 0)
+        total_price = float(key.get('total_price') or 0)
+        models.add_item_to_purchase_invoice(product_id, quantity, purchase_price, total_price)
+        models.add_product_to_purchase(product_id, quantity)
+
+    # update the created Purchase total (grand_total and total_amount)
+    try:
+        last_purchase = models.Purchase.objects.last()
+        total_sum = models.Purchase_item.objects.filter(purchase_id=last_purchase).aggregate(total=Sum('total_price'))['total'] or 0
+        last_purchase.grand_total = total_sum
+        last_purchase.total_amount = total_sum
+        
+        #_#_#_#_#_#_#_#_# (exchange_rate_to_base)
+        # Calculate total_price_base if currency and exchange rate are set
+        if last_purchase.currency_id and last_purchase.exchange_rate_to_base:
+            last_purchase.total_price_base = total_sum * last_purchase.exchange_rate_to_base
+            # Also update (purchase_items) with total_price_base
+            for item in models.Purchase_item.objects.filter(purchase_id=last_purchase):
+                item.currency_id = last_purchase.currency_id
+                item.exchange_rate_to_base = last_purchase.exchange_rate_to_base
+                item.total_price_base = item.total_price * last_purchase.exchange_rate_to_base
+                item.save()
+                
+                # Update product purchasing_price if currency is not base currency
+                # If purchased currency differs from base currency, update product purchasing_price
+                # (عملة الشركة)يتم تحديث سعر الشراء للمنتج إذا كانت عملة الشراء مختلفة عن العملة الأساسية
+                base_currency_id = models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() else None
+                if last_purchase.currency_id != base_currency_id:
+                    try:
+                        product = models.Product.objects.get(id=item.product_id)
+                        # Set purchasing_price to the price in base currency
+                        # product.purchasing_price = float(item.purchase_price) * float(last_purchase.exchange_rate_to_base)
+                        product.purchasing_price = float(item.unit_price) * float(last_purchase.exchange_rate_to_base)
+                        product.save()
+                        messages.warning(request, _("Updated purchasing price for product '%(prod)s' to %(price).2f in base currency.") % {'prod': product.product_name, 'price': product.purchasing_price})
+                    except Exception as e:
+                        # Optionally log or handle error
+                        messages.warning(request, _("Could not Convert : %(err)s") % {'err': str(e)})
+                        # pass
+                        
+        last_purchase.save()
+    except Exception as e:
+        messages.warning(request, _("Could not update purchase totals: %(err)s") % {'err': str(e)})
+
+    _save_purchase_cart(request, [])
+    messages.success(request, _("Purchased Successfully!"), extra_tags = 'add_invoice')
+
+    return redirect('/purchases')
 #____________________________________PURCHASE___________________________________
 
 def clear_purchases_list(request):
@@ -1683,34 +1837,162 @@ def display_company_profile(request):
         return redirect('/index')
 
     if request.method == 'POST':
-        company_name = request.POST.get('company_name', '').strip()
-        registration_number = request.POST.get('registration_number', '').strip()
-        address = request.POST.get('address', '').strip()
-        phone = request.POST.get('phone', '').strip()
-        email = request.POST.get('email', '').strip()
+        # Handle company profile update
+        if 'save_company' in request.POST:
+            company_name = request.POST.get('company_name', '').strip()
+            registration_number = request.POST.get('registration_number', '').strip()
+            address = request.POST.get('address', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            email = request.POST.get('email', '').strip()
+            base_currency_id = request.POST.get('base_currency')
 
-        if not company_name:
-            messages.error(request, _('Company name is required.'))
-            return redirect('/company_profile')
+            if not company_name:
+                messages.error(request, _('Company name is required.'))
+                return redirect('/company_profile')
 
-        try:
-            models.set_company_profile(
-                company_name=company_name,
-                registration_number=registration_number or None,
-                address=address or None,
-                phone=phone or None,
-                email=email or None,
-            )
-            messages.success(request, _('Company profile saved.'))
-        except Exception as e:
-            messages.error(request, _('Failed to save company profile: %(err)s') % {'err': str(e)})
+            try:
+                base_currency = None
+                if base_currency_id:
+                    try:
+                        base_currency = models.Currency.objects.get(id=base_currency_id)
+                    except models.Currency.DoesNotExist:
+                        pass
+                
+                company = models.get_company_profile()
+                if company:
+                    company.company_name = company_name
+                    company.registration_number = registration_number or None
+                    company.address = address or None
+                    company.phone = phone or None
+                    company.email = email or None
+                    company.base_currency = base_currency
+                    company.save()
+                else:
+                    company = models.CompanyProfile.objects.create(
+                        company_name=company_name,
+                        registration_number=registration_number or None,
+                        address=address or None,
+                        phone=phone or None,
+                        email=email or None,
+                        base_currency=base_currency,
+                    )
+                messages.success(request, _('Company profile saved.'))
+            except Exception as e:
+                messages.error(request, _('Failed to save company profile: %(err)s') % {'err': str(e)})
+
+        # Handle new currency creation
+        elif 'add_currency' in request.POST:
+            code = request.POST.get('currency_code', '').strip().upper()
+            name = request.POST.get('currency_name', '').strip()
+
+            if not code or not name:
+                messages.error(request, _('Currency code and name are required.'))
+                return redirect('/company_profile')
+
+            try:
+                if models.Currency.objects.filter(code=code).exists():
+                    messages.error(request, _('Currency with code %(code)s already exists.') % {'code': code})
+                else:
+                    models.Currency.objects.create(code=code, name=name)
+                    messages.success(request, _('Currency added successfully.'))
+            except Exception as e:
+                messages.error(request, _('Failed to add currency: %(err)s') % {'err': str(e)})
+
+        # Handle new exchange rate creation
+        elif 'add_exchange_rate' in request.POST:
+            from_currency_id = request.POST.get('from_currency')
+            to_currency_id = request.POST.get('to_currency')
+            rate = request.POST.get('exchange_rate', '')
+
+            if not from_currency_id or not to_currency_id or not rate:
+                messages.error(request, _('All exchange rate fields are required.'))
+                return redirect('/company_profile')
+
+            try:
+                from_currency = models.Currency.objects.get(id=from_currency_id)
+                to_currency = models.Currency.objects.get(id=to_currency_id)
+                rate_value = float(rate)
+                
+                if rate_value <= 0:
+                    messages.error(request, _('Exchange rate must be greater than 0.'))
+                    return redirect('/company_profile')
+
+                # Update or create exchange rate for today
+                import datetime
+                today = datetime.date.today()
+                exchange_rate, created = models.ExchangeRate.objects.update_or_create(
+                    from_currency=from_currency,
+                    to_currency=to_currency,
+                    date=today,
+                    defaults={'rate': rate_value}
+                )
+                
+                if created:
+                    messages.success(request, _('Exchange rate added successfully.'))
+                else:
+                    messages.success(request, _('Exchange rate updated successfully.'))
+            except models.Currency.DoesNotExist:
+                messages.error(request, _('One or both currencies not found.'))
+            except ValueError:
+                messages.error(request, _('Exchange rate must be a valid number.'))
+            except Exception as e:
+                messages.error(request, _('Failed to add exchange rate: %(err)s') % {'err': str(e)})
+
+        # Handle exchange rate edit
+        elif 'edit_exchange_rate' in request.POST:
+            rate_id = request.POST.get('rate_id')
+            rate_value = request.POST.get('exchange_rate', '')
+
+            if not rate_id or not rate_value:
+                messages.error(request, _('Rate ID and value are required.'))
+                return redirect('/company_profile')
+
+            try:
+                exchange_rate = models.ExchangeRate.objects.get(id=rate_id)
+                rate_float = float(rate_value)
+                
+                if rate_float <= 0:
+                    messages.error(request, _('Exchange rate must be greater than 0.'))
+                    return redirect('/company_profile')
+
+                exchange_rate.rate = rate_float
+                exchange_rate.save()
+                messages.success(request, _('Exchange rate updated successfully.'))
+            except models.ExchangeRate.DoesNotExist:
+                messages.error(request, _('Exchange rate not found.'))
+            except ValueError:
+                messages.error(request, _('Exchange rate must be a valid number.'))
+            except Exception as e:
+                messages.error(request, _('Failed to update exchange rate: %(err)s') % {'err': str(e)})
+
+        # Handle exchange rate delete
+        elif 'delete_exchange_rate' in request.POST:
+            rate_id = request.POST.get('delete_exchange_rate')
+
+            if not rate_id:
+                messages.error(request, _('Rate ID is required.'))
+                return redirect('/company_profile')
+
+            try:
+                exchange_rate = models.ExchangeRate.objects.get(id=rate_id)
+                exchange_rate.delete()
+                messages.success(request, _('Exchange rate deleted successfully.'))
+            except models.ExchangeRate.DoesNotExist:
+                messages.error(request, _('Exchange rate not found.'))
+            except Exception as e:
+                messages.error(request, _('Failed to delete exchange rate: %(err)s') % {'err': str(e)})
 
         return redirect('/company_profile')
 
     company = models.get_company_profile()
+    currencies = models.Currency.objects.all()
+    exchange_rates = models.ExchangeRate.objects.select_related('from_currency', 'to_currency').order_by('-date')[:10]
+    
     context = {
         'company': company,
-        'employee': models.get_employee_by_id(request.session['employee_id'])
+        'employee': models.get_employee_by_id(request.session['employee_id']),
+        'currencies': currencies,
+        'exchange_rates': exchange_rates,
     }
     return render(request, 'company_profile.html', context)
 
@@ -2240,188 +2522,228 @@ def download_stock_products_excel(request):
 
     return response
 
+###########################################################################
+
+from django.utils.translation import gettext as gettext
+from django.db.models import Sum
+from django.db import transaction
+from datetime import date
+from decimal import Decimal
+from openpyxl import load_workbook
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from . import models
+
 
 def import_purchase_invoices_excel(request):
     """
-    Import purchase invoices from Excel file (.xlsx)
-    Expected columns: supplier_name, payment_method, product_isbn, product_name, quantity, unit_price
-    Each row represents one purchase invoice item. Multiple items with same supplier/employee will be grouped into one invoice.
-    Employee is taken from the logged-in user's session.
+    Import purchase invoices from Excel file (.xlsx) using submet_purchase_order logic.
+    Generates **one invoice per supplier + employee + payment_method + currency**.
     """
     if request.method == 'POST':
         if 'excel_file' not in request.FILES:
-            messages.error(request, _('Please select an Excel file to upload.'))
+            messages.error(request, gettext('Please select an Excel file to upload.'))
             return redirect('import_purchase_invoices_excel')
         
         excel_file = request.FILES['excel_file']
         if not excel_file.name.endswith('.xlsx'):
-            messages.error(request, _('Please upload a valid Excel file (.xlsx).'))
+            messages.error(request, gettext('Please upload a valid Excel file (.xlsx).'))
             return redirect('import_purchase_invoices_excel')
         
         try:
-            from openpyxl import load_workbook
             wb = load_workbook(excel_file)
             ws = wb.active
-            
-            # Skip header row
-            rows = list(ws.iter_rows(values_only=True))[1:]
-            
+            rows = list(ws.iter_rows(values_only=True))[1:]  # Skip header
+
+            errors = []
             imported_invoices = 0
             imported_items = 0
-            errors = []
-            
-            # Group items by invoice key (supplier + employee + payment_method)
+
+            # Get base currency
+            company = models.CompanyProfile.objects.first()
+            base_currency_id = company.base_currency_id if company else None
+
+            # Group rows by supplier + employee + payment_method + currency
             invoice_groups = {}
-            
-            for row_num, row in enumerate(rows, start=2):  # Start from 2 because we skipped header
+
+            for row_num, row in enumerate(rows, start=2):
                 try:
-                    # Extract data from row
-                    product_name = row[0] if len(row) > 0 and row[0] else None
-                    quantity = row[1] if len(row) > 1 and row[1] is not None else None
-                    unit_price = row[2] if len(row) > 2 and row[2] is not None else None
-                    product_isbn = row[3] if len(row) > 3 and row[3] else None
-                    supplier_name = row[4] if len(row) > 4 and row[4] else None
-                    payment_method = row[5] if len(row) > 5 and row[5] else 'cash'
-                    
+                    product_name = row[0] if len(row) > 0 else None
+                    quantity = row[1] if len(row) > 1 else None
+                    unit_price = row[2] if len(row) > 2 else None
+                    product_isbn = row[3] if len(row) > 3 else None
+                    supplier_name = row[4] if len(row) > 4 else None
+                    payment_method = row[5] if len(row) > 5 else 'cash'
+                    currency_code = row[6] if len(row) > 6 else None
+
                     # Validate required fields
-                    if  not supplier_name or quantity is None or unit_price is None or not product_name:
-                        errors.append(_("Row %(row_num)d: Missing required fields (supplier_name, payment_method, product_isbn, product_name, quantity, unit_price)") % {'row_num': row_num})
+                    if not all([product_name, quantity, unit_price, product_isbn, supplier_name, currency_code]):
+                        errors.append(gettext("Row %(row)d: Missing required fields") % {'row': row_num})
                         continue
-                    
-                    # valedate product_name matches the product_isbn
-                    product = models.Product.objects.get(isbn=product_isbn)
-                    if product.product_name != product_name:
-                        errors.append(_("Row %(row_num)d: Product name '%(pname)s' does not match the name '%(expected)s' for ISBN '%(isbn)s'") % {'row_num': row_num, 'pname': product_name, 'expected': product.product_name, 'isbn': product_isbn})
-                        continue
-                        
-                    # Validate payment method
-                    if payment_method not in ['cash', 'debts']:
-                        payment_method = 'cash'
-                    
+
                     # Convert quantity and unit_price
                     try:
                         quantity = int(quantity)
                         unit_price = float(unit_price)
                         total_price = quantity * unit_price
-                    except (ValueError, TypeError):
-                        errors.append(_("Row %(row_num)d: Invalid quantity or unit_price") % {'row_num': row_num})
+                    except Exception:
+                        errors.append(gettext("Row %(row)d: Invalid quantity or unit_price") % {'row': row_num})
                         continue
-                    
-                    # Check if product exists
+
+                    # Validate product
                     try:
                         product = models.Product.objects.get(isbn=product_isbn)
+                        if product.product_name != product_name:
+                            errors.append(gettext("Row %(row)d: Product name '%(pname)s' does not match '%(expected)s'") %
+                                          {'row': row_num, 'pname': product_name, 'expected': product.product_name})
+                            continue
                     except models.Product.DoesNotExist:
-                        errors.append(_("Row %(row_num)d: Product with ISBN '%(isbn)s' not found") % {'row_num': row_num, 'isbn': product_isbn})
+                        errors.append(gettext("Row %(row)d: Product with ISBN '%(isbn)s' not found") %
+                                      {'row': row_num, 'isbn': product_isbn})
                         continue
-                    
-                    # Check if employee exists
+
+                    # Validate currency
+                    try:
+                        currency = models.Currency.objects.get(code=currency_code)
+                    except models.Currency.DoesNotExist:
+                        errors.append(gettext("Row %(row)d: Currency '%(currency)s' not found") %
+                                      {'row': row_num, 'currency': currency_code})
+                        continue
+
+                    # Get employee
                     employee_id = request.session.get('employee_id')
                     try:
                         employee = models.Employee.objects.get(id=employee_id)
                     except models.Employee.DoesNotExist:
-                        errors.append(_("Row %(row_num)d: Employee with ID '%(id)s' not found") % {'row_num': row_num, 'id': employee_id})
+                        errors.append(gettext("Row %(row)d: Employee with ID '%(id)s' not found") %
+                                      {'row': row_num, 'id': employee_id})
                         continue
-                    
+
                     # Find or create supplier
-                    supplier = None
-                    if supplier_name:
-                        supplier, created = models.Supplier.objects.get_or_create(
-                            name=supplier_name,
-                            defaults={'phone': '', 'email': '', 'contact_info': ''}
-                        )
-                    
+                    supplier, _ = models.Supplier.objects.get_or_create(
+                        name=supplier_name, defaults={'phone': '', 'email': '', 'contact_info': ''}
+                    )
+
                     # Create invoice key
-                    invoice_key = f"{supplier.id if supplier else 'none'}_{employee.id}_{payment_method}"
-                    
+                    invoice_key = f"{supplier.id}_{employee.id}_{payment_method}_{currency.id}"
+
                     if invoice_key not in invoice_groups:
                         invoice_groups[invoice_key] = {
                             'supplier': supplier,
                             'employee': employee,
                             'payment_method': payment_method,
+                            'currency': currency,
                             'items': []
                         }
-                    
+
                     invoice_groups[invoice_key]['items'].append({
                         'product': product,
                         'quantity': quantity,
                         'unit_price': unit_price,
                         'total_price': total_price
                     })
-                    
+
                 except Exception as e:
-                    errors.append(_("Row %(row_num)d: %(error)s") % {'row_num': row_num, 'error': str(e)})
+                    errors.append(gettext("Row %(row)d: %(error)s") % {'row': row_num, 'error': str(e)})
                     continue
-            
-            # Check for errors - reject entire file if any errors found
+
             if errors:
-                messages.error(request, _('Import failed due to errors in the Excel file. Please fix the following issues and try again:'))
-                for error in errors:
-                    messages.error(request, error)
+                messages.error(request, gettext('Import failed due to errors in the Excel file. Please fix and try again:'))
+                for err in errors:
+                    messages.error(request, err)
                 return redirect('import_purchase_invoices_excel')
-            
-            # Process each invoice group only if no errors
-            for invoice_key, invoice_data in invoice_groups.items():
+
+            # ================== CREATE PURCHASE INVOICES ==================
+            for key, data in invoice_groups.items():
                 try:
                     with transaction.atomic():
-                        # Create purchase invoice
-                        purchase = models.Purchase.objects.create(
-                            employee= employee  ,
-                            supplier=invoice_data['supplier'],
-                            payment_method=invoice_data['payment_method'],
-                            invoice_pay_method=invoice_data['payment_method']
-                        )
-                        
-                        total_amount = 0
-                        # Add items to invoice
-                        for item in invoice_data['items']:
-                            models.Purchase_item.objects.create(
-                                purchase_id=purchase,
-                                product=item['product'],
-                                quantity=item['quantity'],
-                                unit_price=item['unit_price'],
-                                total_price=item['total_price']
-                            )
-                            # Update product quantity and purchasing price from imported unit price
-                            prod = item['product']
-                            prod.quantity += item['quantity']
-                            # update the product's purchasing price to the imported unit price
-                            try:
-                                prod.purchasing_price = float(item['unit_price'])
-                            except Exception:
-                                prod.purchasing_price = item['unit_price']
-                            prod.save()
-                            total_amount += item['total_price']
-                            imported_items += 1
-                        
-                        # Update purchase totals
-                        purchase.total_amount = total_amount
-                        purchase.grand_total = total_amount
+                        employee = data['employee']
+                        supplier = data['supplier']
+                        payment_method = data['payment_method']
+                        currency = data['currency']
+                        items = data['items']
+
+                        # Create purchase order
+                        purchase = models.create_purchase_order(employee.id, supplier_id=supplier.id)
+                        purchase.invoice_pay_method = payment_method
+                        purchase.currency_id = currency.id
+
+                        # Exchange rate
+                        exchange_rate_obj = models.ExchangeRate.objects.filter(
+                            from_currency_id=currency.id,
+                            to_currency_id=base_currency_id,
+                            date=date.today()
+                        ).first()
+                        if exchange_rate_obj:
+                            purchase.exchange_rate_to_base = exchange_rate_obj.rate
+                        elif currency.id != base_currency_id:
+                            purchase.exchange_rate_to_base = 1.0
+                        else:
+                            purchase.exchange_rate_to_base = 1.0
                         purchase.save()
-                        
+
+                        total_amount = 0
+
+                        # Add items and update products
+                        from decimal import Decimal
+                        for item in items:
+                            product = item['product']
+                            quantity = item['quantity']
+                            unit_price = item['unit_price']
+                            total_price = item['total_price']
+                            
+
+                            models.add_item_to_purchase_invoice(product.id, quantity, unit_price, total_price)
+                            
+                            # Update product quantity
+                            product.quantity += quantity
+
+                            # Update product purchasing price if currency != base
+                            if currency.id != base_currency_id:
+                                product.purchasing_price = Decimal(unit_price) * Decimal(purchase.exchange_rate_to_base)
+                                messages.warning(request, gettext("Updated purchasing price for product '%(prod)s' to %(price).2f in base currency.") % {'prod': product.product_name, 'price': product.purchasing_price})
+                            else:
+                                product.purchasing_price = unit_price
+                            product.save()
+
+                            total_amount += total_price
+                            imported_items += 1
+
+                        # Update purchase totals
+                        purchase.total_amount = Decimal(total_amount)
+                        purchase.grand_total = Decimal(total_amount)
+                        purchase.total_price_base = Decimal(total_amount) * Decimal(purchase.exchange_rate_to_base)
+                        purchase.save()
+
+                        # Update purchase_items with total_price_base
+                        for pi in models.Purchase_item.objects.filter(purchase_id=purchase):
+                            pi.currency_id = currency.id
+                            pi.exchange_rate_to_base = Decimal(purchase.exchange_rate_to_base)
+                            pi.total_price_base = Decimal(pi.total_price) * Decimal(purchase.exchange_rate_to_base)
+                            pi.save()
+
                         imported_invoices += 1
-                        
+
                 except Exception as e:
-                    errors.append(_("Error creating invoice for %(key)s: %(error)s") % {'key': invoice_key, 'error': str(e)})
+                    messages.warning(request, gettext("Error creating invoice for %(key)s: %(error)s") %
+                                     {'key': key, 'error': str(e)})
                     continue
-            
-            # Show results only if no errors during processing
+
             if imported_invoices > 0:
-                messages.success(request, _('Successfully imported %(invoices)d purchase invoices with %(items)d items.') % {'invoices': imported_invoices, 'items': imported_items})
-            
-            if errors:
-                for error in errors[:10]:  # Show first 10 errors
-                    messages.warning(request, error)
-                if len(errors) > 10:
-                    messages.warning(request, _('... and %(count)d more errors.') % {'count': len(errors) - 10})
-            
+                messages.success(request, gettext(
+                    'Successfully imported %(invoices)d purchase invoices with %(items)d items.'
+                ) % {'invoices': imported_invoices, 'items': imported_items})
+
             return redirect('display_purchases')
-            
+
         except Exception as e:
-            messages.error(request, _('Error processing Excel file: %(error)s') % {'error': str(e)})
+            messages.error(request, gettext('Error processing Excel file: %(error)s') % {'error': str(e)})
             return redirect('import_purchase_invoices_excel')
-    
-    # GET request - show upload form
+
     return render(request, 'purchases/import_excel.html')
+
+
+################################################################################
 
 
 def download_sample_purchase_excel(request):

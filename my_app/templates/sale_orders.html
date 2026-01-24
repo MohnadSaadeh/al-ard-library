@@ -74,6 +74,17 @@
                             <label for="debts">{% trans "Debts" %}</label>
                         </div>
                     </div>
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-md-6 col-lg-4">
+                            <label for="currency-select" class="form-label">{% trans "Currency" %}</label>
+                            <select id="currency-select" class="form-select" name="currency_id" required>
+                                <option value="">{% trans "- Select Currency -" %}</option>
+                                {% for currency in currencies %}
+                                    <option value="{{ currency.id }}">{{ currency.code }} - {{ currency.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-hover table-bordered align-middle">
                             <thead class="table-dark">

@@ -42,6 +42,7 @@ class CompanyProfile(models.Model):
     address = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=32, blank=True, null=True)
     email = models.EmailField(max_length=255, blank=True, null=True)
+    base_currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, blank=True, related_name='companies_using_as_base')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -57,7 +58,7 @@ def get_company_profile():
         return None
 
 
-def set_company_profile(company_name, registration_number=None, address=None, phone=None, email=None):
+def set_company_profile(company_name, registration_number=None, address=None, phone=None, email=None , base_currency=None):
     cp = get_company_profile()
     if cp:
         cp.company_name = company_name or cp.company_name
@@ -65,6 +66,7 @@ def set_company_profile(company_name, registration_number=None, address=None, ph
         cp.address = address or cp.address
         cp.phone = phone or cp.phone
         cp.email = email or cp.email
+        cp.base_currency = base_currency or cp.base_currency
         cp.save()
         return cp
     return CompanyProfile.objects.create(
@@ -73,7 +75,35 @@ def set_company_profile(company_name, registration_number=None, address=None, ph
         address=address or None,
         phone=phone or None,
         email=email or None,
+        base_currency=base_currency or None,
     )
+
+
+class Currency(models.Model):
+    """Currency model to store supported currencies"""
+    code = models.CharField(max_length=3, unique=True)  # ILS, USD, EUR, etc.
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name_plural = "Currencies"
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+
+class ExchangeRate(models.Model):
+    """Exchange rate model to store conversion rates between currencies"""
+    from_currency = models.ForeignKey(Currency, related_name='rates_from', on_delete=models.CASCADE)
+    to_currency = models.ForeignKey(Currency, related_name='rates_to', on_delete=models.CASCADE)
+    rate = models.DecimalField(max_digits=10, decimal_places=6)  # e.g., 3.5 for 1 USD = 3.5 ILS
+    date = models.DateField(auto_now=True)
+
+    class Meta:
+        unique_together = ('from_currency', 'to_currency', 'date')
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.from_currency.code} to {self.to_currency.code}: {self.rate}"
 
 # class ProductAttribute(models.Model):
 #     attribute_name = models.CharField(max_length=255)
@@ -277,9 +307,14 @@ class Purchase(models.Model): #i changed from Purchasing_invoice to Purchase >
     employee = models.ForeignKey(Employee , related_name="Purchases", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
     # link supplier to this purchase invoice (optional)
     supplier = models.ForeignKey('Supplier', related_name='purchases', on_delete=models.CASCADE, null=True, blank=True)
+    # Currency and exchange rate fields
+    currency = models.ForeignKey('Currency', related_name='purchases', on_delete=models.SET_NULL, null=True, blank=True)
+    exchange_rate_to_base = models.DecimalField(max_digits=10, decimal_places=6, default=1.00)  # rate to convert to base currency
     # إجمالي قيمة الفاتورة
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # the total amount of the invoice
+    total_price_base = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # total in base currency
     payment_method = models.CharField(max_length=10, choices=pay_choices, default='cash')
+    
     invoice_pay_method = models.CharField(max_length=10, choices=pay_choices, default='cash')  # Added field
     grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -295,6 +330,10 @@ class Purchase_item(models.Model): # i changed PK name from Purchasing_invoice t
     quantity = models.IntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # equal purchasing_price in Product table
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    # Currency conversion fields
+    currency = models.ForeignKey('Currency', related_name='purchase_items', on_delete=models.SET_NULL, null=True, blank=True)
+    exchange_rate_to_base = models.DecimalField(max_digits=10, decimal_places=6, default=1.00)
+    total_price_base = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # total in base currency
     # ماذا اشترينا، وبأي كمية، وبأي سعر
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -312,8 +351,12 @@ class Sale_order(models.Model):
     employee = models.ForeignKey(Employee , related_name="sale_orders", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
     # link customer to this sale order (optional)
     customer = models.ForeignKey('Customer', related_name='sales', on_delete=models.CASCADE, null=True, blank=True)
+    currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, blank=True, related_name='sales')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) #means the total amount of the order
+    exchange_rate_to_base = models.DecimalField(max_digits=10, decimal_places=6, default=1.0)  # Exchange rate to base currency
+    total_amount_base = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Total amount in base currency
     invoice_pay_method = models.CharField(max_length=10, choices=pay_choices, default='cash')  # Added field
+    grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = Sale_orderManager()
@@ -328,6 +371,9 @@ class Sale_item(models.Model):
     quantity = models.IntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # equal sale_price in Product table
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # equal sale_price * quantity
+    currency = models.ForeignKey('Currency', on_delete=models.SET_NULL, null=True, blank=True, related_name='sale_items')
+    exchange_rate_to_base = models.DecimalField(max_digits=10, decimal_places=6, default=1.0)  # Exchange rate to base currency
+    total_price_base = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Total price in base currency
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 #---------------------Sale--------------------
@@ -347,16 +393,17 @@ def create_sale_order(employee_id, customer_id=None):
 #     sale_order = Sale_order.objects.last()
 #     return sale_order.products.add(product)
     ################################
-def add_item_to_invoice(product_id, quantity):# add the product to the invoice
+def add_item_to_invoice(product_id, quantity ,sale_price, total_price):# add the product to the invoice
     product = Product.objects.get(id=product_id)
     sale_order = Sale_order.objects.last()
     # ensure we record the unit price and total price at time of invoicing
-    unit_price = product.sale_price if product.sale_price is not None else 0
-    try:
-        total_price = int(quantity) * float(unit_price)
-    except Exception:
-        total_price = 0
-    return Sale_item.objects.create(sale_order=sale_order, product=product, quantity=quantity, unit_price=unit_price, total_price=total_price)
+    # i change it and added (,sale_price, total_price) to the function 
+    # unit_price = product.sale_price if product.sale_price is not None else 0
+    # try:
+    #     total_price = int(quantity) * float(unit_price)
+    # except Exception:
+    #     total_price = 0
+    return Sale_item.objects.create(sale_order=sale_order, product=product, quantity=quantity, unit_price=sale_price, total_price=total_price)
     #################################
 # this is to sale a product
 def add_product_to_sale( product_id, quantity ): #--------- minimize the quantity of the product
@@ -573,3 +620,27 @@ class PasswordResetToken(models.Model):
     token = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
+    
+    
+from datetime import date
+
+def get_exchange_rate(from_currency, to_currency):
+    """
+    Returns exchange rate from one currency to another.
+    If both currencies are the same, returns 1.0
+    """
+    if not from_currency or not to_currency:
+        return 1.0
+
+    if from_currency == to_currency:
+        return 1.0
+
+    rate = ExchangeRate.objects.filter(
+        from_currency=from_currency,
+        to_currency=to_currency,
+        date=date.today()
+    ).first()
+
+    return rate.rate if rate else 1.0
+
+    

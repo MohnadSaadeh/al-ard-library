@@ -8,14 +8,17 @@
 {% block page_name %}{% trans "Company Profile" %}{% endblock %}
 
 <div class="row justify-content-center">
-  <div class="col-md-8">
-    <div class="card mt-4">
+  <div class="col-md-10">
+    <!-- Company Profile Card -->
+    <div class="card mt-4 mb-4">
       <div class="card-header">
         <h6 class="mb-0">{% trans "Company Profile" %}</h6>
       </div>
       <div class="card-body">
         <form method="post" action="/company_profile">
           {% csrf_token %}
+          <input type="hidden" name="save_company" value="1" />
+          
           <div class="mb-3">
             <label class="form-label">{% trans "Company Name" %}</label>
             <input type="text" name="company_name" class="form-control" value="{{ company.company_name|default_if_none:'' }}" required />
@@ -39,6 +42,18 @@
             </div>
           </div>
 
+          <div class="mb-3">
+            <label class="form-label">{% trans "Base Currency" %}</label>
+            <select name="base_currency" class="form-control">
+              <option value="">{% trans "Select a currency" %}</option>
+              {% for currency in currencies %}
+                <option value="{{ currency.id }}" {% if company.base_currency.id == currency.id %}selected{% endif %}>
+                  {{ currency.code }} - {{ currency.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
           <div class="d-flex justify-content-between mt-3">
             <a href="/index" class="btn btn-secondary">{% trans "Cancel" %}</a>
             <button type="submit" class="btn btn-primary">{% trans "Save Company Profile" %}</button>
@@ -46,7 +61,196 @@
         </form>
       </div>
     </div>
+
+    <!-- Currencies Management Card -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6 class="mb-0">{% trans "Manage Currencies" %}</h6>
+      </div>
+      <div class="card-body">
+        <form method="post" action="/company_profile" class="mb-4">
+          {% csrf_token %}
+          <input type="hidden" name="add_currency" value="1" />
+          
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">{% trans "Currency Code (e.g., USD, EUR, ILS)" %}</label>
+              <input type="text" name="currency_code" class="form-control" maxlength="3" placeholder="USD" required />
+            </div>
+            <div class="col-md-5 mb-3">
+              <label class="form-label">{% trans "Currency Name" %}</label>
+              <input type="text" name="currency_name" class="form-control" placeholder="US Dollar" required />
+            </div>
+            <div class="col-md-3 d-flex align-items-end mb-3">
+              <button type="submit" class="btn btn-success w-100">{% trans "Add Currency" %}</button>
+            </div>
+          </div>
+        </form>
+
+        <!-- List of currencies -->
+        <div class="table-responsive">
+          <table class="table table-sm table-striped">
+            <thead class="table-dark">
+              <tr>
+                <th>{% trans "Code" %}</th>
+                <th>{% trans "Name" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for currency in currencies %}
+                <tr>
+                  <td><strong>{{ currency.code }}</strong></td>
+                  <td>{{ currency.name }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="2" class="text-center text-muted">{% trans "No currencies added yet" %}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exchange Rates Management Card -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0">{% trans "Manage Exchange Rates" %}</h6>
+      </div>
+      <div class="card-body">
+        <form method="post" action="/company_profile" class="mb-4">
+          {% csrf_token %}
+          <input type="hidden" name="add_exchange_rate" value="1" />
+          
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <label class="form-label">{% trans "From Currency" %}</label>
+              <select name="from_currency" class="form-control" required>
+                <option value="">{% trans "Select currency" %}</option>
+                {% for currency in currencies %}
+                  <option value="{{ currency.id }}">{{ currency.code }} - {{ currency.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">{% trans "To Currency" %}</label>
+              <select name="to_currency" class="form-control" required>
+                <option value="">{% trans "Select currency" %}</option>
+                {% for currency in currencies %}
+                  <option value="{{ currency.id }}">{{ currency.code }} - {{ currency.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label class="form-label">{% trans "Exchange Rate" %}</label>
+              <input type="number" name="exchange_rate" class="form-control" step="0.000001" placeholder="1.5" required />
+            </div>
+            <div class="col-md-3 d-flex align-items-end mb-3">
+              <button type="submit" class="btn btn-success w-100">{% trans "Add/Update Rate" %}</button>
+            </div>
+          </div>
+        </form>
+
+        <!-- List of exchange rates -->
+        <div class="table-responsive">
+          <table class="table table-sm table-striped">
+            <thead class="table-dark">
+              <tr>
+                <th>{% trans "From" %}</th>
+                <th>{% trans "To" %}</th>
+                <th>{% trans "Rate" %}</th>
+                <th>{% trans "Date" %}</th>
+                <th style="width: 120px;">{% trans "Actions" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for rate in exchange_rates %}
+                <tr id="rate-row-{{ rate.id }}">
+                  <td><strong>{{ rate.from_currency.code }}</strong></td>
+                  <td><strong>{{ rate.to_currency.code }}</strong></td>
+                  <td id="rate-value-{{ rate.id }}">{{ rate.rate }}</td>
+                  <td>{{ rate.date|date:"Y-m-d" }}</td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="editExchangeRate({{ rate.id }}, {{ rate.from_currency.id }}, {{ rate.to_currency.id }}, {{ rate.rate }})" title="{% trans 'Edit' %}">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <form method="post" action="/company_profile" style="display: inline;" onsubmit="return confirm('{% trans 'Are you sure?' %}')">
+                      {% csrf_token %}
+                      <input type="hidden" name="delete_exchange_rate" value="{{ rate.id }}" />
+                      <button type="submit" class="btn btn-sm btn-danger" title="{% trans 'Delete' %}">
+                        <i class="far fa-trash-alt"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted">{% trans "No exchange rates added yet" %}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Edit Exchange Rate Modal -->
+        <div class="modal fade" id="editExchangeRateModal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">{% trans "Edit Exchange Rate" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <form method="post" action="/company_profile" id="editExchangeRateForm">
+                {% csrf_token %}
+                <input type="hidden" name="edit_exchange_rate" value="1" />
+                <input type="hidden" name="rate_id" id="rate_id" />
+                
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">{% trans "From Currency" %}</label>
+                    <select name="from_currency" id="edit_from_currency" class="form-control" disabled>
+                      {% for currency in currencies %}
+                        <option value="{{ currency.id }}">{{ currency.code }} - {{ currency.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">{% trans "To Currency" %}</label>
+                    <select name="to_currency" id="edit_to_currency" class="form-control" disabled>
+                      {% for currency in currencies %}
+                        <option value="{{ currency.id }}">{{ currency.code }} - {{ currency.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">{% trans "Exchange Rate" %}</label>
+                    <input type="number" name="exchange_rate" id="edit_exchange_rate_value" class="form-control" step="0.000001" required />
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                  <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-{% endblock content %}
+<script>
+function editExchangeRate(rateId, fromCurrencyId, toCurrencyId, rateValue) {
+  document.getElementById('rate_id').value = rateId;
+  document.getElementById('edit_from_currency').value = fromCurrencyId;
+  document.getElementById('edit_to_currency').value = toCurrencyId;
+  document.getElementById('edit_exchange_rate_value').value = rateValue;
+  
+  const modal = new bootstrap.Modal(document.getElementById('editExchangeRateModal'));
+  modal.show();
+}
+</script>
+
+{% endblock %}

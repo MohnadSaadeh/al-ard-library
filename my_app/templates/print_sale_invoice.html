@@ -40,7 +40,7 @@
       <em>{% trans "(none)" %}</em>
     {% endif %}
   </div>
-  <div class="text-center small text-muted mb-2">{% trans "Invoice No:" %} <strong>#{{ order.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong></div>
+  <div class="text-center small text-muted mb-2">{% trans "Invoice No:" %} <strong>#{{ order.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong>{% if order.currency %}&nbsp; | &nbsp; {% trans "Currency:" %} <strong>{{ order.currency.code }}</strong>{% endif %}</div>
 
         <div class="table-responsive">
           <table class="table table-sm table-bordered">
@@ -51,6 +51,7 @@
               <th class="text-center">{% trans "Qty" %}</th>
               <th class="text-end">{% trans "Sale Price" %}</th>
               <th class="text-end">{% trans "Total" %}</th>
+              {% if order.currency %}<th class="text-end">{% trans "Total (Base)" %}</th>{% endif %}
             </tr>
           </thead>
           <tbody>
@@ -62,17 +63,26 @@
                 <td class="text-center">{{ item.quantity }}</td>
                 <td class="text-end">{{ item.unit_price }}</td>
                 <td class="text-end">{{ item.total_price }}</td>
+                {% if order.currency%}<td class="text-end">{{ item.total_price_base|default:"-" }}</td>{% endif %}
               </tr>
               {% endfor %}
             {% else %}
-              <tr><td colspan="5" class="text-center">{% trans "No products for this sale." %}</td></tr>
+              <tr><td colspan="{% if order.currency %}6{% else %}5{% endif %}" class="text-center">{% trans "No products for this sale." %}</td></tr>
             {% endif %}
           </tbody>
           <tfoot>
+            {% if order.currency %}
             <tr>
-              <td colspan="3"></td>
+              <td colspan="4"></td>
+              <td class="text-end small" style="color:#6c757d;">{% trans "Exchange Rate to Base:" %} <strong>{{ order.exchange_rate_to_base }}</strong></td>
+              <td></td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td colspan="{% if order.currency %}4{% else %}3{% endif %}"></td>
               <td class="text-end fw-bold">{% trans "Grand Total" %}</td>
               <td class="text-end fw-bold">{{ order.total_amount }}</td>
+              {% if order.currency %}<td class="text-end fw-bold">{{ order.total_amount_base|default:"-" }}</td>{% endif %}
             </tr>
           </tfoot>
         </table>
@@ -82,6 +92,7 @@
         <div class="small text-muted">
           <div><strong>{% trans "VAT / Tax No:" %}</strong>{{ company.registration_number }}</div>
           <div><strong>{% trans "Payment Terms:" %}</strong> {{ order.invoice_pay_method|title }}</div>
+          {% if order.currency %}<div><strong>{% trans "Currency:" %}</strong> {{ order.currency.code }}</div>{% endif %}
         </div>
         <div style="min-width:300px; text-align:right;">
           <div style="margin-bottom:40px;">_____________________________<br/>{% trans "Authorized Signature" %}</div>
