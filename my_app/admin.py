@@ -17,4 +17,8 @@ admin.site.register( Customer )
 admin.site.register( Currency )
 admin.site.register( ExchangeRate )
 admin.site.register( CompanyProfile )
+admin.site.register( Stock_Out_Voucher )
+admin.site.register( Stock_Out_Voucher_item )
+admin.site.register( SaleReturn )
+
 # admin.site.register( Category )

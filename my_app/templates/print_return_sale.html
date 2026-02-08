@@ -13,10 +13,22 @@
       .container{ max-width:900px; margin:0 auto; }
       .text-center{ text-align:center; }
       .text-end{ text-align:right; }
-      .table{ width:100%; border-collapse:collapse; }
-      .table th, .table td{ border:1px solid #dee2e6; padding:.5rem; }
+      .table{ width:100%; border-collapse:collapse; border:1px solid #dee2e6; border-spacing:0; }
+      .table th, .table td{ border:1px solid #dee2e6; padding:.4rem; word-break: break-word; }
+      .table tfoot td{ border-top:2px solid #dee2e6; }
       .small{ font-size:0.9rem; color:#6c757d; }
-      @media print{ body{ margin:0; } }
+      /* Print-specific adjustments for portrait layout */
+      @page { size: A4 portrait; margin: 4mm; }
+      @media print{
+        body{ margin:0; }
+        .container{ max-width:100%; padding:0; }
+        img{ max-width:100%; height:auto; }
+        .table{ font-size:12px; }
+        .table th, .table td{ padding:4px; }
+        thead{ display: table-header-group; }
+        tfoot{ display: table-footer-group; }
+        tr{ page-break-inside: avoid; }
+      }
     </style>
   </head>
   <body>

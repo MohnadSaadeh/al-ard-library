@@ -21,6 +21,8 @@
                         <li><strong>{% trans "Product ISBN" %}</strong> - {% trans "Required (product must exist)" %}</li>
                         <li><strong>{% trans "Supplier Name" %}</strong> - {% trans "Required (will be created if doesn't exist)" %}</li>
                         <li><strong>{% trans "Payment Method" %}</strong> - {% trans "Optional (cash or debts, default: cash)" %}</li>
+                        <li><strong>{% trans "Currency" %}</strong> - {% trans "Required" %}</li>
+
                     </ol>
                     <p><strong>{% trans "Note:" %}</strong> {% trans "The first row should be headers and will be skipped during import. Multiple rows with the same supplier, employee, and payment method will be grouped into a single invoice." %}</p>
                 </div>

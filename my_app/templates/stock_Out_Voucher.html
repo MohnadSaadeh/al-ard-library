@@ -2,28 +2,24 @@
 {% load static %}
 {% load i18n %}
 
-{% block title %}{% trans "Purchase Invoices" %}{% endblock %}
+{% block title %}{% trans "Stock Out Vouchers" %}{% endblock %}
 
 {% block stylesheets %} {% endblock stylesheets %}
 
 {% block content %}
 
-{% block page_name2 %}{% trans "Purchase Invoices" %}{% endblock %}
+{% block page_name2 %}{% trans "Stock Out Vouchers" %}{% endblock %}
 
 <!-- content -->
 <div class="row justify-content-center">
   <div class="col-lg-10 col-md-12">
     <div class="card shadow-sm border-0 mt-5">
       <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between py-3">
-        <h2 class="mb-0" style="font-size:2rem; font-weight:600; color:#2d3748;">{% trans "Purchase Invoices" %}</h2>
-        <div class="d-flex gap-2">
-          <a href="{% url 'import_purchase_invoices_excel' %}" class="btn btn-success">
-            <i class="fas fa-file-excel"></i> {% trans "Import from Excel" %}
-          </a>
-        </div>
+        <h2 class="mb-0" style="font-size:2rem; font-weight:600; color:#2d3748;">{% trans "Stock Out Vouchers" %}</h2>
+        
       </div>
       <div class="card-body">
-        <form action="/add_order_to_purchase" method="post" id="add-form" class="mb-4">
+        <form action="/add_order_to_stock_out" method="post" id="add-form" class="mb-4">
           {% csrf_token %}
           <div class="row g-3 align-items-end">
             <div class="col-md-5 col-lg-4">
@@ -55,7 +51,7 @@
 
           <!-- JS will hijack the add-form submission to POST via AJAX so page doesn't refresh -->
 
-        <form action="/submet_purchase_order" method="post" class="mt-4">
+        <form action="/submit_stock_out_order" method="post" class="mt-4">
           {% csrf_token %}
           <div class="row g-3 align-items-end">
 
@@ -75,7 +71,7 @@
             </div>
             <div class="col-md-5 col-lg-4">
               <label for="currency_id" class="form-label">{% trans "Currency" %}</label>
-              <select name="currency_id" id="currency_id" class="form-select">
+              <select name="currency_id" id="currency_id" class="form-select" required>
                 <option value="">{% trans "- Select Currency -" %}</option>
                 {% for currency in currencies %}
                   <option value="{{ currency.id }}">{{ currency.code }} - {{ currency.name }}</option>
@@ -147,7 +143,7 @@
             </table>
           </div>
           <div class="d-flex gap-2 mt-3">
-            <button type="button" id="apply-purchase-edits-btn" class="btn btn-outline-primary btn-lg">{% trans "Apply Edits" %}</button>
+            <button type="button" id="apply-edits-btn" class="btn btn-outline-primary btn-lg">{% trans "Apply Edits" %}</button>
             <button type="submit" class="btn btn-primary btn-lg">{% trans "Submit order" %}</button>
             <a href="/clear_purchases_list" class="btn btn-outline-secondary btn-lg">{% trans "Clear order" %}</a>
           </div>
@@ -168,7 +164,7 @@
 
     <div class="card mt-5 shadow-sm border-0">
       <div class="card-header bg-white py-3">
-        <h4 class="mb-0" style="font-weight:600; color:#2d3748;">{% trans "Recent Purchases Invoices" %}</h4>
+        <h4 class="mb-0" style="font-weight:600; color:#2d3748;">{% trans "Recent Stock Out Invoices" %}</h4>
       </div>
       <div class="card-body">
         <div class="table-responsive">
@@ -190,8 +186,9 @@
                 <td>{{invoice.created_at}}</td>
                 <td>{{ invoice.currency.code|default:"-" }}</td>
                 <td>
-                  <a href="/view_purchase_invoice/{{invoice.id}}" class="btn btn-outline-primary btn-sm me-1">{% trans "View" %}</a>
-                  <a href="{% url 'purchase_return_create' invoice.id %}" class="btn btn-outline-danger btn-sm">{% trans "Return" %}</a>
+                  <a href="/view_stock_out_invoice/{{invoice.id}}" class="btn btn-outline-primary btn-sm me-1">{% trans "View" %}</a>
+                  <a href="{% url 'stock_out_invoice_edit' invoice.id %}" class="btn btn-outline-secondary btn-sm me-1">{% trans "Edit" %}</a>
+                  <a href="{% url 'convert_stock_out_to_sale' invoice.id %}" class="btn btn-outline-success btn-sm" onclick="return confirm('{% trans "Are you sure you want to convert this voucher to a sale?" %}')">{% trans "Convert to Sale" %}</a>
                 </td>
               </tr>
               {% endfor %}
@@ -235,7 +232,7 @@
 {% endblock content %}
       <div class="card mb-4">
         <div class="card-header pb-0">
-          <h6>{% trans "Recent Purchases Invoices" %}</h6>
+          <h6>{% trans "Recent Stock Out Invoices" %}</h6>
         </div>
         <div class="card-body px-0 pt-0 pb-2">
           <div class="table-responsive p-0">
@@ -265,9 +262,9 @@
                   </td>
                   <td>
                     <span class="text-sm  mb-0 font-weight-bold">
-                      <a href="/view_purchase_invoice/{{invoice.id}}">{% trans "View" %}</a>
+                      <a href="/view_stock_out_invoice/{{invoice.id}}">{% trans "View" %}</a>
                       &nbsp;|&nbsp;
-                      <a href="{% url 'purchase_return_create' invoice.id %}" class="return-link" data-return-label="{% trans "Purchase" %} #{{ invoice.id }}">{% trans "Return" %}</a>
+                      <a href="{% url 'stock_out_return_create' invoice.id %}" class="return-link" data-return-label="{% trans "Stock Out" %} #{{ invoice.id }}">{% trans "Return" %}</a>
                     </span>
                   </td>
                 </tr>
@@ -358,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     // Send AJAX DELETE request (as before)
-    fetch('/delete-product-from-purchase', {
+    fetch('/delete-product-from-stock-out', {
       method: 'POST',
       headers: {
         'X-CSRFToken': getCookie('csrftoken'),
@@ -569,9 +566,9 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 <script>
-// Persist inline edits to purchase session cart
+// Persist inline edits to session cart
 document.addEventListener('DOMContentLoaded', function(){
-  const applyBtn = document.getElementById('apply-purchase-edits-btn');
+  const applyBtn = document.getElementById('apply-edits-btn');
   const tbody = document.getElementById('purchase-cart-tbody');
   if(!applyBtn || !tbody) return;
 
@@ -619,7 +616,7 @@ document.addEventListener('DOMContentLoaded', function(){
     applyBtn.disabled = true;
     applyBtn.textContent = '{% trans "Saving..." %}';
 
-    fetch('/update_purchase_cart', {
+    fetch('/update_stock_out_cart', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -631,6 +628,7 @@ document.addEventListener('DOMContentLoaded', function(){
     .then(r => r.json())
     .then(data => {
       if(data.status === 'ok'){
+        // Rebuild table from server state to keep consistent
         let html = '';
         (data.items || []).forEach(item => {
           html += `

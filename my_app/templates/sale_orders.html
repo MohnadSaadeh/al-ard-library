@@ -50,8 +50,9 @@
 
                 <form action="/submet_sale_order" method="post" class="mt-4">
                     {% csrf_token %}
-                    <h4 class="mb-3" style="font-weight:500; color:#2d3748;">{% trans "Order Summary" %}</h4>
-                    <div class="row g-3 align-items-center mb-3">
+                    {% comment %} <h4 class="mb-3" style="font-weight:500; color:#2d3748;">{% trans "Order Summary" %}</h4> {% endcomment %}
+                    
+                    <div class="row g-3 align-items-end">
                         <div class="col-md-6 col-lg-4">
                             <label for="customer-name-input" class="form-label">{% trans "Customer" %}</label>
                             <input list="customers-datalist" id="customer-name-input" class="form-control" placeholder="{% trans "Select or type customer" %}" autocomplete="off">
@@ -62,29 +63,30 @@
                             </datalist>
                             <input type="hidden" name="customer_id" id="customer-id-hidden" value="">
                         </div>
-                    </div>
-                    <div class="row g-3 align-items-center mb-3">
-                        <div class="col-auto">
-                            <label class="form-label mb-0">{% trans "Payment Method" %}</label>
-                        </div>
-                        <div class="col-auto">
-                            <input type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
-                            <label for="cash" class="me-2">{% trans "Cash" %}</label>
-                            <input type="radio" id="debts" name="invoice_pay_method" value="debts">
-                            <label for="debts">{% trans "Debts" %}</label>
-                        </div>
-                    </div>
-                    <div class="row g-3 align-items-center mb-3">
-                        <div class="col-md-6 col-lg-4">
+                    
+                        <div class="col-md-5 col-lg-4">
                             <label for="currency-select" class="form-label">{% trans "Currency" %}</label>
                             <select id="currency-select" class="form-select" name="currency_id" required>
                                 <option value="">{% trans "- Select Currency -" %}</option>
                                 {% for currency in currencies %}
-                                    <option value="{{ currency.id }}">{{ currency.code }} - {{ currency.name }}</option>
+                                    <option value="{{ currency.id }}" {% if base_currency and currency.id == base_currency %}selected{% endif %}>{{ currency.code }} - {{ currency.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
+                    
+                    <div class="row g-3 align-items-center mb-3">
+                    <div class="col-auto">
+                        <label class="form-label mb-0">{% trans "Payment Method" %}</label>
                     </div>
+                    <div class="col-auto">
+                        <input type="radio" id="cash" name="invoice_pay_method" value="cash" checked>
+                        <label for="cash" class="me-2">{% trans "Cash" %}</label>
+                        <input type="radio" id="debts" name="invoice_pay_method" value="debts">
+                        <label for="debts">{% trans "Debts" %}</label>
+                    </div>
+                    </div>
+                    
+                    
                     <div class="table-responsive">
                         <table class="table table-hover table-bordered align-middle">
                             <thead class="table-dark">
@@ -97,14 +99,18 @@
                                     <th class="ps-3">{% trans "Action" %}</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="sale-cart-tbody">
                                 {% for order in sale_order %}
                                 <tr data-product-id="{{order.product_id}}" data-total-price="{{order.total_price}}">
                                     <td class="ps-3">{{order.product_id}}</td>
                                     <td class="ps-3">{{order.product_name}}</td>
-                                    <td>{{order.quantity}}</td>
-                                    <td class="ps-3">{{order.sale_price}}</td>
-                                    <td class="ps-3">{{order.total_price}}</td>
+                                    <td>
+                                        <input type="number" min="1" class="form-control form-control-sm sale-qty-input" value="{{order.quantity}}" data-product-id="{{order.product_id}}">
+                                    </td>
+                                    <td class="ps-3">
+                                        <input type="number" min="0" step="0.01" class="form-control form-control-sm sale-price-input" value="{{order.sale_price}}" data-product-id="{{order.product_id}}">
+                                    </td>
+                                    <td class="ps-3 total-price-cell" data-product-id="{{order.product_id}}">{{order.total_price}}</td>
                                     <td class="ps-3">
                                         <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="{{order.product_id}}">
                                             <i class="fas fa-trash"></i>
@@ -121,6 +127,7 @@
                         </table>
                     </div>
                     <div class="d-flex gap-2 mt-3">
+                        <button type="button" id="apply-sales-edits-btn" class="btn btn-outline-primary btn-lg">{% trans "Apply Edits" %}</button>
                         <button type="submit" class="btn btn-primary btn-lg">{% trans "Submit order" %}</button>
                         <a href="/clear_sales_list" class="btn btn-outline-secondary btn-lg">{% trans "Clear order" %}</a>
                     </div>
@@ -151,6 +158,7 @@
                                 <th>{% trans "Order No." %}</th>
                                 <th>{% trans "Added by" %}</th>
                                 <th>{% trans "Added at" %}</th>
+                                <th>{% trans "Currency" %}</th>
                                 <th>{% trans "Action" %}</th>
                             </tr>
                         </thead>
@@ -160,6 +168,7 @@
                                 <td><span class="fw-bold">{{order.id}}</span></td>
                                 <td>{{order.employee.first_name}} {{order.employee.last_name}}</td>
                                 <td>{{order.created_at}}</td>
+                                <td>{{order.currency.code|default:"-"}}</td>
                                 <td>
                                     <a href="/view_sale_order/{{order.id}}" class="btn btn-outline-primary btn-sm me-1">{% trans "View" %}</a>
                                     <a href="{% url 'sale_return_create' order.id %}" class="btn btn-outline-danger btn-sm">{% trans "Return" %}</a>
@@ -206,68 +215,196 @@
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
 <script>
-// Handle delete sale item
+// Make sale cart rows editable and keep totals in sync (mirrors purchase page behavior)
 document.addEventListener('DOMContentLoaded', function(){
-  const tbody = document.querySelector('table.table tbody');
-  if(!tbody) return;
-  
-  tbody.addEventListener('click', function(e){
-    const deleteBtn = e.target.closest('.delete-sale-item');
-    if(!deleteBtn) return;
-    
-    e.preventDefault();
-    const productId = deleteBtn.dataset.productId;
-    
-    if(!productId){
-      alert('Error: product_id not found');
-      return;
-    }
-    
-    // Send AJAX DELETE request
-    fetch('/delete-product-from-sale', {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': getCookie('csrftoken'),
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      body: new URLSearchParams({'product_id': productId})
-    })
-    .then(r => r.json())
-    .then(data => {
-      if(data.status === 'ok'){
-        // Rebuild cart table
-        if(Array.isArray(data.items)){
-          let html = '';
-          data.items.forEach(item => {
-            html += `
-              <tr data-product-id="${item.product_id}" data-total-price="${item.total_price}">
-                <td class="ps-3">${item.product_id}</td>
-                <td class="ps-3">${item.product_name}</td>
-                <td>${item.quantity}</td>
-                <td class="ps-3">${item.sale_price}</td>
-                <td class="ps-3">${item.total_price}</td>
-                <td class="ps-3">
-                  <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>`;
-          });
-          html += `<tr class="table-secondary fw-bold">
-                    <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
-                    <td class="ps-3">${data.grand_total}</td>
-                    <td></td>
-                  </tr>`;
-          tbody.innerHTML = html;
+    const tbody = document.getElementById('sale-cart-tbody');
+    if(!tbody) return;
+
+    function recalculateRow(productId){
+        const qtyInput = tbody.querySelector(`.sale-qty-input[data-product-id="${productId}"]`);
+        const priceInput = tbody.querySelector(`.sale-price-input[data-product-id="${productId}"]`);
+        const totalCell = tbody.querySelector(`.total-price-cell[data-product-id="${productId}"]`);
+        if(qtyInput && priceInput && totalCell){
+            const qty = parseFloat(qtyInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const total = (qty * price).toFixed(2);
+            totalCell.textContent = total;
         }
-      } else {
-        alert(data.message || 'Error deleting product');
-      }
-    })
-    .catch(err => {
-      alert('Error: ' + err);
+        recalculateGrandTotal();
+    }
+
+    function recalculateGrandTotal(){
+        let grandTotal = 0;
+        tbody.querySelectorAll('.total-price-cell').forEach(cell => {
+            grandTotal += parseFloat(cell.textContent) || 0;
+        });
+        const grandTotalCell = tbody.querySelector('tr.table-secondary.fw-bold td.ps-3');
+        if(grandTotalCell) grandTotalCell.textContent = grandTotal.toFixed(2);
+    }
+
+    // update totals when user edits qty or price
+    tbody.addEventListener('input', function(e){
+        if(e.target.classList.contains('sale-qty-input') || e.target.classList.contains('sale-price-input')){
+            const productId = e.target.dataset.productId;
+            recalculateRow(productId);
+        }
     });
-  });
+
+    // Handle delete sale item (AJAX)
+    tbody.addEventListener('click', function(e){
+        const deleteBtn = e.target.closest('.delete-sale-item');
+        if(!deleteBtn) return;
+        e.preventDefault();
+        const productId = deleteBtn.dataset.productId;
+        if(!productId){ alert('Error: product_id not found'); return; }
+
+        fetch('/delete-product-from-sale', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: new URLSearchParams({'product_id': productId})
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.status === 'ok'){
+                if(Array.isArray(data.items)){
+                    let html = '';
+                    data.items.forEach(item => {
+                        html += `
+                            <tr data-product-id="${item.product_id}" data-total-price="${item.total_price}">
+                                <td class="ps-3">${item.product_id}</td>
+                                <td class="ps-3">${item.product_name}</td>
+                                <td>
+                                    <input type="number" min="1" class="form-control form-control-sm sale-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
+                                </td>
+                                <td class="ps-3">
+                                    <input type="number" min="0" step="0.01" class="form-control form-control-sm sale-price-input" value="${item.sale_price}" data-product-id="${item.product_id}">
+                                </td>
+                                <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>
+                                <td class="ps-3">
+                                    <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>`;
+                    });
+                    html += `<tr class="table-secondary fw-bold">
+                                        <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
+                                        <td class="ps-3">${data.grand_total}</td>
+                                        <td></td>
+                                    </tr>`;
+                    tbody.innerHTML = html;
+                }
+            } else {
+                alert(data.message || 'Error deleting product');
+            }
+        })
+        .catch(err => { alert('Error: ' + err); });
+    });
+    // compute initial grand total from current rows
+    recalculateGrandTotal();
+});
+</script>
+<script>
+// Persist inline edits to sales session cart
+document.addEventListener('DOMContentLoaded', function(){
+    const applyBtn = document.getElementById('apply-sales-edits-btn');
+    const tbody = document.getElementById('sale-cart-tbody');
+    if(!applyBtn || !tbody) return;
+
+    // Lightweight toast helper
+    function showToast(message, type){
+        let container = document.getElementById('toast-container');
+        if(!container){
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.style.position = 'fixed';
+            container.style.top = '1rem';
+            container.style.right = '1rem';
+            container.style.zIndex = '2000';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.marginBottom = '8px';
+        toast.style.padding = '10px 12px';
+        toast.style.borderRadius = '6px';
+        toast.style.color = '#fff';
+        toast.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)';
+        toast.style.background = type === 'error' ? '#dc3545' : '#28a745';
+        container.appendChild(toast);
+        setTimeout(() => { toast.remove(); }, 2500);
+    }
+
+    applyBtn.addEventListener('click', function(){
+        const rows = Array.from(tbody.querySelectorAll('tr'))
+            .filter(r => !r.classList.contains('table-secondary'));
+        const items = [];
+        rows.forEach(row => {
+            const productId = row.dataset.productId || (row.querySelector('td.ps-3')?.textContent || '').trim();
+            const qtyInput = row.querySelector('.sale-qty-input');
+            const priceInput = row.querySelector('.sale-price-input');
+            const quantity = qtyInput ? parseInt(qtyInput.value || '0', 10) : 0;
+            const sale_price = priceInput ? parseFloat(priceInput.value || '0') : 0;
+            if(productId){
+                items.push({ product_id: parseInt(productId, 10), quantity, sale_price });
+            }
+        });
+
+        // Disable button while saving
+        const originalText = applyBtn.textContent;
+        applyBtn.disabled = true;
+        applyBtn.textContent = '{% trans "Saving..." %}';
+
+        fetch('/update_sales_cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ items })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.status === 'ok'){
+                let html = '';
+                (data.items || []).forEach(item => {
+                    html += `
+                        <tr data-product-id="${item.product_id}" data-total-price="${item.total_price}">
+                            <td class="ps-3">${item.product_id}</td>
+                            <td class="ps-3">${item.product_name}</td>
+                            <td>
+                                <input type="number" min="1" class="form-control form-control-sm sale-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
+                            </td>
+                            <td class="ps-3">
+                                <input type="number" min="0" step="0.01" class="form-control form-control-sm sale-price-input" value="${item.sale_price}" data-product-id="${item.product_id}">
+                            </td>
+                            <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>
+                            <td class="ps-3">
+                                <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                });
+                html += `
+                    <tr class="table-secondary fw-bold">
+                        <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
+                        <td class="ps-3">${data.grand_total}</td>
+                        <td></td>
+                    </tr>`;
+                tbody.innerHTML = html;
+                showToast('{% trans "Edits applied successfully" %}', 'success');
+            } else {
+                showToast(data.message || '{% trans "Error applying edits" %}', 'error');
+            }
+        })
+        .catch(err => showToast('Error: ' + err, 'error'))
+        .finally(() => { applyBtn.disabled = false; applyBtn.textContent = originalText; });
+    });
 });
 </script>
 <script>
@@ -314,18 +451,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data.status === 'ok') {
                         // Update sale list table dynamically
-                        const tbody = document.querySelector('table.table tbody');
+                        const tbody = document.getElementById('sale-cart-tbody');
                         if (tbody && Array.isArray(data.items)) {
                             // Clear existing rows
                             tbody.innerHTML = '';
                             data.items.forEach(item => {
                                 tbody.innerHTML += `
-                                    <tr>
+                                    <tr data-product-id="${item.product_id}" data-total-price="${item.total_price}">
                                         <td class="ps-3">${item.product_id}</td>
                                         <td class="ps-3">${item.product_name}</td>
-                                        <td>${item.quantity}</td>
-                                        <td class="ps-3">${item.sale_price}</td>
-                                        <td class="ps-3">${item.total_price}</td>
+                                        <td>
+                                          <input type="number" min="1" class="form-control form-control-sm sale-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
+                                        </td>
+                                        <td class="ps-3">
+                                          <input type="number" min="0" step="0.01" class="form-control form-control-sm sale-price-input" value="${item.sale_price}" data-product-id="${item.product_id}">
+                                        </td>
+                                        <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>
                                         <td class="ps-3">
                                           <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">
                                             <i class="fas fa-trash"></i>
@@ -343,8 +484,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </tr>
                             `;
                         }
-                        // Update grand total
-                        const grandTotalCell = document.querySelector('tr.table-secondary td.ps-3');
+                        // Update grand total (in tbody)
+                        const grandTotalCell = document.getElementById('sale-cart-tbody').querySelector('tr.table-secondary td.ps-3');
                         if (grandTotalCell) grandTotalCell.textContent = data.grand_total;
                         isbnInput.value = '';
                     } else {
@@ -395,11 +536,11 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'ok') {
-                    const tbody = document.querySelector('table.table tbody');
+                    const tbody = document.getElementById('sale-cart-tbody');
                     if (tbody && Array.isArray(data.items)) {
                         tbody.innerHTML = `\n                                <tr>\n                                    <th class="ps-3">ID</th>\n                                    <th class="ps-3">Product</th>\n                                    <th>Quantity</th>\n                                    <th class="ps-3">Sale Price</th>\n                                    <th class="ps-3">Total Price</th>\n                                </tr>\n                            `;
                         data.items.forEach(item => {
-                            tbody.innerHTML += `\n                                <tr>\n                                    <td class="ps-3">${item.product_id}</td>\n                                    <td class="ps-3">${item.product_name}</td>\n                                    <td>${item.quantity}</td>\n                                    <td class="ps-3">${item.sale_price}</td>\n                                    <td class="ps-3">${item.total_price}</td>\n                                    <td class="ps-3">\n                                      <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">\n                                        <i class="fas fa-trash"></i>\n                                      </button>\n                                    </td>\n                                </tr>\n                            `;
+                            tbody.innerHTML += `\n                                <tr data-product-id="${item.product_id}" data-total-price="${item.total_price}">\n                                    <td class="ps-3">${item.product_id}</td>\n                                    <td class="ps-3">${item.product_name}</td>\n                                    <td>\n                                      <input type="number" min="1" class="form-control form-control-sm sale-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">\n                                    </td>\n                                    <td class="ps-3">\n                                      <input type="number" min="0" step="0.01" class="form-control form-control-sm sale-price-input" value="${item.sale_price}" data-product-id="${item.product_id}">\n                                    </td>\n                                    <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>\n                                    <td class="ps-3">\n                                      <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">\n                                        <i class="fas fa-trash"></i>\n                                      </button>\n                                    </td>\n                                </tr>\n                            `;
                         });
                         tbody.innerHTML += `\n                            <tr class="table-secondary fw-bold">\n                                <td colspan="4" class="text-end">Grand Total</td>\n                                <td class="ps-3">${data.grand_total}</td>\n                                <td></td>\n                            </tr>\n                        `;
                     }

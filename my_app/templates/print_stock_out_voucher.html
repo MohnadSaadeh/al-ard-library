@@ -1,4 +1,3 @@
-
 {% load static %}
 {% load i18n %}
 {% comment %} <!doctype html> {% endcomment %}
@@ -6,7 +5,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% trans "Sales Invoice" %} #{{ order.id }}</title>
+    <title>{% trans "Stock Out Voucher" %} #{{ voucher.id }}</title>
     <link rel="stylesheet" href="/static/css/argon-dashboard.min.css" />
     <style>
       body{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color:#212529; padding:20px; }
@@ -17,7 +16,7 @@
       .invoice-header{ border-bottom:1px solid #dee2e6; padding:12px; }
       .invoice-footer{ border-top:1px solid #dee2e6; padding:12px; }
       .table{ width:100%; border-collapse:collapse; border:1px solid #dee2e6; border-spacing:0; }
-      .table th, .table td, table th, table td{ border:1px solid #dee2e6 !important; padding:.2rem; word-break: break-word; }
+      .table th, .table td, table th, table td{ border:1px solid #dee2e6 !important; padding:.5rem; word-break: break-word; }
       .table tbody tr:last-child td{ border-bottom:1px solid #dee2e6 !important; }
       .table tbody tr:only-child td{ border-top:1px solid #dee2e6 !important; border-bottom:1px solid #dee2e6 !important; }
       .table tfoot td{ border-top:2px solid #dee2e6; }
@@ -31,7 +30,7 @@
         .invoice-header, .invoice-footer{ padding:8px; }
         img{ max-width:100%; height:auto; }
         .table{ font-size:12px; }
-        .table th, .table td{ padding:4px; }
+        .table th, .table td{ padding:6px; }
         thead{ display: table-header-group; }
         tfoot{ display: table-footer-group; }
         tr{ page-break-inside: avoid; }
@@ -45,12 +44,12 @@
           <img src="{% static 'img/al-ard-profile-Banner.png' %}" alt="Al Ard" style="max-height:120px; display:block; margin:0 auto;" />
         </div>
 
-        <h2 class="text-center">{% trans "Sales Invoice" %}</h2>
-        {% if order.customer %}
-          <div class="small text-muted text-center">{% trans "Customer" %} : <strong><a href="/customers/{{ order.customer.id }}/">{{ order.customer.name }}</a></strong></div>
+        <h2 class="text-center">{% trans "Stock Out Voucher" %}</h2>
+        {% if voucher.supplier %}
+          <div class="small text-muted text-center">{% trans "Supplier" %} : <strong><a href="/suppliers/{{ voucher.supplier.id }}/">{{ voucher.supplier.name }}</a></strong></div>
         {% endif %}
         <div class="text-center small text-muted mb-2">
-          {% trans "Invoice No:" %} <strong>#{{ order.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ order.created_at|date:'Y-m-d H:i' }}</strong> {% if order.currency %}&nbsp; | &nbsp; {% trans "Currency:" %} <strong>{{ order.currency.code }}</strong>{% endif %}
+          {% trans "Voucher No:" %} <strong>#{{ voucher.id }}</strong> &nbsp; | &nbsp; {% trans "Date:" %} <strong>{{ voucher.created_at|date:'Y-m-d H:i' }}</strong> {% if voucher.currency %}&nbsp; | &nbsp; {% trans "Currency:" %} <strong>{{ voucher.currency.code }}</strong>{% endif %}
         </div>
         <div class="text-center small text-muted mb-2">
           {% if company %}
@@ -62,55 +61,50 @@
 
         <div class="table-responsive">
           <table class="table table-sm-responsive table-bordered">
-          <thead class="table-light">
+            <thead class="table-light">
             <tr>
-              <th> {% trans "No." %} </th>
-              <th> {% trans "ISBN" %} </th>
+            <th> {% trans "ISBN" %} </th>
               <th>{% trans "Product" %}</th>
               <th>{% trans "Quantity" %}</th>
               <th>{% trans "Unit Price" %}</th>
               <th>{% trans "Total Price" %}</th>
-              <!-- if the order currency is different from the base currency, show the converted total base -->
-                {% if order.currency and order.exchange_rate_to_base != 1 %}
+              <!-- if the voucher currency is different from the base currency, show the converted total base -->
+                {% if voucher.currency and voucher.exchange_rate_to_base != 1 %}
                     <th>{% trans "Total (Base)" %}</th>
                 {% endif %}
             </tr>
           </thead>
           <tbody>
-            {% if sale_products %}
-              {% for item in sale_products %}
-              <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ item.product.isbn }}</td>
-                <td>{{ item.product.product_name }}</td>
-                <td>{{ item.quantity }}</td>
-                <td>{{ item.unit_price }}</td>
-                <td>{{ item.total_price }}</td>
-              <!-- if the order currency is different from the base currency, show the converted total price -->
-                {% if order.currency and order.exchange_rate_to_base != 1 %}
-                    <td>{{ item.total_price_base }} {{ order.currency.code }}</td>
+            {% for it in items %}
+            <tr>
+                <td>{{ it.product.isbn }}</td>
+              <td>{{ it.product.product_name }}</td>
+              <td>{{ it.quantity }}</td>
+              <td>{{ it.unit_price }}</td>
+              <td>{{ it.total_price }}</td>
+              <!-- if the voucher currency is different from the base currency, show the converted total price -->
+                {% if voucher.currency and voucher.exchange_rate_to_base != 1 %}
+                    <td>{{ it.total_price_base }} {{ voucher.currency.code }}</td>
                 {% endif %}
             </tr>
-              {% endfor %}
-             <tr class="table-secondary fw-bold">
-                <td colspan="5" class="text-end">{% trans "Grand Total" %}</td>
-                <td>{{ order.grand_total }} {{company.base_currency.code}}</td>
-                  <!-- if the order currency is different from the base currency, show the converted total -->
-                  {% if order.currency and order.exchange_rate_to_base != 1 %}
-                      <td>{{ order.total_amount_base }} {{ order.currency.code }}</td>
-                  {% endif %}
-              </tr>
-            {% endif %}
+            {% endfor %}
+            <tr class="table-secondary fw-bold">
+              <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
+              <td>{{ voucher.grand_total }} {{company.base_currency.code}}</td>
+                <!-- if the voucher currency is different from the base currency, show the converted total -->
+                {% if voucher.currency and voucher.exchange_rate_to_base != 1 %}
+                    <td>{{ voucher.total_price_base }} {{ voucher.currency.code }}</td>
+                {% endif %}
+            </tr>
           </tbody>
-          
-        </table>
-      </div>
+          </table>
+        </div>
 
         <div class="mt-4 d-flex justify-content-between invoice-footer">
           <div class="small text-muted">
             {% if company and company.registration_number %}<div><strong>{% trans "VAT / Tax No:" %}</strong>  {{ company.registration_number }}</div>{% endif %}
-            <div><strong>{% trans "Payment Terms:" %}</strong> {{ order.invoice_pay_method|title }}</div>
-            {% if order.currency %}<div><strong>{% trans "Currency:" %}</strong> {{ order.currency.code }}</div>{% endif %}
+            <div><strong>{% trans "Payment Terms:" %}</strong> {{ voucher.invoice_pay_method|title }}</div>
+            {% if voucher.currency %}<div><strong>{% trans "Currency:" %}</strong> {{ voucher.currency.code }}</div>{% endif %}
           </div>
           <div style="min-width:300px; text-align:right;">
             <div style="margin-bottom:40px;">_____________________________<br/>{% trans "Authorized Signature" %}</div>

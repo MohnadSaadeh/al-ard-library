@@ -16,12 +16,25 @@
       .invoice-header{ border-bottom:1px solid #dee2e6; padding:12px; }
       .invoice-footer{ border-top:1px solid #dee2e6; padding:12px; }
       .table{ width:100%; border-collapse:collapse; border:1px solid #dee2e6; border-spacing:0; }
-      .table th, .table td, table th, table td{ border:1px solid #dee2e6 !important; padding:.5rem; }
+      .table th, .table td, table th, table td{ border:1px solid #dee2e6 !important; padding:.4rem; word-break: break-word; }
       .table tbody tr:last-child td{ border-bottom:1px solid #dee2e6 !important; }
       .table tbody tr:only-child td{ border-top:1px solid #dee2e6 !important; border-bottom:1px solid #dee2e6 !important; }
       .table tfoot td{ border-top:2px solid #dee2e6; }
       .small{ font-size:0.9rem; color:#6c757d; }
-      @media print{ body{ margin:0; } }
+      /* Print-specific adjustments for portrait layout */
+      @page { size: A4 portrait; margin: 4mm; }
+      @media print{
+        body{ margin:0; }
+        .container{ max-width:100%; padding:0; }
+        .invoice-box{ border:none; border-radius:0; }
+        .invoice-header, .invoice-footer{ padding:8px; }
+        img{ max-width:100%; height:auto; }
+        .table{ font-size:12px; }
+        .table th, .table td{ padding:4px; }
+        thead{ display: table-header-group; }
+        tfoot{ display: table-footer-group; }
+        tr{ page-break-inside: avoid; }
+      }
     </style>
   </head>
   <body>

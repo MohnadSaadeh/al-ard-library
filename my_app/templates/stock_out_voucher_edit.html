@@ -1,0 +1,272 @@
+{% extends 'layouts/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit Stock Out Voucher" %} #{{ voucher.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div>
+        <h4 class="mb-0">{% trans "Edit Stock Out Voucher" %} #{{ voucher.id }}</h4>
+        <div class="small text-muted">
+          {% trans "Added by" %}: {{ voucher.employee.first_name }} {{ voucher.employee.last_name }}
+          | {% trans "Currency" %}: {{ voucher.currency.code|default:"-" }}
+        </div>
+      </div>
+      <div>
+        <a href="{% url 'view_stock_out_invoice' voucher.id %}" class="btn btn-outline-secondary btn-sm">{% trans "View" %}</a>
+        <a href="{% url 'convert_stock_out_to_sale' voucher.id %}" class="btn btn-success btn-sm" onclick="return confirm('{% trans "Are you sure you want to convert this voucher to a sale?" %}')">{% trans "Convert to Sale" %}</a>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row g-3 align-items-end mb-4">
+        <form action="{% url 'stock_out_invoice_add_item' voucher.id %}" method="post" class="row g-3 align-items-end">
+          {% csrf_token %}
+          <div class="col-md-5 col-lg-4">
+            <label class="form-label">{% trans "Product" %}</label>
+            <select name="product_id" class="form-select">
+              {% for p in products %}
+                <option value="{{ p.id }}">{{ p.product_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3 col-lg-2">
+            <label class="form-label">{% trans "Quantity" %}</label>
+            <input type="number" name="quantity" class="form-control" min="1" value="1" />
+          </div>
+          <div class="col-md-3 col-lg-2">
+            <label class="form-label">{% trans "Unit Price" %}</label>
+            <input type="number" step="0.01" name="unit_price" class="form-control" />
+          </div>
+          <div class="col-md-2 col-lg-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary">{% trans "Add Item" %}</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>{% trans "Product" %}</th>
+              <th>{% trans "Quantity" %}</th>
+              <th>{% trans "Unit Price" %}</th>
+              <th>{% trans "Total Price" %}</th>
+              <th>{% trans "Action" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for it in items %}
+            <tr>
+              <td>{{ it.product.product_name }}</td>
+              <td>{{ it.quantity }}</td>
+              <td>{{ it.unit_price }}</td>
+              <td>{{ it.total_price }}</td>
+              <td>
+                <form action="{% url 'stock_out_invoice_delete_item' voucher.id %}" method="post" class="d-inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="item_id" value="{{ it.id }}" />
+                  <button type="submit" class="btn btn-sm btn-danger">{% trans "Delete" %}</button>
+                  
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="button" id="apply-stockout-edits-btn" class="btn btn-outline-primary">{% trans "Apply Edits" %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+    {% block javascripts %}
+    <script>
+    // Make stock-out voucher edit rows editable and keep totals in sync
+    document.addEventListener('DOMContentLoaded', function(){
+      const table = document.querySelector('.card-body table.table');
+      if(!table) return;
+      const tbody = table.querySelector('tbody');
+      if(!tbody) return;
+
+      // Inject inputs into Quantity and Unit Price cells, mark total cells
+      Array.from(tbody.rows).forEach(function(row){
+        // Expect columns: Product | Quantity | Unit Price | Total Price | Action
+        if(row.cells.length < 5) return;
+        const qtyCell = row.cells[1];
+        const priceCell = row.cells[2];
+        const totalCell = row.cells[3];
+        // If this is the header or contains the delete form only, skip
+        if(!qtyCell || !priceCell || !totalCell) return;
+
+        // Preserve existing numeric text values
+        const qtyVal = parseFloat(qtyCell.textContent) || 0;
+        const priceVal = parseFloat(priceCell.textContent) || 0;
+
+        // Replace with inputs
+        qtyCell.innerHTML = `<input type="number" min="1" class="form-control form-control-sm stockout-edit-qty" value="${qtyVal}">`;
+        priceCell.innerHTML = `<input type="number" min="0" step="0.01" class="form-control form-control-sm stockout-edit-price" value="${priceVal}">`;
+        totalCell.classList.add('total-price-cell');
+      });
+
+      function recalcRow(row){
+        const qtyInput = row.querySelector('.stockout-edit-qty');
+        const priceInput = row.querySelector('.stockout-edit-price');
+        const totalCell = row.querySelector('.total-price-cell');
+        if(!qtyInput || !priceInput || !totalCell) return;
+        const qty = parseFloat(qtyInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        totalCell.textContent = (qty * price).toFixed(2);
+      }
+
+      function recalcGrandTotal(){
+        let grand = 0;
+        tbody.querySelectorAll('.total-price-cell').forEach(function(cell){
+          grand += parseFloat(cell.textContent) || 0;
+        });
+        // Ensure a grand total row exists (append if missing)
+        let grandRow = tbody.querySelector('tr.table-secondary.fw-bold');
+        if(!grandRow){
+          grandRow = document.createElement('tr');
+          grandRow.className = 'table-secondary fw-bold';
+          grandRow.innerHTML = `<td colspan="4" class="text-end">{% trans "Grand Total" %}</td><td class="ps-3"></td>`;
+          tbody.appendChild(grandRow);
+        }
+        const grandCell = grandRow.querySelector('td.ps-3');
+        if(grandCell) grandCell.textContent = grand.toFixed(2);
+      }
+
+      // Initial compute
+      Array.from(tbody.rows).forEach(function(row){
+        // skip grand total row if present
+        if(row.classList.contains('table-secondary')) return;
+        recalcRow(row);
+      });
+      recalcGrandTotal();
+
+      // Listen for edits
+      tbody.addEventListener('input', function(e){
+        if(e.target.classList.contains('stockout-edit-qty') || e.target.classList.contains('stockout-edit-price')){
+          const row = e.target.closest('tr');
+          if(row){
+            recalcRow(row);
+            recalcGrandTotal();
+          }
+        }
+      });
+    });
+    </script>
+    <script>
+    // Persist inline edits to voucher items via AJAX
+    document.addEventListener('DOMContentLoaded', function(){
+      const applyBtn = document.getElementById('apply-stockout-edits-btn');
+      const table = document.querySelector('.card-body table.table');
+      if(!applyBtn || !table) return;
+      const tbody = table.querySelector('tbody');
+
+      // Lightweight toast helper
+      function showToast(message, type){
+        let container = document.getElementById('toast-container');
+        if(!container){
+          container = document.createElement('div');
+          container.id = 'toast-container';
+          container.style.position = 'fixed';
+          container.style.top = '1rem';
+          container.style.right = '1rem';
+          container.style.zIndex = '2000';
+          document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.marginBottom = '8px';
+        toast.style.padding = '10px 12px';
+        toast.style.borderRadius = '6px';
+        toast.style.color = '#fff';
+        toast.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)';
+        toast.style.background = type === 'error' ? '#dc3545' : '#28a745';
+        container.appendChild(toast);
+        setTimeout(() => { toast.remove(); }, 2500);
+      }
+
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      applyBtn.addEventListener('click', function(){
+        const rows = Array.from(tbody.rows).filter(r => !r.classList.contains('table-secondary'));
+        const items = [];
+        rows.forEach(row => {
+          const itemIdInput = row.querySelector('input[name="item_id"]');
+          const qtyInput = row.querySelector('.stockout-edit-qty');
+          const priceInput = row.querySelector('.stockout-edit-price');
+          const item_id = itemIdInput ? parseInt(itemIdInput.value || '0', 10) : 0;
+          const quantity = qtyInput ? parseInt(qtyInput.value || '0', 10) : 0;
+          const unit_price = priceInput ? parseFloat(priceInput.value || '0') : 0;
+          if(item_id){ items.push({ item_id, quantity, unit_price }); }
+        });
+
+        // Disable button while saving
+        const originalText = applyBtn.textContent;
+        applyBtn.disabled = true;
+        applyBtn.textContent = '{% trans "Saving..." %}';
+
+        fetch('{% url "stock_out_invoice_update_items" voucher.id %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({ items })
+        })
+        .then(r => r.json())
+        .then(data => {
+          if(data.status === 'ok'){
+            // Update totals per row by item_id and refresh grand total
+            (data.items || []).forEach(it => {
+              const row = tbody.querySelector(`input[name="item_id"][value="${it.id}"]`)?.closest('tr');
+              if(row){
+                const totalCell = row.querySelector('.total-price-cell');
+                if(totalCell){ totalCell.textContent = (it.total_price ?? 0).toFixed ? it.total_price.toFixed(2) : it.total_price; }
+                const qtyInput = row.querySelector('.stockout-edit-qty');
+                if(qtyInput){ qtyInput.value = it.quantity; }
+                const priceInput = row.querySelector('.stockout-edit-price');
+                if(priceInput){ priceInput.value = it.unit_price; }
+              }
+            });
+            // Ensure/Update grand total row
+            let grandRow = tbody.querySelector('tr.table-secondary.fw-bold');
+            if(!grandRow){
+              grandRow = document.createElement('tr');
+              grandRow.className = 'table-secondary fw-bold';
+              grandRow.innerHTML = `<td colspan="4" class="text-end">{% trans "Grand Total" %}</td><td class="ps-3"></td>`;
+              tbody.appendChild(grandRow);
+            }
+            const grandCell = grandRow.querySelector('td.ps-3');
+            if(grandCell){ grandCell.textContent = (data.grand_total ?? 0).toFixed ? data.grand_total.toFixed(2) : data.grand_total; }
+            showToast('{% trans "Edits applied successfully" %}', 'success');
+          } else {
+            showToast(data.message || '{% trans "Error applying edits" %}', 'error');
+          }
+        })
+        .catch(err => showToast('Error: ' + err, 'error'))
+        .finally(() => { applyBtn.disabled = false; applyBtn.textContent = originalText; });
+      });
+    });
+    </script>
+    {% endblock %}

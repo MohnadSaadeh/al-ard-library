@@ -56,6 +56,15 @@
             </a>
         </li>
 
+        <li class="nav-item {% if request.path == '/stock_out_voucher' or 'view_stock_out' in request.path %} bg-gradient-success {% endif %}">
+            <a class="nav-link" href="/stock_out_voucher">
+            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="ni ni-delivery-fast text-warning text-lg opacity-10"></i>
+            </div>
+            <span class="nav-link-text ms-1" style="font-size:18px !important;"><strong>{% trans "Stock Out Voucher" %}</strong></span>
+            </a>
+        </li>
+
         <li class="nav-item {% if request.path == '/products/' or 'products' in request.path %} bg-gradient-success {% endif %}">
             <a class="nav-link " href="/products">
             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">

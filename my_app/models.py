@@ -393,17 +393,32 @@ def create_sale_order(employee_id, customer_id=None):
 #     sale_order = Sale_order.objects.last()
 #     return sale_order.products.add(product)
     ################################
-def add_item_to_invoice(product_id, quantity ,sale_price, total_price):# add the product to the invoice
+def add_item_to_invoice(product_id, quantity, sale_price, total_price, currency=None, exchange_rate_to_base=None, total_price_base=None):
+    """Create a Sale_item with optional currency/exchange-rate/base-total fields.
+    Backwards-compatible with existing callers that only pass 4 args.
+    """
     product = Product.objects.get(id=product_id)
     sale_order = Sale_order.objects.last()
-    # ensure we record the unit price and total price at time of invoicing
-    # i change it and added (,sale_price, total_price) to the function 
-    # unit_price = product.sale_price if product.sale_price is not None else 0
-    # try:
-    #     total_price = int(quantity) * float(unit_price)
-    # except Exception:
-    #     total_price = 0
-    return Sale_item.objects.create(sale_order=sale_order, product=product, quantity=quantity, unit_price=sale_price, total_price=total_price)
+    from decimal import Decimal as D
+
+    # Determine currency and exchange rate
+    item_currency = currency or sale_order.currency
+    ex_rate = D(str(exchange_rate_to_base)) if exchange_rate_to_base is not None else D(str(sale_order.exchange_rate_to_base or 1))
+
+    # Compute base total when not provided
+    total_price_decimal = D(str(total_price)) if total_price is not None else D('0')
+    total_price_base_val = D(str(total_price_base)) if total_price_base is not None else (total_price_decimal * ex_rate)
+
+    return Sale_item.objects.create(
+        sale_order=sale_order,
+        product=product,
+        quantity=quantity,
+        unit_price=sale_price,
+        total_price=total_price,
+        currency=item_currency,
+        exchange_rate_to_base=ex_rate,
+        total_price_base=total_price_base_val,
+    )
     #################################
 # this is to sale a product
 def add_product_to_sale( product_id, quantity ): #--------- minimize the quantity of the product
@@ -643,4 +658,53 @@ def get_exchange_rate(from_currency, to_currency):
 
     return rate.rate if rate else 1.0
 
+
+
+#########################################
+class Stock_Out_Voucher(models.Model ):
+    employee = models.ForeignKey(Employee , related_name="Stock_Out_Vouchers", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
+    # link supplier to this purchase invoice (optional)
+    supplier = models.ForeignKey('Supplier', related_name='Stock_Out_Vouchers', on_delete=models.CASCADE, null=True, blank=True)
+    # Currency and exchange rate fields
+    currency = models.ForeignKey('Currency', related_name='Stock_Out_Vouchers', on_delete=models.SET_NULL, null=True, blank=True)
+    exchange_rate_to_base = models.DecimalField(max_digits=10, decimal_places=6, default=1.00)  # rate to convert to base currency
+    # إجمالي قيمة الفاتورة
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # the total amount of the invoice
+    total_price_base = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # total in base currency
+    payment_method = models.CharField(max_length=10, choices=pay_choices, default='cash')
     
+    invoice_pay_method = models.CharField(max_length=10, choices=pay_choices, default='cash')  # Added field
+    grand_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    # objects = Stock_Out_VouchersManager()
+    
+    # products
+    # purchase_items
+    
+    
+#########################################
+
+#########################################
+class Stock_Out_Voucher_item(models.Model):
+    Stock_Out_Voucher_id = models.ForeignKey(Stock_Out_Voucher, related_name="Stock_Out_Voucher_items", on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name="Stock_Out_Voucher_items", on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # equal purchasing_price in Product table
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    # Currency conversion fields
+    currency = models.ForeignKey('Currency', related_name='Stock_Out_Voucher_items', on_delete=models.SET_NULL, null=True, blank=True)
+    exchange_rate_to_base = models.DecimalField(max_digits=10, decimal_places=6, default=1.00)
+    total_price_base = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # total in base currency
+    # ماذا اشترينا، وبأي كمية، وبأي سعر
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    
+
+#########################################
+
+def get_all_Stock_Out_Vouchers():
+    return Stock_Out_Voucher.objects.all().order_by('-created_at')
+def get_allStock_Out_Voucher_item():
+    return Stock_Out_Voucher_item.objects.all().order_by('-created_at')

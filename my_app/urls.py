@@ -30,6 +30,7 @@ urlpatterns = [
     path('print_return_sale/<int:id>', views.print_sale_return),
     path('print_sale_invoice/<int:id>', views.print_sale_invoice),
     path('print_purchase_invoice/<int:id>', views.print_purchase_invoice),
+    path('print_stock_out_voucher/<int:id>', views.print_stock_out_voucher, name='print_stock_out_voucher'),
     path('delete_product', views.delete_product),
     
     path('add_order_to_sale', views.add_product_to_sale),
@@ -57,7 +58,9 @@ urlpatterns = [
     path('clear_sales_list', views.clear_sales_list),
     path('clear_purchases_list', views.clear_purchases_list),
     path('delete-product-from-purchase', views.delete_product_from_purchase, name='delete_product_from_purchase'),
+    path('update_purchase_cart', views.update_purchase_cart, name='update_purchase_cart'),
     path('delete-product-from-sale', views.delete_product_from_sale, name='delete_product_from_sale'),
+    path('update_sales_cart', views.update_sales_cart, name='update_sales_cart'),
 
     path('view_purchase_invoice/<int:id>', views.view_purchase_invoice),
     path('add_product_to_sale_cart_by_isbn', views.add_product_to_sale_cart_by_isbn, name='add_product_to_sale_cart_by_isbn'),
@@ -97,4 +100,19 @@ urlpatterns = [
     path('purchases/sample-excel/', views.download_sample_purchase_excel, name='download_sample_purchase_excel'),
     path('forget_password', views.forget_password, name='forget_password'),
     path('reset_password/<str:token>', views.reset_password, name='reset_password'),
+    
+    path('stock_out_voucher', views.display_Stock_Out_voucher, name='display_Stock_Out_voucher'),
+    # Stock Out Voucher actions
+    path('add_order_to_stock_out', views.add_product_to_stock_out, name='add_order_to_stock_out'),
+    path('delete-product-from-stock-out', views.delete_product_from_stock_out, name='delete_product_from_stock_out'),
+    ## update cart session
+    path('update_stock_out_cart', views.update_stock_out_cart, name='update_stock_out_cart'),
+    ## end update cart session
+    path('submit_stock_out_order', views.submit_stock_out_order, name='submit_stock_out_order'),
+    path('view_stock_out_invoice/<int:id>', views.view_stock_out_invoice, name='view_stock_out_invoice'),
+    path('stock_out_invoice/<int:id>/edit', views.stock_out_invoice_edit, name='stock_out_invoice_edit'),
+    path('stock_out_invoice/<int:id>/add_item', views.stock_out_invoice_add_item, name='stock_out_invoice_add_item'),
+    path('stock_out_invoice/<int:id>/delete_item', views.stock_out_invoice_delete_item, name='stock_out_invoice_delete_item'),
+    path('stock_out_invoice/<int:id>/update_items', views.stock_out_invoice_update_items, name='stock_out_invoice_update_items'),
+    path('stock_out_invoice/<int:id>/convert-to-sale', views.convert_stock_out_to_sale, name='convert_stock_out_to_sale'),
 ]

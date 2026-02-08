@@ -153,6 +153,75 @@ def delete_product_from_purchase(request):
     
     return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
 
+def update_purchase_cart(request):
+    """
+    Persist edited purchase cart rows to session.
+    Accepts JSON payload: { items: [ {product_id, quantity, purchase_price} ] }
+    Returns updated items and grand_total.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+    items_payload = None
+    if request.content_type == 'application/json':
+        import json
+        try:
+            body = json.loads(request.body or '{}')
+            items_payload = body.get('items')
+        except Exception:
+            return JsonResponse({'status': 'error', 'message': _('Invalid payload')}, status=400)
+    else:
+        items_str = request.POST.get('items')
+        if items_str:
+            import json
+            try:
+                items_payload = json.loads(items_str)
+            except Exception:
+                items_payload = None
+
+    if not isinstance(items_payload, list):
+        return JsonResponse({'status': 'error', 'message': _('No items provided')}, status=400)
+
+    new_cart = []
+    for it in items_payload:
+        product_id = it.get('product_id')
+        quantity = it.get('quantity')
+        purchase_price = it.get('purchase_price')
+        try:
+            product_id = int(product_id)
+        except (ValueError, TypeError):
+            return JsonResponse({'status': 'error', 'message': _('Invalid product_id')}, status=400)
+        try:
+            quantity = int(quantity)
+        except (ValueError, TypeError):
+            quantity = 0
+        try:
+            purchase_price = float(purchase_price)
+        except (ValueError, TypeError):
+            purchase_price = 0.0
+
+        if quantity <= 0:
+            return JsonResponse({'status': 'error', 'message': _('Quantity must be positive')}, status=400)
+
+        try:
+            prod = models.Product.objects.get(id=product_id)
+        except models.Product.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': _('Product not found')}, status=404)
+
+        total_price = quantity * purchase_price
+        new_cart.append({
+            'product_name': prod.product_name,
+            'product_id': product_id,
+            'quantity': quantity,
+            'purchase_price': purchase_price,
+            'total_price': total_price,
+        })
+
+    _save_purchase_cart(request, new_cart)
+
+    grand_total = sum(float(item.get('total_price', 0)) for item in new_cart)
+    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': new_cart})
+
 
 # to display the sign-in page
 def about_us(request):
@@ -496,6 +565,7 @@ def display_sales(request):
     orders_page_number = request.GET.get('orders_page')
     orders_paginator = Paginator(orders_qs, 10)  # 10 orders per page
     orders_page = orders_paginator.get_page(orders_page_number)
+    base_currency = models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None
 
     context = {
             'sale_order': cart,
@@ -506,6 +576,7 @@ def display_sales(request):
             'currencies': models.Currency.objects.all(),
             'grand_total': grand_total,
             'orders_paginator': orders_paginator,
+            'base_currency': base_currency,
         }
     return render(request , 'sale_orders.html', context )
 
@@ -962,11 +1033,15 @@ def submet_sale_order(request):
                 # if PURCHASE_CURRENCT == USD
                 # and BASE_CURRENCY == USD
                 # USD to USD : exchange_rate_obj == False
+                # exchange_rate_obj = models.ExchangeRate.objects.filter(
+                #     from_currency_id=currency_id,
+                #     to_currency__id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None,
+                #     date=date.today()
+                # ).first()
                 exchange_rate_obj = models.ExchangeRate.objects.filter(
-                    from_currency_id=currency_id,
-                    to_currency__id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None,
-                    date=date.today()
-                ).first()
+                    from_currency_id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None,
+                    to_currency__id=currency_id,
+                    date=date.today()).first()
                 
                 # if found a record in the table (ExchangeRate)
                 # git that rate 
@@ -1059,6 +1134,87 @@ def delete_product_from_sale(request):
     grand_total = sum(float(item.get('total_price', 0)) for item in cart)
 
     return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+
+def update_sales_cart(request):
+    """
+    Persist edited sales cart rows to session.
+    Accepts JSON payload: { items: [ {product_id, quantity, sale_price} ] }
+    Returns updated items and grand_total.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+    items_payload = None
+    if request.content_type == 'application/json':
+        import json
+        try:
+            body = json.loads(request.body or '{}')
+            items_payload = body.get('items')
+        except Exception:
+            return JsonResponse({'status': 'error', 'message': _('Invalid payload')}, status=400)
+    else:
+        # Fallback: accept form-encoded 'items' JSON string
+        items_str = request.POST.get('items')
+        if items_str:
+            import json
+            try:
+                items_payload = json.loads(items_str)
+            except Exception:
+                items_payload = None
+
+    if not isinstance(items_payload, list):
+        return JsonResponse({'status': 'error', 'message': _('No items provided')}, status=400)
+
+    new_cart = []
+    for it in items_payload:
+        product_id = it.get('product_id')
+        quantity = it.get('quantity')
+        sale_price = it.get('sale_price')
+        try:
+            product_id = int(product_id)
+        except (ValueError, TypeError):
+            return JsonResponse({'status': 'error', 'message': _('Invalid product_id')}, status=400)
+        try:
+            quantity = int(quantity)
+        except (ValueError, TypeError):
+            quantity = 0
+        try:
+            sale_price = float(sale_price)
+        except (ValueError, TypeError):
+            sale_price = 0.0
+
+        if quantity <= 0:
+            return JsonResponse({'status': 'error', 'message': _('Quantity must be positive')}, status=400)
+
+        # Validate against available stock
+        try:
+            prod = models.Product.objects.get(id=product_id)
+        except models.Product.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': _('Product not found')}, status=404)
+
+        available_qty = int(prod.quantity or 0)
+        if available_qty <= 0:
+            msg = _('Cannot sell "%(product)s": out of stock.') % {'product': prod.product_name}
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        if quantity > available_qty:
+            msg = _('Cannot sell more than available stock for "%(product)s". Available: %(available)d, requested: %(requested)d') % {
+                'product': prod.product_name, 'available': available_qty, 'requested': quantity
+            }
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+
+        total_price = quantity * sale_price
+        new_cart.append({
+            'product_name': prod.product_name,
+            'product_id': product_id,
+            'quantity': quantity,
+            'sale_price': sale_price,
+            'total_price': total_price,
+        })
+
+    _save_sale_cart(request, new_cart)
+
+    grand_total = sum(float(item.get('total_price', 0)) for item in new_cart)
+    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': new_cart})
 
 
 def delete_product_from_purchase(request):
@@ -1811,6 +1967,22 @@ def print_purchase_invoice(request, id):
         'company': models.get_company_profile(),
     }
     return render(request, 'print_purchase_invoice.html', context)
+
+
+def print_stock_out_voucher(request, id):
+    try:
+        voucher = models.Stock_Out_Voucher.objects.get(id=id)
+    except models.Stock_Out_Voucher.DoesNotExist:
+        messages.error(request, _('Voucher not found.'))
+        return redirect('/stock_out_voucher')
+
+    items = voucher.Stock_Out_Voucher_items.select_related('product').all()
+    context = {
+        'voucher': voucher,
+        'items': items,
+        'company': models.get_company_profile(),
+    }
+    return render(request, 'print_stock_out_voucher.html', context)
 
 
 def clear_sales_list(request) :
@@ -2761,7 +2933,7 @@ def download_sample_purchase_excel(request):
     ws.title = 'Purchase Invoices'
 
     # Add headers
-    headers = [ _('Product Name'),_('Quantity'),_('Unit Price'),_('Product ISBN'),_('Supplier Name'), _('Payment Method')]
+    headers = [ _('Product Name'),_('Quantity'),_('Unit Price'),_('Product ISBN'),_('Supplier Name'), _('Payment Method'),_('Currency')]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
@@ -2772,9 +2944,9 @@ def download_sample_purchase_excel(request):
     for col in range(1, len(headers) + 1):
         ws.column_dimensions[chr(64 + col)].width = 15
     sample_data = [
-        ['Sample Book 1',10,15.50,'9781234567890','ABC Suppliers', 'cash'],
-        ['Sample Book 2',5,12.75,'9780987654321','ABC Suppliers',  'cash'],
-        ['Sample Magazine',20,8.00,'9781122334455','XYZ Distributors',  'debts'],
+        ['Sample Book 1',10,15.50,'9781234567890','ABC Suppliers', 'cash','ILS' ],
+        ['Sample Book 2',5,12.75,'9780987654321','ABC Suppliers',  'cash','ILS'],
+        ['Sample Magazine',20,8.00,'9781122334455','XYZ Distributors',  'debts','USD'],
     ]
 
     for row_num, row_data in enumerate(sample_data, 2):
@@ -2967,3 +3139,659 @@ def download_sales_products_report_excel(request):
     response['Content-Disposition'] = f'attachment; filename="sales_products_report_{from_date}_to_{to_date}.xlsx"'
 
     return response
+
+
+
+
+
+
+
+def _get_Stock_Out_cart(request):
+    return request.session.get('stock_out_cart', [])
+
+
+def _save_Stock_Out_cart(request, cart):
+    request.session['stock_out_cart'] = cart
+    request.session.modified = True
+
+
+def delete_product_from_stock_out(request):
+    """
+    AJAX endpoint: delete a product from purchase cart by product_id
+    Returns JSON with updated grand_total and cart items
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+    
+    product_id = request.POST.get('product_id')
+    if not product_id:
+        return JsonResponse({'status': 'error', 'message': 'No product_id provided'}, status=400)
+    
+    try:
+        product_id = int(product_id)
+    except (ValueError, TypeError):
+        return JsonResponse({'status': 'error', 'message': 'Invalid product_id'}, status=400)
+    
+    cart = _get_Stock_Out_cart(request)
+    # Find and remove the item by product_id
+    original_length = len(cart)
+    cart = [item for item in cart if int(item.get('product_id')) != product_id]
+    
+    if len(cart) == original_length:
+        # Item not found
+        return JsonResponse({'status': 'error', 'message': 'Product not found in cart'}, status=404)
+    
+    _save_Stock_Out_cart(request, cart)
+    
+    # Recalculate grand total
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+    
+    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+
+def update_stock_out_cart(request):
+    """
+    Persist edited stock-out cart rows to session.
+    Accepts JSON payload: { items: [ {product_id, quantity, purchase_price} ] }
+    Returns updated items and grand_total.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+    items_payload = None
+    if request.content_type == 'application/json':
+        import json
+        try:
+            body = json.loads(request.body or '{}')
+            items_payload = body.get('items')
+        except Exception:
+            return JsonResponse({'status': 'error', 'message': _('Invalid payload')}, status=400)
+    else:
+        # Fallback: accept form-encoded 'items' JSON string
+        items_str = request.POST.get('items')
+        if items_str:
+            import json
+            try:
+                items_payload = json.loads(items_str)
+            except Exception:
+                items_payload = None
+
+    if not isinstance(items_payload, list):
+        return JsonResponse({'status': 'error', 'message': _('No items provided')}, status=400)
+
+    new_cart = []
+    for it in items_payload:
+        product_id = it.get('product_id')
+        quantity = it.get('quantity')
+        purchase_price = it.get('purchase_price')
+        try:
+            product_id = int(product_id)
+        except (ValueError, TypeError):
+            return JsonResponse({'status': 'error', 'message': _('Invalid product_id')}, status=400)
+        try:
+            quantity = int(quantity)
+        except (ValueError, TypeError):
+            quantity = 0
+        try:
+            purchase_price = float(purchase_price)
+        except (ValueError, TypeError):
+            purchase_price = 0.0
+
+        if quantity <= 0:
+            return JsonResponse({'status': 'error', 'message': _('Quantity must be positive')}, status=400)
+
+        try:
+            prod = models.Product.objects.get(id=product_id)
+        except models.Product.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': _('Product not found')}, status=404)
+
+        # Stock validations consistent with add-to-cart
+        try:
+            available_qty = int(prod.quantity)
+        except Exception:
+            available_qty = prod.quantity or 0
+        if available_qty < 0:
+            msg = _('Product "%(prod)s" is out of stock.') % {'prod': prod.product_name}
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        if available_qty < quantity:
+            msg = _('Not enough stock for product "%(prod)s". Available: %(avail)d') % {'prod': prod.product_name, 'avail': available_qty}
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+
+        total_price = quantity * purchase_price
+        new_cart.append({
+            'product_name': prod.product_name,
+            'product_id': product_id,
+            'quantity': quantity,
+            'purchase_price': purchase_price,
+            'total_price': total_price,
+        })
+
+    _save_Stock_Out_cart(request, new_cart)
+
+    grand_total = sum(float(item.get('total_price', 0)) for item in new_cart)
+    return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': new_cart})
+
+############################################
+def display_Stock_Out_voucher(request):
+    # calculate grand total (session-backed)
+    Stock_Out_cart = _get_Stock_Out_cart(request)
+    grand_total = sum(float(item.get('total_price', 0)) for item in Stock_Out_cart)
+    # paginate recent purchase invoices
+    stock_out_vouchers_qs = models.get_all_Stock_Out_Vouchers()
+    stock_out_vouchers_page_number = request.GET.get('vouchers_page')
+    stock_out_vouchers_paginator = Paginator(stock_out_vouchers_qs, 10)  # 10 invoices per page
+    stock_out_vouchers_page = stock_out_vouchers_paginator.get_page(stock_out_vouchers_page_number)
+    
+
+    context = {
+            # alias to match existing template keys
+            'purchases_order': Stock_Out_cart,
+            'stock_outs_order': Stock_Out_cart,
+            'products': models.get_all_products(),
+            # recent vouchers list + aliases used by template
+            'stock_out_vouchers': stock_out_vouchers_page,
+            'invoices': stock_out_vouchers_page,
+            'employee': models.get_employee_by_id(request.session['employee_id']),
+            'grand_total': grand_total,
+            'stock_out_vouchers_paginator': stock_out_vouchers_paginator,
+            'invoices_paginator': stock_out_vouchers_paginator,
+            'suppliers': models.Supplier.objects.all(),
+            'currencies': models.Currency.objects.all(),
+        }
+    return render(request , 'stock_Out_Voucher.html' ,context)
+############################################
+
+# ------------------- Stock Out Voucher Cart Ops -------------------
+from decimal import Decimal
+
+def add_product_to_stock_out(request):
+    """
+    Add product to session-backed stock out cart. Supports normal POST and AJAX/JSON.
+    Returns JSON when called via AJAX, else redirects back to stock-out page.
+    """
+    data = None
+    if request.content_type == 'application/json':
+        import json
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            return JsonResponse({'status': 'error', 'message': _('Invalid payload')}, status=400)
+
+    product_name = (data.get('product_name') if data else request.POST.get('product_name'))
+    quantity = int((data.get('quantity') if data else request.POST.get('quantity', 0)) or 0)
+
+    if not product_name or quantity <= 0:
+        msg = _('Product name and positive quantity are required.')
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        messages.error(request, msg)
+        return redirect('/stock_out_voucher')
+
+    try:
+        prod = models.Product.objects.get(product_name=product_name)
+    except models.Product.DoesNotExist:
+        msg = _('Product not found')
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'status': 'not_found', 'message': msg})
+        messages.error(request, msg)
+        return redirect('/stock_out_voucher')
+
+    # Stock validations (consider existing quantity in cart for this product)
+    try:
+        available_qty = int(prod.quantity)
+    except Exception:
+        available_qty = prod.quantity or 0
+    # existing quantity of this product already in cart
+    existing_qty_in_cart = 0
+    try:
+        existing_qty_in_cart = sum(int(i.get('quantity', 0)) for i in _get_Stock_Out_cart(request) if int(i.get('product_id', 0)) == int(prod.id))
+    except Exception:
+        existing_qty_in_cart = 0
+    if available_qty < 0:
+        msg = _('Product "%(prod)s" is out of stock.') % {'prod': product_name}
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        messages.error(request, msg)
+        return redirect('/stock_out_voucher')
+    # validate against total desired quantity (existing + new)
+    total_desired = existing_qty_in_cart + quantity
+    if available_qty < total_desired:
+        msg = _('Not enough stock for product "%(prod)s". Available: %(avail)d') % {'prod': product_name, 'avail': available_qty}
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        messages.error(request, msg)
+        return redirect('/stock_out_voucher')
+
+    product_id = prod.id
+    unit_price = float(prod.purchasing_price) if prod.purchasing_price is not None else 0.0
+    total_price = quantity * unit_price
+    cart = _get_Stock_Out_cart(request)
+    for item in cart:
+        if int(item.get('product_id')) == int(product_id):
+            item['quantity'] = int(item.get('quantity', 0)) + quantity
+            try:
+                item['total_price'] = int(item['quantity']) * float(item.get('purchase_price', unit_price))
+            except Exception:
+                item['total_price'] = 0
+            break
+    else:
+        cart.append({
+            'product_name': product_name,
+            'product_id': product_id,
+            'quantity': quantity,
+            # keep same key name used by template/JS
+            'purchase_price': unit_price,
+            'total_price': total_price,
+        })
+    _save_Stock_Out_cart(request, cart)
+
+    grand_total = sum(float(item.get('total_price', 0)) for item in cart)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+        return JsonResponse({'status': 'ok', 'grand_total': grand_total, 'items': cart})
+    return redirect('/stock_out_voucher')
+
+
+def submit_stock_out_order(request):
+    """
+    Persist current stock-out cart to DB as Stock_Out_Voucher and Stock_Out_Voucher_item rows
+    without affecting Product.quantity.
+    """
+    cart = _get_Stock_Out_cart(request)
+    if not cart:
+        messages.error(request, _('Please add at least one product to stock-out voucher!'))
+        return redirect('/stock_out_voucher')
+
+    currency_id = request.POST.get('currency_id')
+    supplier_id = request.POST.get('supplier_id')
+    pay_method = request.POST.get('invoice_pay_method', 'cash')
+
+    # Create voucher
+    employee_id = request.session.get('employee_id')
+    if not employee_id:
+        messages.error(request, _('You must be signed in as an employee.'))
+        return redirect('/')
+
+    voucher = models.Stock_Out_Voucher.objects.create(
+        employee_id=employee_id,
+        supplier_id=supplier_id or None,
+        invoice_pay_method=pay_method,
+    )
+
+    # Set currency and exchange rate (use base -> selected currency logic)
+    if currency_id:
+        voucher.currency_id = currency_id
+        try:
+            exchange_rate_obj = models.ExchangeRate.objects.filter(
+                from_currency_id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None,
+                to_currency__id=currency_id,
+                date=date.today()
+            ).first()
+            if exchange_rate_obj:
+                voucher.exchange_rate_to_base = exchange_rate_obj.rate
+            elif currency_id != (models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() else None):
+                voucher.exchange_rate_to_base = 1.0
+        except Exception as e:
+            messages.warning(request, _("Could not set exchange rate: %(err)s") % {'err': str(e)})
+    voucher.save()
+
+    # Create voucher items and compute totals
+    total_sum = Decimal('0.0')
+    total_sum_base = Decimal('0.0')
+    for key in cart:
+        product_id = key.get('product_id')
+        quantity = int(key.get('quantity'))
+        unit_price = Decimal(str(key.get('purchase_price') or 0))
+        total_price = Decimal(str(key.get('total_price') or 0))
+
+        item = models.Stock_Out_Voucher_item.objects.create(
+            Stock_Out_Voucher_id=voucher,
+            product_id=product_id,
+            quantity=quantity,
+            unit_price=unit_price,
+            total_price=total_price,
+            currency_id=currency_id or None,
+            exchange_rate_to_base=voucher.exchange_rate_to_base or Decimal('1.0'),
+            total_price_base=(total_price * Decimal(str(voucher.exchange_rate_to_base or 1)))
+        )
+        total_sum += total_price
+        total_sum_base += item.total_price_base
+
+    voucher.grand_total = total_sum
+    voucher.total_amount = total_sum
+    voucher.total_price_base = total_sum_base
+    voucher.save()
+
+    # Clear cart and notify
+    _save_Stock_Out_cart(request, [])
+    messages.success(request, _('Stock-Out Voucher Created Successfully!'), extra_tags='add_invoice')
+    return redirect('/stock_out_voucher')
+
+
+def view_stock_out_invoice(request, id):
+    try:
+        voucher = models.Stock_Out_Voucher.objects.get(id=id)
+    except models.Stock_Out_Voucher.DoesNotExist:
+        messages.error(request, _('Voucher not found.'))
+        return redirect('/stock_out_voucher')
+    items = voucher.Stock_Out_Voucher_items.select_related('product').all()
+    context = {
+        'voucher': voucher,
+        'items': items,
+        'total': voucher.grand_total,
+        'company': models.get_company_profile(),
+    }
+    return render(request, 'stock_out_voucher_detail.html', context)
+
+######### applying the edit for stock out invoice edit view (in cart_session) ############
+def stock_out_invoice_edit(request, id):
+    try:
+        voucher = models.Stock_Out_Voucher.objects.get(id=id)
+    except models.Stock_Out_Voucher.DoesNotExist:
+        messages.error(request, _('Voucher not found.'))
+        return redirect('/stock_out_voucher')
+    items = voucher.Stock_Out_Voucher_items.select_related('product').all()
+    context = {
+        'voucher': voucher,
+        'items': items,
+        'products': models.Product.objects.all(),
+    }
+    return render(request, 'stock_out_voucher_edit.html', context)
+######### applying the edit for stock out invoice edit view (in cart_session) ############
+
+
+
+def stock_out_invoice_add_item(request, id):
+    if request.method != 'POST':
+        return redirect(f'/stock_out_invoice/{id}/edit')
+    try:
+        voucher = models.Stock_Out_Voucher.objects.get(id=id)
+    except models.Stock_Out_Voucher.DoesNotExist:
+        messages.error(request, _('Voucher not found.'))
+        return redirect('/stock_out_voucher')
+
+    product_id = request.POST.get('product_id')
+    quantity = int(request.POST.get('quantity', 0) or 0)
+    unit_price = request.POST.get('unit_price')
+    if not product_id or quantity <= 0:
+        messages.error(request, _('Product and positive quantity are required.'))
+        return redirect(f'/stock_out_invoice/{id}/edit')
+    try:
+        prod = models.Product.objects.get(id=product_id)
+    except models.Product.DoesNotExist:
+        messages.error(request, _('Product not found.'))
+        return redirect(f'/stock_out_invoice/{id}/edit')
+    # Stock validation: check available against existing voucher quantity + new qty
+    try:
+        available_qty = int(prod.quantity)
+    except Exception:
+        available_qty = prod.quantity or 0
+    if available_qty < 0:
+        messages.error(request, _('Product "%(prod)s" is out of stock.') % {'prod': prod.product_name})
+        return redirect(f'/stock_out_invoice/{id}/edit')
+    try:
+        existing_voucher_qty = voucher.Stock_Out_Voucher_items.filter(product_id=product_id).aggregate(q=Sum('quantity')).get('q') or 0
+        existing_voucher_qty = int(existing_voucher_qty)
+    except Exception:
+        existing_voucher_qty = 0
+    total_desired = existing_voucher_qty + quantity
+    if available_qty < total_desired:
+        messages.error(request, _('Not enough stock for product "%(prod)s". Available: %(avail)d') % {'prod': prod.product_name, 'avail': available_qty})
+        return redirect(f'/stock_out_invoice/{id}/edit')
+    unit_price_val = Decimal(str(unit_price)) if unit_price is not None and unit_price != '' else Decimal(str(prod.purchasing_price or 0))
+    # Merge with existing item instead of creating a new row
+    existing_item = voucher.Stock_Out_Voucher_items.filter(product_id=prod.id).order_by('id').first()
+    if existing_item:
+        new_qty = int(existing_item.quantity or 0) + int(quantity)
+        existing_item.quantity = new_qty
+        existing_item.unit_price = unit_price_val
+        existing_item.total_price = unit_price_val * Decimal(new_qty)
+        existing_item.currency = voucher.currency
+        existing_item.exchange_rate_to_base = voucher.exchange_rate_to_base
+        existing_item.total_price_base = existing_item.total_price * Decimal(str(voucher.exchange_rate_to_base or 1))
+        existing_item.save()
+        merged_message = _('Item quantity updated.')
+    else:
+        total_price = unit_price_val * Decimal(quantity)
+        models.Stock_Out_Voucher_item.objects.create(
+            Stock_Out_Voucher_id=voucher,
+            product=prod,
+            quantity=quantity,
+            unit_price=unit_price_val,
+            total_price=total_price,
+            currency=voucher.currency,
+            exchange_rate_to_base=voucher.exchange_rate_to_base,
+            total_price_base=(total_price * Decimal(str(voucher.exchange_rate_to_base or 1)))
+        )
+        merged_message = _('Item added.')
+    # Recompute totals
+    totals = voucher.Stock_Out_Voucher_items.aggregate(
+        total=Sum('total_price'), base=Sum('total_price_base')
+    )
+    voucher.grand_total = totals.get('total') or 0
+    voucher.total_amount = voucher.grand_total
+    voucher.total_price_base = totals.get('base') or 0
+    voucher.save()
+    messages.success(request, merged_message)
+    return redirect(f'/stock_out_invoice/{id}/edit')
+
+
+def stock_out_invoice_delete_item(request, id):
+    if request.method != 'POST':
+        return redirect(f'/stock_out_invoice/{id}/edit')
+    item_id = request.POST.get('item_id')
+    try:
+        item = models.Stock_Out_Voucher_item.objects.get(id=item_id, Stock_Out_Voucher_id_id=id)
+    except models.Stock_Out_Voucher_item.DoesNotExist:
+        messages.error(request, _('Item not found.'))
+        return redirect(f'/stock_out_invoice/{id}/edit')
+    voucher = item.Stock_Out_Voucher_id
+    item.delete()
+    totals = voucher.Stock_Out_Voucher_items.aggregate(
+        total=Sum('total_price'), base=Sum('total_price_base')
+    )
+    voucher.grand_total = totals.get('total') or 0
+    voucher.total_amount = voucher.grand_total
+    voucher.total_price_base = totals.get('base') or 0
+    voucher.save()
+    messages.success(request, _('Item deleted.'))
+    return redirect(f'/stock_out_invoice/{id}/edit')
+
+
+def stock_out_invoice_update_items(request, id):
+    """
+    Persist inline edits on the stock-out voucher edit page.
+    Accepts JSON: { items: [ { item_id, quantity, unit_price } ] }
+    Applies validations against current product stock and updates totals.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+    try:
+        voucher = models.Stock_Out_Voucher.objects.get(id=id)
+    except models.Stock_Out_Voucher.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': _('Voucher not found')}, status=404)
+
+    # Parse payload
+    items_payload = None
+    if request.content_type == 'application/json':
+        import json
+        try:
+            body = json.loads(request.body or '{}')
+            items_payload = body.get('items')
+        except Exception:
+            return JsonResponse({'status': 'error', 'message': _('Invalid payload')}, status=400)
+    else:
+        items_str = request.POST.get('items')
+        if items_str:
+            import json
+            try:
+                items_payload = json.loads(items_str)
+            except Exception:
+                items_payload = None
+
+    if not isinstance(items_payload, list):
+        return JsonResponse({'status': 'error', 'message': _('No items provided')}, status=400)
+
+    from decimal import Decimal as D
+    # Apply edits
+    for it in items_payload:
+        item_id = it.get('item_id')
+        quantity = it.get('quantity')
+        unit_price = it.get('unit_price')
+        try:
+            item_id = int(item_id)
+        except (ValueError, TypeError):
+            return JsonResponse({'status': 'error', 'message': _('Invalid item_id')}, status=400)
+        try:
+            quantity = int(quantity)
+        except (ValueError, TypeError):
+            quantity = 0
+        try:
+            unit_price = D(str(unit_price))
+        except Exception:
+            unit_price = D('0')
+
+        if quantity <= 0:
+            return JsonResponse({'status': 'error', 'message': _('Quantity must be positive')}, status=400)
+
+        try:
+            item = models.Stock_Out_Voucher_item.objects.get(id=item_id, Stock_Out_Voucher_id=voucher)
+        except models.Stock_Out_Voucher_item.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': _('Item not found')}, status=404)
+
+        prod = item.product
+        try:
+            available_qty = int(prod.quantity)
+        except Exception:
+            available_qty = prod.quantity or 0
+        if available_qty < 0:
+            msg = _('Product "%(prod)s" is out of stock.') % {'prod': prod.product_name}
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+        if available_qty < quantity:
+            msg = _('Not enough stock for product "%(prod)s". Available: %(avail)d') % {'prod': prod.product_name, 'avail': available_qty}
+            return JsonResponse({'status': 'error', 'message': msg}, status=400)
+
+        # Update item
+        item.quantity = quantity
+        item.unit_price = unit_price
+        item.total_price = unit_price * D(str(quantity))
+        item.currency = voucher.currency
+        item.exchange_rate_to_base = voucher.exchange_rate_to_base
+        item.total_price_base = item.total_price * D(str(voucher.exchange_rate_to_base or 1))
+        item.save()
+
+    # Recompute voucher totals
+    totals = voucher.Stock_Out_Voucher_items.aggregate(total=Sum('total_price'), base=Sum('total_price_base'))
+    voucher.grand_total = totals.get('total') or 0
+    voucher.total_amount = voucher.grand_total
+    voucher.total_price_base = totals.get('base') or 0
+    voucher.save()
+
+    # Build response items
+    resp_items = []
+    for it in voucher.Stock_Out_Voucher_items.select_related('product').all():
+        resp_items.append({
+            'id': it.id,
+            'product_id': it.product_id,
+            'product_name': it.product.product_name if it.product_id else '',
+            'quantity': it.quantity,
+            'unit_price': float(it.unit_price) if it.unit_price is not None else 0,
+            'total_price': float(it.total_price) if it.total_price is not None else 0,
+        })
+
+    return JsonResponse({'status': 'ok', 'grand_total': float(voucher.grand_total or 0), 'items': resp_items})
+def convert_stock_out_to_sale(request, id):
+    """
+    Convert a Stock_Out_Voucher to a Sale_order with corresponding Sale_item entries.
+    This will decrement product stock according to sale quantity.
+    """
+    try:
+        voucher = models.Stock_Out_Voucher.objects.get(id=id)
+    except models.Stock_Out_Voucher.DoesNotExist:
+        messages.error(request, _('Voucher not found.'))
+        return redirect('/stock_out_voucher')
+
+    # Prevent duplicate conversion (session-based guard) 
+    # converted_ids = request.session.get('converted_stock_out_vouchers', [])
+    # if voucher.id in converted_ids:
+    #     messages.warning(request, _('This voucher was already converted to a sale invoice.'))
+    #     return redirect(f'/view_stock_out_invoice/{voucher.id}')
+
+    # Require voucher has items
+    items_qs = voucher.Stock_Out_Voucher_items.select_related('product').all()
+    if not items_qs.exists():
+        messages.error(request, _('Cannot convert an empty voucher. Please add items first.'))
+        return redirect(f'/view_stock_out_invoice/{voucher.id}')
+
+    # Validate quantities and available stock before conversion
+    validation_errors = []
+    for it in items_qs:
+        # Quantity must be positive
+        try:
+            qty = int(it.quantity or 0)
+        except Exception:
+            qty = 0
+        if qty <= 0:
+            validation_errors.append(_(\
+                'Item "%(prod)s" has non-positive quantity.') % {'prod': (it.product.product_name if it.product_id else '')}
+            )
+            continue
+
+        # Check available stock
+        prod = it.product
+        try:
+            available_qty = int(prod.quantity)
+        except Exception:
+            available_qty = prod.quantity or 0
+        if available_qty < 0 or available_qty < qty:
+            validation_errors.append(_(
+                'Not enough stock for "%(prod)s". Available: %(avail)d, required: %(req)d'
+            ) % {
+                'prod': (prod.product_name if prod else ''),
+                'avail': available_qty,
+                'req': qty,
+            })
+
+    if validation_errors:
+        for err in validation_errors:
+            messages.error(request, err)
+        return redirect(f'/view_stock_out_invoice/{voucher.id}')
+
+    sale_order = models.create_sale_order(voucher.employee_id, customer_id=None)
+    sale_order.currency = voucher.currency
+    sale_order.exchange_rate_to_base = voucher.exchange_rate_to_base or Decimal('1.0')
+    sale_order.invoice_pay_method = voucher.invoice_pay_method
+    sale_order.save()
+
+    total_sum = Decimal('0.0')
+    for item in items_qs:
+        models.add_item_to_invoice(
+            product_id=item.product_id,
+            quantity=item.quantity,
+            sale_price=item.unit_price,
+            total_price=item.total_price,
+            currency=item.currency,
+            exchange_rate_to_base=item.exchange_rate_to_base,
+            total_price_base=item.total_price_base,
+        )
+        # decrement product stock
+        try:
+            models.add_product_to_sale(item.product_id, item.quantity)
+        except Exception:
+            pass
+        total_sum += Decimal(str(item.total_price))
+
+    sale_order.grand_total = total_sum
+    sale_order.total_amount = total_sum
+    sale_order.total_amount_base = total_sum * Decimal(str(sale_order.exchange_rate_to_base or 1))
+    sale_order.save()
+
+    # Mark this voucher as converted in the current session
+    try:
+        converted_ids.append(voucher.id)
+        request.session['converted_stock_out_vouchers'] = converted_ids
+        request.session.modified = True
+    except Exception:
+        # Non-fatal: session write failure should not block successful conversion
+        pass
+
+    messages.success(request, _('Converted to sale invoice successfully.'))
+    return redirect(f'/view_sale_order/{sale_order.id}')
