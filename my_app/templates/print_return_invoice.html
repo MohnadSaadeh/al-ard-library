@@ -50,7 +50,8 @@
           <table class="table table-sm table-bordered">
           <thead>
             <tr>
-              <th>{% trans "#" %}</th>
+              <th> {% trans "No." %} </th>
+              <th> {% trans "ISBN" %} </th>
               <th>{% trans "Product" %}</th>
               <th class="text-center">{% trans "Qty" %}</th>
               <th class="text-end">{% trans "Unit Price" %}</th>
@@ -62,6 +63,7 @@
               {% for item in return_products %}
               <tr>
                 <td>{{ forloop.counter }}</td>
+                <td>{{ item.product.isbn }}</td>
                 <td>{{ item.product.product_name }}</td>
                 <td class="text-center">{{ item.quantity }}</td>
                 <td class="text-end">{{ item.unit_price }}</td>

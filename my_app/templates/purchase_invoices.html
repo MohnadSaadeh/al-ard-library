@@ -175,9 +175,10 @@
           <table class="table table-hover table-bordered align-middle">
             <thead class="table-dark">
               <tr>
-                <th>{% trans "Order No." %}</th>
+                <th>{% trans "No." %}</th>
                 <th>{% trans "Added by" %}</th>
                 <th>{% trans "Added at" %}</th>
+                <th>{% trans "Supplier" %}</th>
                 <th>{% trans "Currency" %}</th>
                 <th>{% trans "Action" %}</th>
               </tr>
@@ -186,8 +187,9 @@
               {% for invoice in invoices %}
               <tr>
                 <td><span class="fw-bold">{{invoice.id}}</span></td>
-                <td>{{invoice.employee.first_name}} {{invoice.employee.last_name}}</td>
-                <td>{{invoice.created_at}}</td>
+                <td>{{invoice.employee.first_name}}</td>
+                <td>{{invoice.created_at|date:"Y-m-d"}}</td>
+                <td>{% if invoice.supplier %}<a href="/suppliers/{{ invoice.supplier.id }}/">{{ invoice.supplier.name }}</a>{% else %}-{% endif %}</td>
                 <td>{{ invoice.currency.code|default:"-" }}</td>
                 <td>
                   <a href="/view_purchase_invoice/{{invoice.id}}" class="btn btn-outline-primary btn-sm me-1">{% trans "View" %}</a>

@@ -155,9 +155,10 @@
                     <table class="table table-hover table-bordered align-middle">
                         <thead class="table-dark">
                             <tr>
-                                <th>{% trans "Order No." %}</th>
+                                <th>{% trans "No." %}</th>
                                 <th>{% trans "Added by" %}</th>
                                 <th>{% trans "Added at" %}</th>
+                                <th>{% trans "Customer" %}</th>
                                 <th>{% trans "Currency" %}</th>
                                 <th>{% trans "Action" %}</th>
                             </tr>
@@ -166,8 +167,9 @@
                             {% for order in orders %}
                             <tr>
                                 <td><span class="fw-bold">{{order.id}}</span></td>
-                                <td>{{order.employee.first_name}} {{order.employee.last_name}}</td>
-                                <td>{{order.created_at}}</td>
+                                <td>{{order.employee.first_name}}</td>
+                                <td>{{order.created_at|date:"Y-m-d"}}</td>
+                                <td>{% if order.customer %}<a href="/customers/{{ order.customer.id }}/">{{ order.customer.name }}</a>{% else %}-{% endif %}</td>
                                 <td>{{order.currency.code|default:"-"}}</td>
                                 <td>
                                     <a href="/view_sale_order/{{order.id}}" class="btn btn-outline-primary btn-sm me-1">{% trans "View" %}</a>

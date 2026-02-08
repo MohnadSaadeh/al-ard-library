@@ -38,10 +38,10 @@
           <!-- Company contact (left) and invoice meta (right) for screen view -->
           <div class="d-flex justify-content-between mb-3">
             <div class="small text-muted">
-              <div><strong>{% trans "الأرض للنشر والتوزيع" %}</strong></div>
-              <div>{% trans "Address:" %} {% trans "البالوع , رام الله , فلسطين" %}</div>
-              <div>{% trans "Phone:" %} +972-599-966535</div>
-              <div>{% trans "Email:" %} info@al-ard.com</div>
+              <div><strong> {{ company.company_name }} </strong></div>
+              <div>{% trans "Address:" %} {{ company.address }}</div>
+              <div>{% trans "Phone:" %} {{ company.phone }}</div>
+              <div>{% trans "Email:" %} {{ company.email }}</div>
             </div>
             <div class="text-end small text-muted">
               <div>{% trans "Invoice No:" %} <strong>#{{ invoice.id }}</strong></div>
@@ -54,7 +54,8 @@
             <table class="table table-sm table-striped">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th> {% trans "No." %} </th>
+                  <th> {% trans "ISBN" %} </th>
                   <th>{% trans "Product" %}</th>
                   <th class="text-center">{% trans "Qty" %}</th>
                   <th class="text-end">{% trans "Unit Price" %}</th>
@@ -66,6 +67,7 @@
                   {% for item in return_products %}
                   <tr>
                     <td>{{ forloop.counter }}</td>
+                    <td>{{ item.product.isbn }}</td>
                     <td>{{ item.product.product_name }}</td>
                     <td class="text-center">{{ item.quantity }}</td>
                     <td class="text-end">{{ item.unit_price }}</td>
@@ -74,13 +76,13 @@
                   {% endfor %}
                 {% else %}
                   <tr>
-                    <td colspan="5" class="text-center text-muted">{% trans "No returned products recorded for this invoice." %}</td>
+                    <td colspan="6" class="text-center text-muted">{% trans "No returned products recorded for this invoice." %}</td>
                   </tr>
                 {% endif %}
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="3"></td>
+                  <td colspan="4"></td>
                   <td class="text-end fw-bold">{% trans "Grand Total" %}</td>
                   <td class="text-end fw-bold">{{ invoice.grand_total }}</td>
                 </tr>

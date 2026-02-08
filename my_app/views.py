@@ -813,7 +813,8 @@ def customer_detail(request, id):
         messages.error(request, _('Customer not found.'))
         return redirect('/customers')
 
-    sales_qs = models.Sale_order.objects.filter(customer=customer).order_by('-created_at')
+    sales_qs = models.Sale_order.objects.filter(customer=customer).order_by('-created_at') 
+    stock_out_vouchers_qs = models.Stock_Out_Voucher.objects.filter(customer=customer).order_by('-created_at')
     page_number = request.GET.get('page')
     paginator = Paginator(sales_qs, 10)
     sales_page = paginator.get_page(page_number)
@@ -823,6 +824,7 @@ def customer_detail(request, id):
         'sales': sales_page,
         'employee': models.get_employee_by_id(request.session['employee_id']),
         'sales_paginator': paginator,
+        'stock_outs': stock_out_vouchers_qs,
     }
     return render(request, 'customer_detail.html', context)
 
@@ -1929,6 +1931,7 @@ def view_sale_return(request, id):
     context = {
         'invoice': models.get_sale_return(id),
         'return_products': models.sale_return_products(id),
+        'company': models.get_company_profile(),
     }
     return render(request, 'view_return_sale.html', context)
 
@@ -1937,6 +1940,7 @@ def print_sale_return(request, id):
     context = {
         'invoice': models.get_sale_return(id),
         'return_products': models.sale_return_products(id),
+        'company': models.get_company_profile(),
     }
     return render(request, 'print_return_sale.html', context)
 
@@ -1946,6 +1950,7 @@ def print_return_invoice(request, id):
     context = {
         'invoice': models.get_return_invoice(id),
         'return_products': models.return_invoices_products(id),
+        'company': models.get_company_profile(),
     }
     return render(request, 'print_return_invoice.html', context)
 
@@ -3294,8 +3299,10 @@ def display_Stock_Out_voucher(request):
             'grand_total': grand_total,
             'stock_out_vouchers_paginator': stock_out_vouchers_paginator,
             'invoices_paginator': stock_out_vouchers_paginator,
-            'suppliers': models.Supplier.objects.all(),
+            #'suppliers': models.Supplier.objects.all(),
+            'customers': models.Customer.objects.all(),
             'currencies': models.Currency.objects.all(),
+            'voucher' : stock_out_vouchers_qs,
         }
     return render(request , 'stock_Out_Voucher.html' ,context)
 ############################################
@@ -3381,6 +3388,7 @@ def add_product_to_stock_out(request):
             # keep same key name used by template/JS
             'purchase_price': unit_price,
             'total_price': total_price,
+            
         })
     _save_Stock_Out_cart(request, cart)
 
@@ -3401,7 +3409,12 @@ def submit_stock_out_order(request):
         return redirect('/stock_out_voucher')
 
     currency_id = request.POST.get('currency_id')
-    supplier_id = request.POST.get('supplier_id')
+    customer_id = request.POST.get('customer_id')
+
+    if not customer_id:
+        messages.error(request, _('Please select a customer for the stock-out voucher!'))
+        return redirect('/stock_out_voucher')
+
     pay_method = request.POST.get('invoice_pay_method', 'cash')
 
     # Create voucher
@@ -3412,7 +3425,7 @@ def submit_stock_out_order(request):
 
     voucher = models.Stock_Out_Voucher.objects.create(
         employee_id=employee_id,
-        supplier_id=supplier_id or None,
+        customer_id=customer_id or None,
         invoice_pay_method=pay_method,
     )
 
@@ -3755,7 +3768,7 @@ def convert_stock_out_to_sale(request, id):
             messages.error(request, err)
         return redirect(f'/view_stock_out_invoice/{voucher.id}')
 
-    sale_order = models.create_sale_order(voucher.employee_id, customer_id=None)
+    sale_order = models.create_sale_order(voucher.employee_id, customer_id= voucher.customer_id)
     sale_order.currency = voucher.currency
     sale_order.exchange_rate_to_base = voucher.exchange_rate_to_base or Decimal('1.0')
     sale_order.invoice_pay_method = voucher.invoice_pay_method

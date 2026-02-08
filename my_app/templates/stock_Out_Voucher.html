@@ -56,18 +56,18 @@
           <div class="row g-3 align-items-end">
 
             <div class="col-md-5 col-lg-4">
-              <label class="form-label">{% trans "Supplier" %}</label>
+              <label class="form-label">{% trans "Customer" %}</label>
               {% comment %} <div class="col-md-6"> {% endcomment %}
-                <input id="supplier-search" class="form-control" list="supplier-list" placeholder="{% trans "Type or select a supplier" %}" aria-label="{% trans "Supplier" %}" autocomplete="off">
-                <input type="hidden" name="supplier_id" id="supplier-id" value="">
-                <datalist id="supplier-list" style="max-height: 5px; overflow-y: auto;">
-                  {% for sup in suppliers %}
-                  <option data-id="{{ sup.id }}" value="{{ sup.name }}{% if sup.phone %} - {{ sup.phone }}{% endif %}"></option>
+                <input id="customer-search" class="form-control" list="customer-list" placeholder="{% trans "Type or select a customer" %}" aria-label="{% trans "Customer" %}" autocomplete="off">
+                <input type="hidden" name="customer_id" id="customer-id" value="">
+                <datalist id="customer-list" style="max-height: 5px; overflow-y: auto;">
+                  {% for cust in customers %}
+                  <option data-id="{{ cust.id }}" value="{{ cust.name }}{% if cust.phone %} - {{ cust.phone }}{% endif %}" ></option>
                   {% endfor %}
                 </datalist>
               {% comment %} </div> {% endcomment %}
 
-              {% comment %} <div class="form-text small text-muted">{% trans "Start typing to search suppliers" %}</div> {% endcomment %}
+              {% comment %} <div class="form-text small text-muted">{% trans "Start typing to search customers" %}</div> {% endcomment %}
             </div>
             <div class="col-md-5 col-lg-4">
               <label for="currency_id" class="form-label">{% trans "Currency" %}</label>
@@ -171,9 +171,10 @@
           <table class="table table-hover table-bordered align-middle">
             <thead class="table-dark">
               <tr>
-                <th>{% trans "Order No." %}</th>
+                <th>{% trans "No." %}</th>
                 <th>{% trans "Added by" %}</th>
                 <th>{% trans "Added at" %}</th>
+                <th>{% trans "Customer" %}</th>
                 <th>{% trans "Currency" %}</th>
                 <th>{% trans "Action" %}</th>
               </tr>
@@ -182,13 +183,14 @@
               {% for invoice in invoices %}
               <tr>
                 <td><span class="fw-bold">{{invoice.id}}</span></td>
-                <td>{{invoice.employee.first_name}} {{invoice.employee.last_name}}</td>
-                <td>{{invoice.created_at}}</td>
+                <td>{{invoice.employee.first_name}}</td>
+                <td>{{invoice.created_at|date:"Y-m-d"}}</td>
+                <td  class="small text-nowrap text-truncate" >{% if invoice.customer %}<a href="/customers/{{invoice.customer.id}}/">{{invoice.customer.name}}</a>{% else %}-{% endif %}</td>
                 <td>{{ invoice.currency.code|default:"-" }}</td>
                 <td>
                   <a href="/view_stock_out_invoice/{{invoice.id}}" class="btn btn-outline-primary btn-sm me-1">{% trans "View" %}</a>
                   <a href="{% url 'stock_out_invoice_edit' invoice.id %}" class="btn btn-outline-secondary btn-sm me-1">{% trans "Edit" %}</a>
-                  <a href="{% url 'convert_stock_out_to_sale' invoice.id %}" class="btn btn-outline-success btn-sm" onclick="return confirm('{% trans "Are you sure you want to convert this voucher to a sale?" %}')">{% trans "Convert to Sale" %}</a>
+                  <a href="{% url 'convert_stock_out_to_sale' invoice.id %}" class="btn btn-outline-success btn-sm me-3" onclick="return confirm('{% trans "Are you sure you want to convert this voucher to a sale?" %}')">{% trans "Convert to Sale" %}</a>
                 </td>
               </tr>
               {% endfor %}
@@ -474,11 +476,11 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 // Prevent form submission on Enter for search inputs
 document.addEventListener('DOMContentLoaded', function() {
-    const supplierSearch = document.getElementById('supplier-search');
+    const customerSearch = document.getElementById('customer-search');
     const isbnInput = document.getElementById('isbn-search-input');
     
-    if (supplierSearch) {
-        supplierSearch.addEventListener('keydown', function(e) {
+    if (customerSearch) {
+        customerSearch.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
             }
@@ -511,7 +513,7 @@ function getCookie(name) {
 }
 </script>
 <script>
-// AJAX handler for add-product form so supplier selection is preserved
+// AJAX handler for add-product form so customer selection is preserved
 document.addEventListener('DOMContentLoaded', function(){
   const addForm = document.getElementById('add-form');
   if(!addForm) return;
@@ -554,7 +556,7 @@ document.addEventListener('DOMContentLoaded', function(){
           html += `\n<tr class="table-secondary fw-bold">\n<td colspan="4" class="text-end">{% trans "Grand Total" %}</td>\n<td class="ps-3">${data.grand_total}</td>\n<td></td>\n</tr>`;
           tbody.innerHTML = html;
         }
-        // clear quantity, keep selected supplier/product
+        // clear quantity, keep selected customer/product
         const qty = document.getElementById('quantity'); if(qty) qty.value = '';
       } else {
         alert(data.message || 'Error adding product');
@@ -667,12 +669,12 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 <script>
-// Sync datalist selection to hidden supplier_id input so form submits supplier id
+// Sync datalist selection to hidden customer_id input so form submits customer id
 document.addEventListener('DOMContentLoaded', function(){
-  const search = document.getElementById('supplier-search');
-  const supplierId = document.getElementById('supplier-id');
-  const datalist = document.getElementById('supplier-list');
-  if(!search || !supplierId || !datalist) return;
+  const search = document.getElementById('customer-search');
+  const customerId = document.getElementById('customer-id');
+  const datalist = document.getElementById('customer-list');
+  if(!search || !customerId || !datalist) return;
 
   // Build quick lookup from value -> id
   const options = Array.from(datalist.options);
@@ -683,18 +685,18 @@ document.addEventListener('DOMContentLoaded', function(){
 
   function updateHidden(){
     const v = search.value.trim();
-    if(!v){ supplierId.value = ''; return; }
+    if(!v){ customerId.value = ''; return; }
     // exact match first
     if(valueToId[v]){
-      supplierId.value = valueToId[v];
+      customerId.value = valueToId[v];
       return;
     }
     // try startsWith (case-insensitive)
     const lower = v.toLowerCase();
     const matched = options.filter(o => o.value.toLowerCase().startsWith(lower));
-    if(matched.length === 1){ supplierId.value = matched[0].dataset.id; return; }
-    // no unique match -> leave supplier_id blank
-    supplierId.value = '';
+    if(matched.length === 1){ customerId.value = matched[0].dataset.id; return; }
+    // no unique match -> leave customer_id blank
+    customerId.value = '';
   }
 
   // update on input and on change (when user picks an option)

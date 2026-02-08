@@ -66,7 +66,8 @@
             <table class="table table-sm table-bordered">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th> {% trans "No." %} </th>
+                  <th> {% trans "ISBN" %} </th>
                   <th>{% trans "Product" %}</th>
                   <th class="text-center">{% trans "Qty" %}</th>
                   <th class="text-end">{% trans "Unit Price" %}</th>
@@ -79,6 +80,7 @@
                   {% for item in purchase_products %}
                   <tr>
                     <td>{{ forloop.counter }}</td>
+                    <td>{{ item.product.isbn }}</td>
                     <td>{{ item.product.product_name }}</td>
                     <td class="text-center">{{ item.quantity }}</td>
                     <td class="text-end">{{ item.currency.code }} {{ item.unit_price }}</td>
@@ -94,16 +96,19 @@
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="{% if invoice.currency and invoice.exchange_rate_to_base != 1 %}3{% else %}3{% endif %}"></td>
+                  <td colspan="{% if invoice.currency and invoice.exchange_rate_to_base != 1 %}4{% else %}3{% endif %}"></td>
                   <td class="text-end fw-bold">{% trans "Grand Total" %}</td>
                   <td class="text-end fw-bold">{{ invoice.currency.code }} {{ invoice.grand_total }}</td>
                   {% if invoice.currency and invoice.exchange_rate_to_base != 1 %}<td class="text-end fw-bold">{{ company.base_currency.code }} {{ invoice.total_price_base|default:"-" }}</td>{% endif %}
                 </tr>
+
+                {% comment %} 
+                <!--show exchange rate info if applicable-->
                 {% if invoice.currency and invoice.exchange_rate_to_base != 1 %}
                 <tr>
                   <td colspan="{% if invoice.currency and invoice.exchange_rate_to_base != 1 %}6{% else %}5{% endif %}" class="text-end small text-muted">{% trans "Exchange Rate to Base:" %} <strong>{{ invoice.exchange_rate_to_base }}</strong></td>
                 </tr> 
-                {% endif %}
+                {% endif %} {% endcomment %}
               </tfoot>
             </table>
           </div>

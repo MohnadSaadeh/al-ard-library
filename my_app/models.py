@@ -664,7 +664,8 @@ def get_exchange_rate(from_currency, to_currency):
 class Stock_Out_Voucher(models.Model ):
     employee = models.ForeignKey(Employee , related_name="Stock_Out_Vouchers", on_delete=models.CASCADE) # RESTRICT  deleted >>  dont delete the item or ( default="Default", on_delete=models.SET_DEFAULT)
     # link supplier to this purchase invoice (optional)
-    supplier = models.ForeignKey('Supplier', related_name='Stock_Out_Vouchers', on_delete=models.CASCADE, null=True, blank=True)
+    #supplier = models.ForeignKey('Supplier', related_name='Stock_Out_Vouchers', on_delete=models.CASCADE, null=True, blank=True)
+    customer = models.ForeignKey('Customer', related_name='Stock_Out_Vouchers', on_delete=models.CASCADE, null=True, blank=True)
     # Currency and exchange rate fields
     currency = models.ForeignKey('Currency', related_name='Stock_Out_Vouchers', on_delete=models.SET_NULL, null=True, blank=True)
     exchange_rate_to_base = models.DecimalField(max_digits=10, decimal_places=6, default=1.00)  # rate to convert to base currency

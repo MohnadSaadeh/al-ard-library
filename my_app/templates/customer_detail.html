@@ -27,7 +27,8 @@
           <table class="table table-hover table-bordered align-middle">
             <thead class="table-dark">
               <tr>
-                <th>{% trans "Order No." %}</th>
+                <th>{% trans "No." %}</th>
+                <th>{% trans "Order Type" %}</th>
                 <th>{% trans "Added by" %}</th>
                 <th>{% trans "Date" %}</th>
                 <th>{% trans "Total" %}</th>
@@ -38,11 +39,24 @@
               {% for order in sales %}
               <tr>
                 <td>{{ order.id }}</td>
+                <td>{% trans "Sale Order" %}</td>
                 <td>{{ order.employee.first_name }} {{ order.employee.last_name }}</td>
                 <td>{{ order.created_at }}</td>
                 <td>{{ order.total_amount }}</td>
                 <td>
                   <a class="btn btn-sm btn-outline-primary" href="/view_sale_order/{{ order.id }}">{% trans "View" %}</a>
+                </td>
+              </tr>
+              {% endfor %}
+              {% for voucher in stock_outs %}
+              <tr>
+                <td>{{ voucher.id }}</td>
+                <td>{% trans "Stock Out Order" %}</td>
+                <td>{{ voucher.employee.first_name }} {{ voucher.employee.last_name }}</td>
+                <td>{{ voucher.created_at }}</td>
+                <td>{{ voucher.total_amount }}</td>
+                <td>
+                  <a class="btn btn-sm btn-outline-primary" href="/view_stock_out_invoice/{{ voucher.id }}">{% trans "View" %}</a>
                 </td>
               </tr>
               {% endfor %}

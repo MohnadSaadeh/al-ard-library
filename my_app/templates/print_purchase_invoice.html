@@ -68,7 +68,8 @@
           <table class="table table-sm-responsive table-bordered">
           <thead>
             <tr>
-              <th>{% trans "#" %}</th>
+              <th> {% trans "No." %} </th>
+              <th> {% trans "ISBN" %} </th>
               <th>{% trans "Product" %}</th>
               <th >{% trans "Qty" %}</th>
               <th >{% trans "Unit Price" %}</th>
@@ -81,6 +82,7 @@
               {% for item in purchase_products %}
               <tr>
                 <td>{{ forloop.counter }}</td>
+                <td>{{ item.product.isbn }}</td>
                 <td>{{ item.product.product_name }}</td>
                 <td >{{ item.quantity }}</td>
                 <td >{{ item.currency.code }} {{ item.unit_price }}</td>
@@ -94,16 +96,12 @@
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="{% if invoice.currency and invoice.exchange_rate_to_base != 1 %}3{% else %}3{% endif %}"></td>
+              <td colspan="{% if invoice.currency and invoice.exchange_rate_to_base != 1 %}4{% else %}3{% endif %}"></td>
               <td class="fw-bold">{% trans "Grand Total" %}</td>
               <td class="fw-bold">{{ invoice.currency.code }} {{ invoice.grand_total }}</td>
               {% if invoice.currency and invoice.exchange_rate_to_base != 1 %}<td class="fw-bold">{{ company.base_currency.code }} {{ invoice.total_price_base|default:"-" }}</td>{% endif %}
             </tr>
-            {% if invoice.currency and invoice.exchange_rate_to_base != 1 %}
-            <tr>
-              <td colspan="{% if invoice.currency and invoice.exchange_rate_to_base != 1%}6{% else %}5{% endif %}" class="text-end small text-muted">{% trans "Exchange Rate to Base:" %} <strong>{{ invoice.exchange_rate_to_base }}</strong></td>
-            </tr>
-            {% endif %}
+            
           </tfoot>
         </table>
       </div>
