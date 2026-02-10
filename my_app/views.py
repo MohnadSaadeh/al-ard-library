@@ -2709,7 +2709,7 @@ def download_stock_products_excel(request):
     from openpyxl.styles import Font, PatternFill
 
     # Get stock products
-    products = models.Product.objects.filter(quantity__gt=0).order_by('-updated_at')
+    products = models.Product.objects.filter(quantity__gt=0)
 
     # Create workbook
     wb = Workbook()
@@ -2717,7 +2717,7 @@ def download_stock_products_excel(request):
     ws.title = 'Stock Products'
 
     # Add headers
-    headers = [_('Product Name'), _('Author'), _('Supplier'), _('Sale Price'),_('Publisher'), _('Production Date'), _('Quantity')]
+    headers = [_('Product Name'), _('Author'), _('Category'), _('Sale Price'),_('Publisher'), _('Production Date'), _('Quantity')]
     for col_num, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_num, value=header)
         cell.font = Font(bold=True)
@@ -2730,7 +2730,7 @@ def download_stock_products_excel(request):
     for row_num, product in enumerate(products, 2):
         ws.cell(row=row_num, column=1, value=product.product_name)
         ws.cell(row=row_num, column=2, value=product.author)
-        ws.cell(row=row_num, column=3, value=product.supplier)
+        ws.cell(row=row_num, column=3, value=product.category)
         ws.cell(row=row_num, column=4, value=float(product.sale_price) if product.sale_price else 0).font = Font(bold=True)
         ws.cell(row=row_num, column=5, value=product.publisher)
         ws.cell(row=row_num, column=6, value=product.production_date.strftime('%Y') if product.production_date else '')

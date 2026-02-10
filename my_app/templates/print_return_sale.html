@@ -1,8 +1,8 @@
 {% load static %}
 {% load i18n %}
-{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!doctype html>
-<html lang="en">
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_CODE == 'ar' %}rtl{% else %}ltr{% endif %}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,6 +17,10 @@
       .table th, .table td{ border:1px solid #dee2e6; padding:.4rem; word-break: break-word; }
       .table tfoot td{ border-top:2px solid #dee2e6; }
       .small{ font-size:0.9rem; color:#6c757d; }
+      /* RTL adjustments */
+      [dir="rtl"] body { direction: rtl; text-align: right; }
+      [dir="rtl"] .text-end { text-align: left; }
+      [dir="rtl"] .d-flex { flex-direction: row-reverse; }
       /* Print-specific adjustments for portrait layout */
       @page { size: A4 portrait; margin: 4mm; }
       @media print{

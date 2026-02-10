@@ -19,7 +19,8 @@
                     <tr>
                         <th>{% trans "Product Name" %}</th>
                         <th>{% trans "Author" %}</th>
-                        <th>{% trans "Supplier" %}</th>
+                        {% comment %} <th>{% trans "Supplier" %}</th> {% endcomment %}
+                        <th>{% trans "Category" %}</th>
                         <th>{% trans "Sale Price" %}</th>
                         <th>{% trans "Publisher" %}</th>
                         <th>{% trans "Production Date" %}</th>
@@ -31,7 +32,8 @@
                     <tr>
                         <td>{{ product.product_name|default:"" }}</td>
                         <td>{{ product.author|default:"" }}</td>
-                        <td>{{ product.supplier|default:"" }}</td>
+                        {% comment %} <td>{{ product.supplier|default:"" }}</td> {% endcomment %}
+                        <td>{{ product.category|default:"" }}</td>
                         <td>{{ product.sale_price|default:"" }}</td>
                         <td>{{ product.publisher|default:"" }}</td>
                         <td>{{ product.production_date|date:"Y"|default:"" }}</td>

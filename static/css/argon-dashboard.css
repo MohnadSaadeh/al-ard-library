@@ -4607,6 +4607,7 @@ fieldset:disabled .btn {
   color: var(--bs-nav-link-disabled-color);
   background-color: transparent;
   border-color: transparent;
+  
 }
 
 .nav-pills .nav-link.active,
@@ -4706,6 +4707,7 @@ fieldset:disabled .btn {
   display: flex;
   flex-direction: column;
   padding-left: 0;
+  padding-right: 0;
   margin-bottom: 0;
   list-style: none;
 }
