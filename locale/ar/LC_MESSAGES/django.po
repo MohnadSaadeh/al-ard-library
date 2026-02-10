@@ -2332,6 +2332,11 @@ msgstr "ادخل منتج على الاقل للشراء"
 msgid "Please select a currency before submitting the purchase!"
 msgstr "يُرجى تحديد العملة قبل تقديم طلب الشراء."
 
+#: .\my_app\views.py
+#, python-format
+msgid "Purchase price must be greater than 0 for: %(names)s"
+msgstr "سعر الشراء يجب أن يكون أكبر من 0 لـ: %(names)s"
+
 
 #: .\my_app\views.py:1650 .\my_app\views.py:2932
 #, python-format
@@ -2476,7 +2481,7 @@ msgstr "لا توجد منتجات لهذا الإرجاع."
 #: .\my_app\views.py:2336
 
 msgid "Product created successfully!"
-msgstr "تم الشراء بنجاح"
+msgstr "تم تعريف الكتاب بنجاح"
 
 #: .\my_app\views.py:2475 .\my_app\views.py:2773
 msgid "Please select an Excel file to upload."

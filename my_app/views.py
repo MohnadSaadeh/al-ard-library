@@ -1560,6 +1560,13 @@ def submet_purchase_order(request):
         messages.error(request, _("Please add at least one product to purchase!"))
         return redirect('/purchases')
     
+    # Validate purchase prices – every item must have a price > 0
+    invalid_items = [item for item in cart if not item.get('purchase_price') or float(item.get('purchase_price', 0)) <= 0]
+    if invalid_items:
+        names = ', '.join(item.get('product_name', '?') for item in invalid_items)
+        messages.error(request, _("Purchase price must be greater than 0 for: %(names)s") % {'names': names})
+        return redirect('/purchases')
+
     # Validate currency selection
     currency_id = request.POST.get('currency_id')
     if not currency_id:
@@ -3247,7 +3254,7 @@ def delete_product_from_stock_out(request):
 def update_stock_out_cart(request):
     """
     Persist edited stock-out cart rows to session.
-    Accepts JSON payload: { items: [ {product_id, quantity, purchase_price} ] }
+    Accepts JSON payload: { items: [ {product_id, quantity, sale_price} ] }
     Returns updated items and grand_total.
     """
     if request.method != 'POST':
@@ -3278,7 +3285,7 @@ def update_stock_out_cart(request):
     for it in items_payload:
         product_id = it.get('product_id')
         quantity = it.get('quantity')
-        purchase_price = it.get('purchase_price')
+        sale_price = it.get('sale_price')
         try:
             product_id = int(product_id)
         except (ValueError, TypeError):
@@ -3288,9 +3295,9 @@ def update_stock_out_cart(request):
         except (ValueError, TypeError):
             quantity = 0
         try:
-            purchase_price = float(purchase_price)
+            sale_price = float(sale_price)
         except (ValueError, TypeError):
-            purchase_price = 0.0
+            sale_price = 0.0
 
         if quantity <= 0:
             return JsonResponse({'status': 'error', 'message': _('Quantity must be positive')}, status=400)
@@ -3312,12 +3319,12 @@ def update_stock_out_cart(request):
             msg = _('Not enough stock for product "%(prod)s". Available: %(avail)d') % {'prod': prod.product_name, 'avail': available_qty}
             return JsonResponse({'status': 'error', 'message': msg}, status=400)
 
-        total_price = quantity * purchase_price
+        total_price = quantity * sale_price
         new_cart.append({
             'product_name': prod.product_name,
             'product_id': product_id,
             'quantity': quantity,
-            'purchase_price': purchase_price,
+            'sale_price': sale_price,
             'total_price': total_price,
         })
 
@@ -3340,7 +3347,7 @@ def display_Stock_Out_voucher(request):
 
     context = {
             # alias to match existing template keys
-            'purchases_order': Stock_Out_cart,
+            'sale_order': Stock_Out_cart,
             'stock_outs_order': Stock_Out_cart,
             'products': models.get_all_products(),
             # recent vouchers list + aliases used by template
@@ -3420,14 +3427,14 @@ def add_product_to_stock_out(request):
         return redirect('/stock_out_voucher')
 
     product_id = prod.id
-    unit_price = float(prod.purchasing_price) if prod.purchasing_price is not None else 0.0
+    unit_price = float(prod.sale_price) if prod.sale_price is not None else 0.0
     total_price = quantity * unit_price
     cart = _get_Stock_Out_cart(request)
     for item in cart:
         if int(item.get('product_id')) == int(product_id):
             item['quantity'] = int(item.get('quantity', 0)) + quantity
             try:
-                item['total_price'] = int(item['quantity']) * float(item.get('purchase_price', unit_price))
+                item['total_price'] = int(item['quantity']) * float(item.get('sale_price', unit_price))
             except Exception:
                 item['total_price'] = 0
             break
@@ -3437,7 +3444,7 @@ def add_product_to_stock_out(request):
             'product_id': product_id,
             'quantity': quantity,
             # keep same key name used by template/JS
-            'purchase_price': unit_price,
+            'sale_price': unit_price,
             'total_price': total_price,
             
         })
@@ -3503,7 +3510,7 @@ def submit_stock_out_order(request):
     for key in cart:
         product_id = key.get('product_id')
         quantity = int(key.get('quantity'))
-        unit_price = Decimal(str(key.get('purchase_price') or 0))
+        unit_price = Decimal(str(key.get('sale_price') or 0))
         total_price = Decimal(str(key.get('total_price') or 0))
 
         item = models.Stock_Out_Voucher_item.objects.create(
@@ -3600,7 +3607,7 @@ def stock_out_invoice_add_item(request, id):
     if available_qty < total_desired:
         messages.error(request, _('Not enough stock for product "%(prod)s". Available: %(avail)d') % {'prod': prod.product_name, 'avail': available_qty})
         return redirect(f'/stock_out_invoice/{id}/edit')
-    unit_price_val = Decimal(str(unit_price)) if unit_price is not None and unit_price != '' else Decimal(str(prod.purchasing_price or 0))
+    unit_price_val = Decimal(str(unit_price)) if unit_price is not None and unit_price != '' else Decimal(str(prod.sale_price or 0))
     # Merge with existing item instead of creating a new row
     existing_item = voucher.Stock_Out_Voucher_items.filter(product_id=prod.id).order_by('id').first()
     if existing_item:

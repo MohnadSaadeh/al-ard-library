@@ -110,25 +110,25 @@
                   <th class="ps-3">{% trans "ID" %}</th>
                   <th class="ps-3">{% trans "Product" %}</th>
                   <th>{% trans "Quantity" %}</th>
-                  <th class="ps-3">{% trans "Purchase Price" %}</th>
+                  <th class="ps-3">{% trans "Sale Price" %}</th>
                   <th class="ps-3">{% trans "Total Price" %}</th>
                   <th class="ps-3">{% trans "Action" %}</th>
                 </tr>
               </thead>
               <tbody id="purchase-cart-tbody">
-                {% for item in purchases_order %}
+                {% for item in sale_order %}
                 <tr data-product-id="{{item.product_id}}" data-total-price="{{item.total_price}}">
                   <td class="ps-3">{{item.product_id}}</td>
                   <td class="ps-3">{{item.product_name}}</td>
                   <td>
-                    <input type="number" min="1" class="form-control form-control-sm purchase-qty-input" value="{{item.quantity}}" data-product-id="{{item.product_id}}">
+                    <input type="number" min="1" class="form-control form-control-sm sale-qty-input" value="{{item.quantity}}" data-product-id="{{item.product_id}}">
                   </td>
                   <td class="ps-3">
-                    <input type="number" min="0" step="0.01" class="form-control form-control-sm purchase-price-input" value="{{item.purchase_price}}" data-product-id="{{item.product_id}}">
+                    <input type="number" min="0" step="0.01" class="form-control form-control-sm sale-price-input" value="{{item.sale_price}}" data-product-id="{{item.product_id}}">
                   </td>
                   <td class="ps-3 total-price-cell" data-product-id="{{item.product_id}}">{{item.total_price}}</td>
                   <td class="ps-3">
-                    <button type="button" class="btn btn-sm btn-danger delete-purchase-item" data-product-id="{{item.product_id}}">
+                    <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="{{item.product_id}}">
                       <i class="fas fa-trash"></i>
                     </button>
                   </td>
@@ -316,8 +316,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const tbody = document.getElementById('purchase-cart-tbody');
 
   function recalculateRow(productId) {
-    const qtyInput = tbody.querySelector(`.purchase-qty-input[data-product-id="${productId}"]`);
-    const priceInput = tbody.querySelector(`.purchase-price-input[data-product-id="${productId}"]`);
+    const qtyInput = tbody.querySelector(`.sale-qty-input[data-product-id="${productId}"]`);
+    const priceInput = tbody.querySelector(`.sale-price-input[data-product-id="${productId}"]`);
     const totalCell = tbody.querySelector(`.total-price-cell[data-product-id="${productId}"]`);
     if (qtyInput && priceInput && totalCell) {
       const qty = parseFloat(qtyInput.value) || 0;
@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   tbody.addEventListener('input', function(e) {
-    if (e.target.classList.contains('purchase-qty-input') || e.target.classList.contains('purchase-price-input')) {
+    if (e.target.classList.contains('sale-qty-input') || e.target.classList.contains('sale-price-input')) {
       const productId = e.target.dataset.productId;
       recalculateRow(productId);
     }
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Keep your delete handler as is
   tbody.addEventListener('click', function(e){
-    const deleteBtn = e.target.closest('.delete-purchase-item');
+    const deleteBtn = e.target.closest('.delete-sale-item');
     if(!deleteBtn) return;
     e.preventDefault();
     const productId = deleteBtn.dataset.productId;
@@ -377,14 +377,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td class="ps-3">${item.product_id}</td>
                 <td class="ps-3">${item.product_name}</td>
                 <td>
-                  <input type="number" min="1" class="form-control form-control-sm purchase-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
+                  <input type="number" min="1" class="form-control form-control-sm sale-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
                 </td>
                 <td class="ps-3">
-                  <input type="number" min="0" step="0.01" class="form-control form-control-sm purchase-price-input" value="${item.purchase_price}" data-product-id="${item.product_id}">
+                  <input type="number" min="0" step="0.01" class="form-control form-control-sm sale-price-input" value="${item.sale_price}" data-product-id="${item.product_id}">
                 </td>
                 <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>
                 <td class="ps-3">
-                  <button type="button" class="btn btn-sm btn-danger delete-purchase-item" data-product-id="${item.product_id}">
+                  <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">
                     <i class="fas fa-trash"></i>
                   </button>
                 </td>
@@ -438,14 +438,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td class="ps-3">${item.product_id}</td>
                     <td class="ps-3">${item.product_name}</td>
                     <td>
-                      <input type="number" min="1" class="form-control form-control-sm purchase-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
+                      <input type="number" min="1" class="form-control form-control-sm sale-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
                     </td>
                     <td class="ps-3">
-                      <input type="number" min="0" step="0.01" class="form-control form-control-sm purchase-price-input" value="${item.purchase_price}" data-product-id="${item.product_id}">
+                      <input type="number" min="0" step="0.01" class="form-control form-control-sm sale-price-input" value="${item.sale_price}" data-product-id="${item.product_id}">
                     </td>
                     <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>
                     <td class="ps-3">
-                      <button type="button" class="btn btn-sm btn-danger delete-purchase-item" data-product-id="${item.product_id}">
+                      <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">
                         <i class="fas fa-trash"></i>
                       </button>
                     </td>
@@ -540,14 +540,14 @@ document.addEventListener('DOMContentLoaded', function(){
                 <td class="ps-3">${item.product_id}</td>
                 <td class="ps-3">${item.product_name}</td>
                 <td>
-                  <input type="number" min="1" class="form-control form-control-sm purchase-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
+                  <input type="number" min="1" class="form-control form-control-sm sale-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
                 </td>
                 <td class="ps-3">
-                  <input type="number" min="0" step="0.01" class="form-control form-control-sm purchase-price-input" value="${item.purchase_price}" data-product-id="${item.product_id}">
+                  <input type="number" min="0" step="0.01" class="form-control form-control-sm sale-price-input" value="${item.sale_price}" data-product-id="${item.product_id}">
                 </td>
                 <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>
                 <td class="ps-3">
-                  <button type="button" class="btn btn-sm btn-danger delete-purchase-item" data-product-id="${item.product_id}">
+                  <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">
                     <i class="fas fa-trash"></i>
                   </button>
                 </td>
@@ -604,12 +604,12 @@ document.addEventListener('DOMContentLoaded', function(){
     const items = [];
     rows.forEach(row => {
       const productId = row.dataset.productId || (row.querySelector('td.ps-3')?.textContent || '').trim();
-      const qtyInput = row.querySelector('.purchase-qty-input');
-      const priceInput = row.querySelector('.purchase-price-input');
+      const qtyInput = row.querySelector('.sale-qty-input');
+      const priceInput = row.querySelector('.sale-price-input');
       const quantity = qtyInput ? parseInt(qtyInput.value || '0', 10) : 0;
-      const purchase_price = priceInput ? parseFloat(priceInput.value || '0') : 0;
+      const sale_price = priceInput ? parseFloat(priceInput.value || '0') : 0;
       if(productId){
-        items.push({ product_id: parseInt(productId, 10), quantity, purchase_price });
+        items.push({ product_id: parseInt(productId, 10), quantity, sale_price });
       }
     });
 
@@ -638,14 +638,14 @@ document.addEventListener('DOMContentLoaded', function(){
               <td class="ps-3">${item.product_id}</td>
               <td class="ps-3">${item.product_name}</td>
               <td>
-                <input type="number" min="1" class="form-control form-control-sm purchase-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
+                <input type="number" min="1" class="form-control form-control-sm sale-qty-input" value="${item.quantity}" data-product-id="${item.product_id}">
               </td>
               <td class="ps-3">
-                <input type="number" min="0" step="0.01" class="form-control form-control-sm purchase-price-input" value="${item.purchase_price}" data-product-id="${item.product_id}">
+                <input type="number" min="0" step="0.01" class="form-control form-control-sm sale-price-input" value="${item.sale_price}" data-product-id="${item.product_id}">
               </td>
               <td class="ps-3 total-price-cell" data-product-id="${item.product_id}">${item.total_price}</td>
               <td class="ps-3">
-                <button type="button" class="btn btn-sm btn-danger delete-purchase-item" data-product-id="${item.product_id}">
+                <button type="button" class="btn btn-sm btn-danger delete-sale-item" data-product-id="${item.product_id}">
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
@@ -719,7 +719,7 @@ window.onScannerUpdate = function(payload){
       '<td class="ps-3">'+it.product_id+'</td>'+
       '<td class="ps-3">'+it.product_name+'</td>'+
       '<td>'+it.quantity+'</td>'+
-      '<td class="ps-3">'+it.purchase_price+'</td>'+
+      '<td class="ps-3">'+it.sale_price+'</td>'+
       '<td class="ps-3">'+it.total_price+'</td>'+
       '</tr>';
   });

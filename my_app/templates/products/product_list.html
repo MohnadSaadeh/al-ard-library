@@ -47,7 +47,7 @@
                             {% comment %} <th scope="col">{% trans "Expiry Date" %}</th> {% endcomment %}
                             <th scope="col">{% trans "Supplier" %}</th>
                             {% comment %} <th scope="col">{% trans "Employee" %}</th> {% endcomment %}
-                            <th scope="col">{% trans "Attributes" %}</th>
+                            {% comment %} <th scope="col">{% trans "Attributes" %}</th> {% endcomment %}
                             <th scope="col">{% trans "Actions" %}</th>
                         </tr>
                     </thead>
@@ -67,7 +67,7 @@
                             {% comment %} <td>{{ product.expiry_date }}</td> {% endcomment %}
                             <td>{{ product.supplier|default:"" }}</td>
                             {% comment %} <td>{{ product.employee.first_name }}</td> {% endcomment %}
-                            <td>
+                            {% comment %} <td>
                                 <ul class="list-unstyled mb-0">
                                     {% for attr in product.attributes.all %}
                                         <li><span style="font-weight:600; color:#4a5568;">{{ attr.attribute_name }}:</span> {{ attr.attribute_value }}</li>
@@ -75,7 +75,7 @@
                                         <li class="text-muted">{% trans "No attributes" %}</li>
                                     {% endfor %}
                                 </ul>
-                            </td>
+                            </td> {% endcomment %}
                             <td>
                                 <a class="btn btn-outline-primary btn-sm me-1" href="{% url 'product_update' product.pk %}" title="{% trans 'Edit' %}"><i class="fas fa-pencil-alt"></i></a>
                                 <a class="btn btn-outline-danger btn-sm" href="{% url 'product_delete' product.pk %}" title="{% trans 'Delete' %}"><i class="far fa-trash-alt"></i></a>
