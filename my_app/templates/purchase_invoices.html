@@ -78,7 +78,7 @@
               <select name="currency_id" id="currency_id" class="form-select">
                 <option value="">{% trans "- Select Currency -" %}</option>
                 {% for currency in currencies %}
-                  <option value="{{ currency.id }}">{{ currency.code }} - {{ currency.name }}</option>
+                  <option value="{{ currency.id }}" {% if currency.id == base_currency_id %}selected{% endif %}>-- {{ currency.code }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -109,7 +109,7 @@
             
             <table class="table table-hover table-bordered align-middle">
               <thead class="table-dark">
-                                                                <p style="color: #c53030; font-size: 0.8rem;">{% trans "Products purchased in a currency different from the base currency are automatically converted to the base currency based on the applicable exchange rate." %}</p>
+                  <p style="color: #c53030; font-size: 0.8rem;">{% trans "Products purchased in a currency different from the base currency are automatically converted to the base currency based on the applicable exchange rate." %}</p>
                 <tr>
                   <th class="ps-3">{% trans "ID" %}</th>
                   <th class="ps-3">{% trans "Product" %}</th>
@@ -145,6 +145,8 @@
                 </tr>
               </tbody>
             </table>
+            <p style="color: #c53030; font-size: 0.8rem;">{% trans "The purchase price is updated immediately if it is not listed or has been changed to a new price." %}</p>
+            
           </div>
           <div class="d-flex gap-2 mt-3">
             <button type="button" id="apply-purchase-edits-btn" class="btn btn-outline-primary btn-lg">{% trans "Apply Edits" %}</button>

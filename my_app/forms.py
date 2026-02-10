@@ -12,7 +12,7 @@ class ProductForm(forms.ModelForm):
         fields = [
             'product_name','isbn', 
             # 'quantity', 
-            # 'purchasing_price', 
+            'purchasing_price', 
             'sale_price', 
             # 'supplier',
              'publisher', 
@@ -40,24 +40,51 @@ class ProductForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        # hide_purchasing_price Flag 
+        # to determine whether to show or hide the purchasing price field
+        hide_purchasing_price = kwargs.pop('hide_purchasing_price', False)
         super().__init__(*args, **kwargs)
+
+        if hide_purchasing_price:
+            self.fields['purchasing_price'].required = False
+            self.fields['purchasing_price'].widget = forms.HiddenInput()
+
         self.helper = FormHelper()
         self.helper.form_tag = False
-        self.helper.layout = Layout(
-            Row(
-                Column('product_name', css_class='col-md-4 mb-3'),
-                Column('isbn', css_class='col-md-4 mb-3'),
-                Column('sale_price', css_class='col-md-4 mb-3'),
-            ),
-            Row(
-                Column('publisher', css_class='col-md-4 mb-3'),
-                Column('production_date', css_class='col-md-4 mb-3'),
-                Column('category', css_class='col-md-4 mb-3'),
-            ),
-            Row(
-                Column('author', css_class='col-md-4 mb-3'),
-            ),
-        )
+
+        if hide_purchasing_price:
+            self.helper.layout = Layout(
+                Row(
+                    Column('product_name', css_class='col-md-4 mb-3'),
+                    Column('isbn', css_class='col-md-4 mb-3'),
+                    Column('sale_price', css_class='col-md-4 mb-3'),
+                ),
+                Row(
+                    Column('publisher', css_class='col-md-4 mb-3'),
+                    Column('production_date', css_class='col-md-4 mb-3'),
+                    Column('category', css_class='col-md-4 mb-3'),
+                ),
+                Row(
+                    Column('author', css_class='col-md-4 mb-3'),
+                ),
+            )
+        else:
+            self.helper.layout = Layout(
+                Row(
+                    Column('product_name', css_class='col-md-4 mb-3'),
+                    Column('isbn', css_class='col-md-4 mb-3'),
+                    Column('sale_price', css_class='col-md-4 mb-3'),
+                ),
+                Row(
+                    Column('purchasing_price', css_class='col-md-4 mb-3'),
+                    Column('publisher', css_class='col-md-4 mb-3'),
+                    Column('production_date', css_class='col-md-4 mb-3'),
+                ),
+                Row(
+                    Column('category', css_class='col-md-4 mb-3'),
+                    Column('author', css_class='col-md-4 mb-3'),
+                ),
+            )
 
 
 

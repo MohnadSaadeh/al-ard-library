@@ -595,6 +595,9 @@ def display_purchases(request):
     invoices_page = invoices_paginator.get_page(invoices_page_number)
     
 
+    company = models.get_company_profile()
+    base_currency_id = company.base_currency_id if company and company.base_currency_id else None
+
     context = {
             'purchases_order': p_cart,
             'products': models.get_all_products(),#--------------------------------------------Mai
@@ -604,6 +607,7 @@ def display_purchases(request):
             'invoices_paginator': invoices_paginator,
             'suppliers': models.Supplier.objects.all(),
             'currencies': models.Currency.objects.all(),
+            'base_currency_id': base_currency_id,
         }
     return render(request , 'purchase_invoices.html' ,context)
 
@@ -1650,14 +1654,29 @@ def submet_purchase_order(request):
                 if last_purchase.currency_id != base_currency_id:
                     try:
                         product = models.Product.objects.get(id=item.product_id)
+                        # Updated purchasing price for product
                         # Set purchasing_price to the price in base currency
                         # product.purchasing_price = float(item.purchase_price) * float(last_purchase.exchange_rate_to_base)
                         product.purchasing_price = float(item.unit_price) * float(last_purchase.exchange_rate_to_base)
+                        print(f"Updating product '{product.product_name}' purchasing price to {product.purchasing_price} in base currency.")
                         product.save()
                         messages.warning(request, _("Updated purchasing price for product '%(prod)s' to %(price).2f in base currency.") % {'prod': product.product_name, 'price': product.purchasing_price})
                     except Exception as e:
                         # Optionally log or handle error
                         messages.warning(request, _("Could not Convert : %(err)s") % {'err': str(e)})
+                        # pass
+                else:
+                    # If purchase currency is base currency, update product purchasing_price directly
+                    try:
+                        # يتم تخديث سعر الشراء للمنتج مباشرة إذا كان سعره غير موجود او سعره مختلف
+                        product = models.Product.objects.get(id=item.product_id)
+                        if product.purchasing_price != float(item.unit_price):
+                            product.purchasing_price = float(item.unit_price)
+                            print(f"Updating product '{product.product_name}' purchasing price to {product.purchasing_price} in base currency.")
+                            product.save()
+                            messages.warning(request, _("Updated purchasing price for product '%(prod)s' to %(price).2f.") % {'prod': product.product_name, 'price': product.purchasing_price})
+                    except Exception as e:
+                        messages.warning(request, _("Could not update purchasing price: %(err)s") % {'err': str(e)})
                         # pass
                         
         last_purchase.save()
@@ -2323,7 +2342,7 @@ def product_create(request):
     employee_id = request.session.get('employee_id')
 
     if request.method == "POST":
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST, hide_purchasing_price=True)
         # formset = ProductAttributeFormSet(request.POST, queryset=ProductAttribute.objects.none())
         
         if form.is_valid(): #and formset.is_valid():
@@ -2345,7 +2364,8 @@ def product_create(request):
         else:
             print("Form errors:", form.errors)
     else:
-        form = ProductForm()
+        # عند عرض النموذج لأول مرة، نمرر hide_purchasing_price=True لإخفاء حقل سعر الشراء
+        form = ProductForm(hide_purchasing_price=True)
         # formset = ProductAttributeFormSet(queryset=ProductAttribute.objects.none())
 
     return render(request, 'products/product_form.html', {
@@ -2381,15 +2401,15 @@ def product_update(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
         form = ProductForm(request.POST, instance=product)
-        formset = ProductAttributeFormSet(request.POST, instance=product)
-        if form.is_valid() and formset.is_valid():
+        # formset = ProductAttributeFormSet(request.POST, instance=product)
+        if form.is_valid(): #and formset.is_valid():
             form.save()
-            formset.save()
+            # formset.save()
             return redirect('product_list')
     else:
         form = ProductForm(instance=product)
-        formset = ProductAttributeFormSet(instance=product)
-    return render(request, 'products/product_form.html', {'form': form, 'formset': formset})
+        # formset = ProductAttributeFormSet(instance=product)
+    return render(request, 'products/product_form.html', {'form': form}) #, 'formset': formset})
 
 
 def product_delete(request, pk):

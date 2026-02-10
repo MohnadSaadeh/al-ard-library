@@ -69,7 +69,7 @@
                             <select id="currency-select" class="form-select" name="currency_id" required>
                                 <option value="">{% trans "- Select Currency -" %}</option>
                                 {% for currency in currencies %}
-                                    <option value="{{ currency.id }}" {% if base_currency and currency.id == base_currency %}selected{% endif %}>{{ currency.code }} - {{ currency.name }}</option>
+                                    <option value="{{ currency.id }}" {% if base_currency and currency.id == base_currency %}selected{% endif %}>-- {{ currency.code }}</option>
                                 {% endfor %}
                             </select>
                         </div>
