@@ -1,0 +1,109 @@
+
+.messages {
+    color: red;
+}
+.success {
+    background-color: rgb(5, 172, 5);
+    color: rgb(8, 24, 8);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.error {
+    background-color: rgb(220, 53, 69);
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.warning {
+    background-color: rgb(255, 193, 7);
+    color: rgb(33, 37, 41);
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.info {
+    background-color: rgb(13, 110, 253);
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.debug {
+    background-color: rgb(108, 117, 125);
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
+}
+
+.center{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%)scale(1.25);
+}
+.popup{
+    position: absolute;
+    top: -150%;
+    left: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    width: 380px;
+    padding: 20px 30px;
+    background-color: #fff;
+    box-shadow: 2px 2px 5px 5px rgba(0,0,0,0.15);
+    border-radius: 10px;
+    transition: top 0ms ease-in-out 200ms,
+                opacity 200ms ease-in-out 0ms,
+                transform 20ms ease-in-out 0ms;
+}
+.popup.active{
+    top: 50%;
+    opacity: 1;
+    transform: translate(-50%, -50%)scale(1);
+    transition: top 0ms ease-in-out 0ms,
+                opacity 200ms ease-in-out 0ms,
+                transform 20ms ease-in-out 0ms;
+}
+@media print{
+    body *{
+        visibility:hidden;
+        
+    }
+    #printableTable, #printableTable *{
+        visibility: visible;
+    }
+    #printableTable{
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    .no-print{
+        display: none;
+    }
+    #printableTable2, #printableTable2 *{
+        visibility: visible;
+    
+    }
+    #printableTable2{
+        width: 90%;
+        position: absolute;
+        left: 5%;
+        top: 20%;
+    }
+    #printableTable2 h2{
+        color: blueviolet;
+    }
+    
+}

@@ -420,6 +420,7 @@ button,
 [type="reset"],
 [type="submit"] {
   -webkit-appearance: button;
+  appearance: button;
 }
 
 button:not(:disabled),
@@ -481,6 +482,7 @@ legend+* {
 [type="search"] {
   outline-offset: -2px;
   -webkit-appearance: textfield;
+  appearance: textfield;
 }
 
 /* rtl:raw:
@@ -502,6 +504,7 @@ legend+* {
 ::file-selector-button {
   font: inherit;
   -webkit-appearance: button;
+  appearance: button;
 }
 
 output {
@@ -5595,7 +5598,7 @@ fieldset:disabled .btn {
 }
 
 .page-item:not(:first-child) .page-link {
-  margin-left: calc($pagination-border-width * -1);
+  margin-left: calc(var(--bs-pagination-border-width) * -1);
 }
 
 .page-item:first-child .page-link {
@@ -22479,8 +22482,6 @@ hr.horizontal.gray-light {
   }
 }
 
-@use "sass:math";
-
 .navbar-vertical .navbar-brand>img,
 .navbar-vertical .navbar-brand-img {
   max-width: 100%;
@@ -22618,8 +22619,8 @@ hr.horizontal.gray-light {
 }
 
 .navbar-vertical.navbar-expand-xs .navbar-nav .nav .nav-link {
-  padding-top: calc($navbar-vertical-nav-link-padding-y / 1.5);
-  padding-bottom: calc($navbar-vertical-nav-link-padding-y / 1.5);
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
   padding-left: 15px;
 }
 
@@ -22718,8 +22719,8 @@ hr.horizontal.gray-light {
   }
 
   .navbar-vertical.navbar-expand-sm .navbar-nav .nav .nav-link {
-    padding-top: calc($navbar-vertical-nav-link-padding-y / 1.5);
-    padding-bottom: calc($navbar-vertical-nav-link-padding-y / 1.5);
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
     padding-left: 15px;
   }
 
@@ -22819,8 +22820,8 @@ hr.horizontal.gray-light {
   }
 
   .navbar-vertical.navbar-expand-md .navbar-nav .nav .nav-link {
-    padding-top: calc($navbar-vertical-nav-link-padding-y / 1.5);
-    padding-bottom: calc($navbar-vertical-nav-link-padding-y / 1.5);
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
     padding-left: 15px;
   }
 
@@ -22920,8 +22921,8 @@ hr.horizontal.gray-light {
   }
 
   .navbar-vertical.navbar-expand-lg .navbar-nav .nav .nav-link {
-    padding-top: calc($navbar-vertical-nav-link-padding-y / 1.5);
-    padding-bottom: calc($navbar-vertical-nav-link-padding-y / 1.5);
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
     padding-left: 15px;
   }
 
@@ -23021,8 +23022,8 @@ hr.horizontal.gray-light {
   }
 
   .navbar-vertical.navbar-expand-xl .navbar-nav .nav .nav-link {
-    padding-top: calc($navbar-vertical-nav-link-padding-y / 1.5);
-    padding-bottom: calc($navbar-vertical-nav-link-padding-y / 1.5);
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
     padding-left: 15px;
   }
 
@@ -23122,8 +23123,8 @@ hr.horizontal.gray-light {
   }
 
   .navbar-vertical.navbar-expand-xxl .navbar-nav .nav .nav-link {
-    padding-top: calc($navbar-vertical-nav-link-padding-y / 1.5);
-    padding-bottom: calc($navbar-vertical-nav-link-padding-y / 1.5);
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
     padding-left: 15px;
   }
 
@@ -25398,6 +25399,7 @@ body.dark-version {
   touch-action: manipulation;
   background: #fff;
   -webkit-box-shadow: 0 8px 26px -4px rgba(20, 20, 20, 0.15), 0 8px 9px -5px rgba(20, 20, 20, 0.06);
+  box-shadow: 0 8px 26px -4px rgba(20, 20, 20, 0.15), 0 8px 9px -5px rgba(20, 20, 20, 0.06);
 }
 
 .flatpickr-calendar.open,
@@ -26501,10 +26503,10 @@ span.flatpickr-weekday {
   border-radius: 100%;
   background: #5e72e4;
   cursor: default;
-  webkit-transition: .3s ease 0s;
+  -webkit-transition: .3s ease 0s;
   -moz-transition: .3s ease 0s;
   -ms-transition: .3s ease 0s;
-  -o-transform: .3s ease 0s;
+  -o-transition: .3s ease 0s;
   transition: .3s ease 0s;
 }
 
