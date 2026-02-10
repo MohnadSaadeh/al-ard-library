@@ -2,9 +2,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('index_dashboard', views.index , name='index'),
     
     path('', views.display_homepage),
-    path('index', views.index),#dachboard
+    path('index', views.index_dashboard, name='index_dashboard'),#dachboard
     path('logout', views.logout),
     path('emp_logout' , views.emp_logout ),
     path('employees', views.display_employees),
@@ -71,6 +72,7 @@ urlpatterns = [
 
 
     path('products/', views.product_list, name='product_list'),
+    path('products/lookup/', views.product_lookup, name='product_lookup'),
     path('products/create/', views.product_create, name='product_create'),
     path('products/<int:pk>/edit/', views.product_update, name='product_update'),
     path('products/<int:pk>/delete/', views.product_delete, name='product_delete'),

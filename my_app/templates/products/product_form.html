@@ -8,17 +8,18 @@
     <form method="post">
         {% csrf_token %}
         <div class="row">
-            <div class="col-md-7">
-                <div class="card mb-4">
+            <div class="col-md-12">
+                <div class="card mb-3">
                     <div class="card-header">{% trans "Product Details" %}</div>
                     <div class="card-body">
-                        {{ form|crispy }}
+                        {% crispy form form.helper %}
                     </div>
                 </div>
             </div>
-            <div class="col-md-5">
-                <div class="card mb-4">
-                    <div class="card-header">{% trans "Product Attributes" %}</div>
+            <!-- remove Product Attributes  -->
+            {% comment %} <div class="col-md-5">
+            <div class="card mb-4">
+                <div class="card-header">{% trans "Product Attributes" %}</div>
                     <div class="card-body">
                         {{ formset.management_form }}
                         <div id="formset-area">
@@ -33,47 +34,203 @@
                         </button>
                     </div>
                 </div>
-            </div>
+            </div> {% endcomment %}
         </div>
         <button type="submit" class="btn btn-primary">💾 {% trans "Save Product" %}</button>
         <a href="{% url 'product_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
     </form>
 </div>
 
+<style>
+.lookup-results {
+    position: absolute;
+    z-index: 1050;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    max-height: 220px;
+    overflow-y: auto;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+.lookup-results .lookup-item {
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.lookup-results .lookup-item:hover {
+    background: #e9ecef;
+}
+.lookup-results .lookup-item:last-child {
+    border-bottom: none;
+}
+.autofill-preview {
+    font-size: 12px;
+    color: #6c757d;
+    background: #f8f9fa;
+    border: 1px dashed #ced4da;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-top: 4px;
+    display: none;
+}
+.autofill-preview.active {
+    display: block;
+}
+</style>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const formsetArea = document.getElementById("formset-area");
-    const totalForms = document.getElementById("id_attributes-TOTAL_FORMS");
+    const LOOKUP_URL = "{% url 'product_lookup' %}";
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // function لتغيير نوع input بناءً على select
-    function updateInputType(select) {
-        const input = select.closest(".formset-form").querySelector("input[name$='attribute_value']");
-        if (!input) return;
-        if (select.value === "number") input.type = "number";
-        else if (select.value === "date") input.type = "date";
-        else input.type = "text";
+    // Field IDs in the crispy form
+    const fieldMap = {
+        product_name: document.getElementById('id_product_name'),
+        isbn:          document.getElementById('id_isbn'),
+        sale_price:    document.getElementById('id_sale_price'),
+        publisher:     document.getElementById('id_publisher'),
+        production_date: document.getElementById('id_production_date'),
+        category:      document.getElementById('id_category'),
+        author:        document.getElementById('id_author'),
+    };
+
+    // Create preview spans under each field
+    const previews = {};
+    for (const [key, input] of Object.entries(fieldMap)) {
+        if (!input) continue;
+        const span = document.createElement('div');
+        span.className = 'autofill-preview';
+        span.id = 'preview_' + key;
+        input.parentNode.appendChild(span);
+        previews[key] = span;
     }
 
-    // تتبع التغيير لأي select داخل formsetArea
-    formsetArea.addEventListener("change", function(e) {
-        if (e.target && e.target.tagName === "SELECT" && e.target.name.includes("value_type")) {
-            updateInputType(e.target);
+    // Create dropdown container for results
+    function createDropdown(anchorInput) {
+        // Remove any existing dropdown
+        removeDropdowns();
+        const wrapper = anchorInput.parentNode;
+        wrapper.style.position = 'relative';
+        const dropdown = document.createElement('div');
+        dropdown.className = 'lookup-results';
+        dropdown.id = 'lookup-dropdown';
+        wrapper.appendChild(dropdown);
+        return dropdown;
+    }
+
+    function removeDropdowns() {
+        document.querySelectorAll('.lookup-results').forEach(el => el.remove());
+    }
+
+    // Fill previews with product data
+    function fillPreviews(product) {
+        for (const [key, span] of Object.entries(previews)) {
+            const val = product[key] || '';
+            if (val) {
+                span.textContent = val;
+                span.classList.add('active');
+            } else {
+                span.textContent = '';
+                span.classList.remove('active');
+            }
+        }
+    }
+
+    // Fill form fields with product data
+    function fillFormFields(product) {
+        for (const [key, input] of Object.entries(fieldMap)) {
+            if (!input) continue;
+            const val = product[key] || '';
+            if (val) {
+                input.value = val;
+            }
+        }
+        fillPreviews(product);
+    }
+
+    // Clear all previews
+    function clearPreviews() {
+        for (const span of Object.values(previews)) {
+            span.textContent = '';
+            span.classList.remove('active');
+        }
+    }
+
+    // Debounce helper
+    let debounceTimer = null;
+    function debounce(fn, delay) {
+        return function (...args) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => fn.apply(this, args), delay);
+        };
+    }
+
+    // AJAX lookup
+    function doLookup(query, field, anchorInput) {
+        if (!query || query.length < 2) {
+            removeDropdowns();
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('query', query);
+        formData.append('field', field);
+
+        fetch(LOOKUP_URL, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'ok' && data.results.length > 0) {
+                const dropdown = createDropdown(anchorInput);
+                data.results.forEach(product => {
+                    const item = document.createElement('div');
+                    item.className = 'lookup-item';
+                    if (field === 'isbn') {
+                        item.innerHTML = '<strong>' + (product.isbn || '') + '</strong> — ' + product.product_name;
+                    } else {
+                        item.innerHTML = '<strong>' + product.product_name + '</strong>' + (product.isbn ? ' — ' + product.isbn : '');
+                    }
+                    item.addEventListener('click', function () {
+                        fillFormFields(product);
+                        removeDropdowns();
+                    });
+                    dropdown.appendChild(item);
+                });
+            } else {
+                removeDropdowns();
+            }
+        })
+        .catch(() => removeDropdowns());
+    }
+
+    const debouncedLookup = debounce(doLookup, 350);
+
+    // Attach listeners to product_name and isbn fields
+    if (fieldMap.product_name) {
+        fieldMap.product_name.addEventListener('input', function () {
+            debouncedLookup(this.value.trim(), 'product_name', this);
+        });
+    }
+    if (fieldMap.isbn) {
+        fieldMap.isbn.addEventListener('input', function () {
+            debouncedLookup(this.value.trim(), 'isbn', this);
+        });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.lookup-results') && e.target !== fieldMap.product_name && e.target !== fieldMap.isbn) {
+            removeDropdowns();
         }
     });
-
-    // فورم فارغ لإضافة خصائص جديدة
-    const emptyFormHtml = `{{ formset.empty_form|crispy|escapejs }}`;
-
-    document.getElementById("add-attribute").addEventListener("click", function(e) {
-        e.preventDefault();
-        let formNum = parseInt(totalForms.value);
-        let newForm = emptyFormHtml.replace(/__prefix__/g, formNum);
-        formsetArea.insertAdjacentHTML("beforeend", newForm);
-        totalForms.value = formNum + 1;
-    });
-
-    // تحديث النوع لجميع الفورمز الحالية عند التحميل
-    formsetArea.querySelectorAll("select[name$='value_type']").forEach(updateInputType);
 });
 </script>
 

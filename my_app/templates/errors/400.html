@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+{% load i18n %}
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+    <title>{% trans "AL Ard" %} - {% trans "400 Bad Request" %}</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+    <link href="{% static 'css/nucleo-icons.css' %}" rel="stylesheet" />
+    <link id="pagestyle" href="{% static 'css/argon-dashboard.css' %}" rel="stylesheet" />
+    <style>
+        .error-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .error-card { text-align: center; padding: 3rem; max-width: 500px; }
+        .error-code { font-size: 120px; font-weight: 700; color: #f5365c; line-height: 1; margin-bottom: 0; }
+        .error-title { font-size: 24px; font-weight: 600; color: #32325d; margin-bottom: 1rem; }
+        .error-message { font-size: 16px; color: #8898aa; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <div class="error-page">
+        <div class="error-card card shadow-lg border-radius-xl p-5">
+            <p class="error-code">400</p>
+            <h1 class="error-title">{% trans "Bad Request" %}</h1>
+            <p class="error-message">{% trans "The server could not understand your request. Please check and try again." %}</p>
+            <a href="/index" class="btn bg-gradient-primary btn-lg">
+                <i class="ni ni-bold-left me-2"></i>{% trans "Back to Dashboard" %}
+            </a>
+        </div>
+    </div>
+</body>
+</html>

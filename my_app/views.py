@@ -231,7 +231,10 @@ def about_us(request):
 
 
 def display_homepage(request):
-    return render(request, 'sign-in.html')
+    if 'employee_id' in request.session or 'manager_id' in request.session:
+        return redirect('/index')
+    else:
+        return render(request, 'sign-in.html')
 
 def index(request):
     if 'employee_id' in request.session:
@@ -479,6 +482,7 @@ def reset_password(request, token):
 def logout(request):
     request.session.clear()
     return redirect('/')
+
 def emp_logout(request):
     employee = models.Employee.objects.get(id=request.session['employee_id'])
     employee.is_active = False
@@ -2263,6 +2267,47 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product, ProductAttribute
 from .forms import ProductForm, ProductAttributeFormSet
 
+@csrf_exempt
+def product_lookup(request):
+    """
+    AJAX endpoint: lookup product by ISBN or product_name and return its details as JSON.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'POST required'}, status=405)
+
+    query = request.POST.get('query', '').strip()
+    field = request.POST.get('field', '')  # 'isbn' or 'product_name'
+
+    if not query:
+        return JsonResponse({'status': 'empty', 'results': []})
+
+    qs = Product.objects.none()
+    if field == 'isbn':
+        qs = Product.objects.filter(isbn__icontains=query)
+    elif field == 'product_name':
+        qs = Product.objects.filter(product_name__icontains=query)
+    else:
+        qs = Product.objects.filter(
+            models.models.Q(isbn__icontains=query) | models.models.Q(product_name__icontains=query)
+        )
+
+    results = []
+    for p in qs[:10]:
+        results.append({
+            'id': p.id,
+            'product_name': p.product_name,
+            'isbn': p.isbn or '',
+            'sale_price': str(p.sale_price) if p.sale_price else '',
+            'purchasing_price': str(p.purchasing_price) if p.purchasing_price else '',
+            'publisher': p.publisher or '',
+            'production_date': p.production_date.strftime('%Y-%m-%d') if p.production_date else '',
+            'category': p.category or '',
+            'author': p.author or '',
+        })
+
+    return JsonResponse({'status': 'ok', 'results': results})
+
+
 def product_create(request):
     """
     إنشاء منتج جديد مع خصائصه (Attributes) باستخدام formset
@@ -2272,27 +2317,33 @@ def product_create(request):
 
     if request.method == "POST":
         form = ProductForm(request.POST)
-        formset = ProductAttributeFormSet(request.POST, queryset=ProductAttribute.objects.none())
+        # formset = ProductAttributeFormSet(request.POST, queryset=ProductAttribute.objects.none())
         
-        if form.is_valid() and formset.is_valid():
+        if form.is_valid(): #and formset.is_valid():
+
             # حفظ المنتج وربطه بالموظف
             product = form.save(commit=False)
+            if not product.purchasing_price:
+                product.purchasing_price = 0
             if employee_id:
                 product.employee_id = employee_id
             product.save()
 
             # حفظ الخصائص وربطها بالمنتج
-            formset.instance = product
-            formset.save()
+            # formset.instance = product
+            # formset.save()
 
+            messages.success(request, _("Product created successfully!"))
             return redirect('product_list')  # تأكد أن لديك URL اسمه product_list
+        else:
+            print("Form errors:", form.errors)
     else:
         form = ProductForm()
-        formset = ProductAttributeFormSet(queryset=ProductAttribute.objects.none())
+        # formset = ProductAttributeFormSet(queryset=ProductAttribute.objects.none())
 
     return render(request, 'products/product_form.html', {
         'form': form,
-        'formset': formset
+        # 'formset': formset
     })
 
 
@@ -3808,3 +3859,36 @@ def convert_stock_out_to_sale(request, id):
 
     messages.success(request, _('Converted to sale invoice successfully.'))
     return redirect(f'/view_sale_order/{sale_order.id}')
+
+
+
+
+def index_dashboard(request):
+    if 'employee_id' not in request.session:
+        return redirect('/login')
+    return render(request, 'index_dashboard.html', {
+        'company': models.get_company_profile(),
+        'employee': models.get_employee_by_id(request.session['employee_id']),
+        'sales_orders_count': models.Sale_order.objects.count(),
+        'return_sales_count': models.SaleReturn.objects.count(),
+        'purchases_count': models.Purchase.objects.count(),
+        'return_purchases_count': models.Return.objects.count(),
+        'stock_out_vouchers_count': models.Stock_Out_Voucher.objects.count(),
+        'products_count': models.Product.objects.count(),
+        'suppliers_count': models.Supplier.objects.count(),
+        'customers_count': models.Customer.objects.count(),
+    })
+
+
+# ------------------- Custom Error Handlers -------------------
+def error_400(request, exception):
+    return render(request, 'errors/400.html', status=400)
+
+def error_403(request, exception):
+    return render(request, 'errors/403.html', status=403)
+
+def error_404(request, exception):
+    return render(request, 'errors/404.html', status=404)
+
+def error_500(request):
+    return render(request, 'errors/500.html', status=500)
