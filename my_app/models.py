@@ -636,27 +636,6 @@ class PasswordResetToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     
-    
-from datetime import date
-
-def get_exchange_rate(from_currency, to_currency):
-    """
-    Returns exchange rate from one currency to another.
-    If both currencies are the same, returns 1.0
-    """
-    if not from_currency or not to_currency:
-        return 1.0
-
-    if from_currency == to_currency:
-        return 1.0
-
-    rate = ExchangeRate.objects.filter(
-        from_currency=from_currency,
-        to_currency=to_currency,
-        date=date.today()
-    ).first()
-
-    return rate.rate if rate else 1.0
 
 
 

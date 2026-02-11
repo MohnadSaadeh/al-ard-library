@@ -74,7 +74,8 @@
               <select name="currency_id" id="currency_id" class="form-select" required>
                 <option value="">{% trans "- Select Currency -" %}</option>
                 {% for currency in currencies %}
-                  <option value="{{ currency.id }}">{{ currency.code }} - {{ currency.name }}</option>
+                  <option value="{{ currency.id }}" {% if base_currency and currency.id == base_currency %}selected{% endif %}>-- {{ currency.code }}</option>
+
                 {% endfor %}
               </select>
             </div>
@@ -105,7 +106,6 @@
             
             <table class="table table-hover table-bordered align-middle">
               <thead class="table-dark">
-                                                                <p style="color: #c53030; font-size: 0.8rem;">{% trans "Products purchased in a currency different from the base currency are automatically converted to the base currency based on the applicable exchange rate." %}</p>
                 <tr>
                   <th class="ps-3">{% trans "ID" %}</th>
                   <th class="ps-3">{% trans "Product" %}</th>
@@ -115,7 +115,7 @@
                   <th class="ps-3">{% trans "Action" %}</th>
                 </tr>
               </thead>
-              <tbody id="purchase-cart-tbody">
+              <tbody id="sale-cart-tbody"> 
                 {% for item in sale_order %}
                 <tr data-product-id="{{item.product_id}}" data-total-price="{{item.total_price}}">
                   <td class="ps-3">{{item.product_id}}</td>
@@ -145,7 +145,7 @@
           <div class="d-flex gap-2 mt-3">
             <button type="button" id="apply-edits-btn" class="btn btn-outline-primary btn-lg">{% trans "Apply Edits" %}</button>
             <button type="submit" class="btn btn-primary btn-lg">{% trans "Submit order" %}</button>
-            <a href="/clear_purchases_list" class="btn btn-outline-secondary btn-lg">{% trans "Clear order" %}</a>
+            <a href="/clear_sales_list" class="btn btn-outline-secondary btn-lg">{% trans "Clear order" %}</a> 
           </div>
           {% if messages %}
             <ul class="messages mt-3">    
@@ -313,7 +313,7 @@
 {% block javascripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const tbody = document.getElementById('purchase-cart-tbody');
+  const tbody = document.getElementById('sale-cart-tbody');
 
   function recalculateRow(productId) {
     const qtyInput = tbody.querySelector(`.sale-qty-input[data-product-id="${productId}"]`);
@@ -416,19 +416,19 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         var isbn = isbnInput.value.trim();
         if (!isbn) return;
-        fetch('/scan/add-to-purchase/', {
+        fetch('/add_order_to_stock_out', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken'),
           },
-          body: JSON.stringify({ isbn })
+          body: JSON.stringify({ isbn, quantity: 1 })
         })
         .then(response => response.json())
         .then(data => {
           if (data.status === 'ok') {
-            // Update purchase cart table dynamically
-            const tbody = document.getElementById('purchase-cart-tbody');
+            // Update sale cart table dynamically
+            const tbody = document.getElementById('sale-cart-tbody'); 
             if (tbody && Array.isArray(data.items)) {
               // Clear existing rows
               tbody.innerHTML = '';
@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
               // Always render the Grand Total row at the end
               tbody.innerHTML += `
                 <tr class="table-secondary fw-bold">
-                  <td colspan="4" class="text-end">Grand Total</td>
+                  <td colspan="4" class="text-end">{% trans "Grand Total" %}</td>
                   <td class="ps-3">${data.grand_total}</td>
                   <td></td>
                 </tr>
@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function(){
       body: formData
     }).then(r => r.json()).then(data => {
       if(data.status === 'ok'){
-        const tbody = document.getElementById('purchase-cart-tbody');
+        const tbody = document.getElementById('sale-cart-tbody'); 
         if (tbody && Array.isArray(data.items)) {
           // rebuild rows
           let html = '';
@@ -571,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function(){
 // Persist inline edits to session cart
 document.addEventListener('DOMContentLoaded', function(){
   const applyBtn = document.getElementById('apply-edits-btn');
-  const tbody = document.getElementById('purchase-cart-tbody');
+  const tbody = document.getElementById('sale-cart-tbody');
   if(!applyBtn || !tbody) return;
 
   // Lightweight toast helper
@@ -708,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 <script src="{% static 'js/isbn-scanner.js' %}"></script>
 <script>
-// Renderer for scanner updates on purchases page
+// Renderer for scanner updates on stock out page
 window.onScannerUpdate = function(payload){
   const tbody = document.querySelector('table.table tbody');
   if (!tbody) return;
@@ -723,7 +723,7 @@ window.onScannerUpdate = function(payload){
       '<td class="ps-3">'+it.total_price+'</td>'+
       '</tr>';
   });
-  rows += '<tr class="table-secondary fw-bold"><td colspan="4" class="text-end">Grand Total</td><td class="ps-3">'+payload.grand_total+'</td></tr>';
+  rows += '<tr class="table-secondary fw-bold"><td colspan="4" class="text-end"> {% trans "Grand Total" %} </td><td class="ps-3">'+payload.grand_total+'</td></tr>';
   tbody.innerHTML = rows;
 };
 </script>

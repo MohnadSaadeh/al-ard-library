@@ -1033,26 +1033,11 @@ def submet_sale_order(request):
             try:
                 sale_order.currency_id = currency_id
                 # Get exchange rate for selected currency to base currency
-                from datetime import date
-                # Get exchange rate for selected currency ()
-                
-                # means: true if you defined an exchange_rate in your ExchangeRate TABLE in your company profile from currency to curency 
-                # means: is there an ExchangeRate from (purchased currenct to BASE_currency) ?
-                # ----EXAMBLE----
-                # if you didnt add in (ExchangeRate TABLE) USD to USD :
-                # if PURCHASE_CURRENCT == USD
-                # and BASE_CURRENCY == USD
-                # USD to USD : exchange_rate_obj == False
-                # exchange_rate_obj = models.ExchangeRate.objects.filter(
-                #     from_currency_id=currency_id,
-                #     to_currency__id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None,
-                #     date=date.today()
-                # ).first()
+                # Use the most recent available exchange rate (not just today's)
                 exchange_rate_obj = models.ExchangeRate.objects.filter(
                     from_currency_id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None,
-                    to_currency__id=currency_id,
-                    date=date.today()).first()
-                
+                    to_currency__id=currency_id
+                ).order_by('-date').first()
                 # if found a record in the table (ExchangeRate)
                 # git that rate 
                 # put it in purchase.exchange_rate_to_base
@@ -1063,7 +1048,7 @@ def submet_sale_order(request):
                     sale_order.exchange_rate_to_base = 1.0
             except Exception as e:
                 messages.warning(request, _("Could not set exchange rate: %(err)s") % {'err': str(e)})
-
+    
         sale_order.save()
         
 
@@ -1595,18 +1580,11 @@ def submet_purchase_order(request):
             from datetime import date
             # Get exchange rate for selected currency ()
             
-            # means: true if you defined an exchange_rate in your ExchangeRate TABLE in your company profile from currency to curency 
-            # means: is there an ExchangeRate from (purchased currenct to BASE_currency) ?
-            # ----EXAMBLE----
-            # if you didnt add in (ExchangeRate TABLE) USD to USD :
-            # if PURCHASE_CURRENCT == USD
-            # and BASE_CURRENCY == USD
-            # USD to USD : exchange_rate_obj == False
+            # Use the most recent available exchange rate (not just today's)
             exchange_rate_obj = models.ExchangeRate.objects.filter(
                 from_currency_id=currency_id,
-                to_currency__id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None,
-                date=date.today()
-            ).first()
+                to_currency__id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None
+            ).order_by('-date').first()
             
             # if found a record in the table (ExchangeRate)
             # git that rate 
@@ -1661,6 +1639,7 @@ def submet_purchase_order(request):
                         print(f"Updating product '{product.product_name}' purchasing price to {product.purchasing_price} in base currency.")
                         product.save()
                         messages.warning(request, _("Updated purchasing price for product '%(prod)s' to %(price).2f in base currency.") % {'prod': product.product_name, 'price': product.purchasing_price})
+                        
                     except Exception as e:
                         # Optionally log or handle error
                         messages.warning(request, _("Could not Convert : %(err)s") % {'err': str(e)})
@@ -2923,12 +2902,11 @@ def import_purchase_invoices_excel(request):
                         purchase.invoice_pay_method = payment_method
                         purchase.currency_id = currency.id
 
-                        # Exchange rate
+                        # Exchange rate - use most recent available
                         exchange_rate_obj = models.ExchangeRate.objects.filter(
                             from_currency_id=currency.id,
-                            to_currency_id=base_currency_id,
-                            date=date.today()
-                        ).first()
+                            to_currency_id=base_currency_id
+                        ).order_by('-date').first()
                         if exchange_rate_obj:
                             purchase.exchange_rate_to_base = exchange_rate_obj.rate
                         elif currency.id != base_currency_id:
@@ -3381,6 +3359,7 @@ def display_Stock_Out_voucher(request):
             'customers': models.Customer.objects.all(),
             'currencies': models.Currency.objects.all(),
             'voucher' : stock_out_vouchers_qs,
+            'base_currency': models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.exists() else None,
         }
     return render(request , 'stock_Out_Voucher.html' ,context)
 ############################################
@@ -3391,6 +3370,7 @@ from decimal import Decimal
 def add_product_to_stock_out(request):
     """
     Add product to session-backed stock out cart. Supports normal POST and AJAX/JSON.
+    Can add by product_name (form) or isbn (JSON scanner).
     Returns JSON when called via AJAX, else redirects back to stock-out page.
     """
     data = None
@@ -3401,18 +3381,32 @@ def add_product_to_stock_out(request):
         except Exception:
             return JsonResponse({'status': 'error', 'message': _('Invalid payload')}, status=400)
 
-    product_name = (data.get('product_name') if data else request.POST.get('product_name'))
-    quantity = int((data.get('quantity') if data else request.POST.get('quantity', 0)) or 0)
+    # Support both product_name (form) and isbn (scanner) lookups
+    product_name = data.get('product_name') if data else request.POST.get('product_name')
+    isbn = data.get('isbn') if data else None
+    quantity = int((data.get('quantity') if data else request.POST.get('quantity', 0)) or 1)
 
-    if not product_name or quantity <= 0:
-        msg = _('Product name and positive quantity are required.')
+    if quantity <= 0:
+        msg = _('Quantity must be positive.')
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
             return JsonResponse({'status': 'error', 'message': msg}, status=400)
         messages.error(request, msg)
         return redirect('/stock_out_voucher')
 
+    # Try to find product by isbn first, then by product_name
+    prod = None
     try:
-        prod = models.Product.objects.get(product_name=product_name)
+        if isbn:
+            prod = models.Product.objects.get(isbn=isbn)
+            product_name = prod.product_name
+        elif product_name:
+            prod = models.Product.objects.get(product_name=product_name)
+        else:
+            msg = _('Product name or ISBN is required.')
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
+                return JsonResponse({'status': 'error', 'message': msg}, status=400)
+            messages.error(request, msg)
+            return redirect('/stock_out_voucher')
     except models.Product.DoesNotExist:
         msg = _('Product not found')
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
@@ -3425,18 +3419,21 @@ def add_product_to_stock_out(request):
         available_qty = int(prod.quantity)
     except Exception:
         available_qty = prod.quantity or 0
+    
     # existing quantity of this product already in cart
     existing_qty_in_cart = 0
     try:
         existing_qty_in_cart = sum(int(i.get('quantity', 0)) for i in _get_Stock_Out_cart(request) if int(i.get('product_id', 0)) == int(prod.id))
     except Exception:
         existing_qty_in_cart = 0
-    if available_qty < 0:
+    
+    if available_qty <= 0:
         msg = _('Product "%(prod)s" is out of stock.') % {'prod': product_name}
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json':
             return JsonResponse({'status': 'error', 'message': msg}, status=400)
         messages.error(request, msg)
         return redirect('/stock_out_voucher')
+    
     # validate against total desired quantity (existing + new)
     total_desired = existing_qty_in_cart + quantity
     if available_qty < total_desired:
@@ -3450,6 +3447,8 @@ def add_product_to_stock_out(request):
     unit_price = float(prod.sale_price) if prod.sale_price is not None else 0.0
     total_price = quantity * unit_price
     cart = _get_Stock_Out_cart(request)
+    
+    # Check if product already in cart
     for item in cart:
         if int(item.get('product_id')) == int(product_id):
             item['quantity'] = int(item.get('quantity', 0)) + quantity
@@ -3459,15 +3458,15 @@ def add_product_to_stock_out(request):
                 item['total_price'] = 0
             break
     else:
+        # Add new product to cart
         cart.append({
             'product_name': product_name,
             'product_id': product_id,
             'quantity': quantity,
-            # keep same key name used by template/JS
             'sale_price': unit_price,
             'total_price': total_price,
-            
         })
+    
     _save_Stock_Out_cart(request, cart)
 
     grand_total = sum(float(item.get('total_price', 0)) for item in cart)
@@ -3511,11 +3510,11 @@ def submit_stock_out_order(request):
     if currency_id:
         voucher.currency_id = currency_id
         try:
+            # Use the most recent available exchange rate (not just today's)
             exchange_rate_obj = models.ExchangeRate.objects.filter(
                 from_currency_id=models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() and models.CompanyProfile.objects.first().base_currency else None,
-                to_currency__id=currency_id,
-                date=date.today()
-            ).first()
+                to_currency__id=currency_id
+            ).order_by('-date').first()
             if exchange_rate_obj:
                 voucher.exchange_rate_to_base = exchange_rate_obj.rate
             elif currency_id != (models.CompanyProfile.objects.first().base_currency_id if models.CompanyProfile.objects.first() else None):
@@ -3876,13 +3875,13 @@ def convert_stock_out_to_sale(request, id):
     sale_order.save()
 
     # Mark this voucher as converted in the current session
-    try:
-        converted_ids.append(voucher.id)
-        request.session['converted_stock_out_vouchers'] = converted_ids
-        request.session.modified = True
-    except Exception:
-        # Non-fatal: session write failure should not block successful conversion
-        pass
+    # try:
+    #     converted_ids.append(voucher.id)
+    #     request.session['converted_stock_out_vouchers'] = converted_ids
+    #     request.session.modified = True
+    # except Exception:
+    #     # Non-fatal: session write failure should not block successful conversion
+    #     pass
 
     messages.success(request, _('Converted to sale invoice successfully.'))
     return redirect(f'/view_sale_order/{sale_order.id}')
@@ -3919,3 +3918,39 @@ def error_404(request, exception):
 
 def error_500(request):
     return render(request, 'errors/500.html', status=500)
+
+
+
+
+
+#____________test __________________
+    # اذا بدك عند البيع سعر البيع يتحدث تلقائيا في المنتج اذا كان السعر 0 او 
+    # null 
+    # او مختلف عن سعر الكارت
+    # يعني  السعر الجديد بصير هو السعر الي بالكارت
+    # وبعدين تحفظ الطلب
+        # sale_order.save()
+        
+
+        # for key in cart:
+        #     product_id = key.get('product_id')
+        #     quantity = int(key.get('quantity'))
+        #     sale_price = float(key.get('sale_price') or 0)
+        #     total_price = float(key.get('total_price') or 0)
+            
+        #     # Update product sale price if it's 0, null, or different from cart item price
+        ######################################################################################## نضع هذا الكود  ########### بعد سطر 1059 
+        #     try:
+        #         product = models.Product.objects.get(id=product_id)
+        #         current_price = float(product.sale_price) if product.sale_price else 0
+        #         if current_price == 0 or current_price != sale_price:
+        #             product.sale_price = sale_price
+        #             product.save()
+        #             messages.warning(request, _("Updated sale price for product '%(product)s' to %(price).2f") % {'product': product.product_name, 'price': sale_price}, extra_tags='price_update')
+        ######################################################################################## نضع هذا الكود  ###########
+        #      except models.Product.DoesNotExist:
+        #         pass
+            
+        #     models.add_item_to_invoice(product_id, quantity, sale_price, total_price)  #######  عند سطر 1060  ########
+        #     models.add_product_to_sale(product_id, quantity)
+        #_______________test __________________
