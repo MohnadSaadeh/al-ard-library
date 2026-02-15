@@ -162,6 +162,15 @@ STATIC_ROOT = os.path.join(BASE_DIR , "staticfiles")
 LANGUAGE_COOKIE_NAME = 'django_language'
 LANGUAGE_COOKIE_PATH = '/'
 
+# Persist language preference for 1 year (31536000 seconds)
+LANGUAGE_COOKIE_AGE = 31536000
+LANGUAGE_COOKIE_SECURE = False  # Set to True in production with HTTPS
+LANGUAGE_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
+
+# Also ensure sessions persist
+SESSION_COOKIE_AGE = 31536000  # 1 year in seconds
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_SAVE_EVERY_REQUEST = True  # Update session expiry on each request
 
 
 # Configure DEFAULT_AUTO_FIELD in settings
