@@ -3102,6 +3102,180 @@ def sales_products_report(request):
     return render(request, 'sales_products_report.html', context)
 
 
+def sort_report(request):
+    """
+    Generate a report sorted by Category, Author, Publisher, or Supplier
+    """
+    sort_type = request.POST.get('sort_type') or request.GET.get('sort_type', '')
+    sort_value = request.POST.get('sort_value') or request.GET.get('sort_value', '')
+    products = []
+    sort_options = []
+    report_title = ''
+    
+    # Get all available values for each sort type
+    categories = Product.objects.values_list('category', flat=True).distinct().filter(category__isnull=False).exclude(category='')
+    authors = Product.objects.values_list('author', flat=True).distinct().filter(author__isnull=False).exclude(author='')
+    publishers = Product.objects.values_list('publisher', flat=True).distinct().filter(publisher__isnull=False).exclude(publisher='')
+    suppliers = Product.objects.values_list('supplier', flat=True).distinct().filter(supplier__isnull=False).exclude(supplier='')
+    
+    # Determine which options to show based on sort_type
+    if sort_type == 'category':
+        sort_options = sorted(categories)
+        report_title = _('Report by Category')
+        if sort_value:
+            products = Product.objects.filter(category=sort_value).order_by('product_name')
+    elif sort_type == 'author':
+        sort_options = sorted(authors)
+        report_title = _('Report by Author')
+        if sort_value:
+            products = Product.objects.filter(author=sort_value).order_by('product_name')
+    elif sort_type == 'publisher':
+        sort_options = sorted(publishers)
+        report_title = _('Report by Publisher')
+        if sort_value:
+            products = Product.objects.filter(publisher=sort_value).order_by('product_name')
+    elif sort_type == 'supplier':
+        sort_options = sorted(suppliers)
+        report_title = _('Report by Supplier')
+        if sort_value:
+            products = Product.objects.filter(supplier=sort_value).order_by('product_name')
+    
+    # Pagination
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    page = request.GET.get('page', 1)
+    paginator = Paginator(products, 20)
+    try:
+        products_page = paginator.page(page)
+    except PageNotAnInteger:
+        products_page = paginator.page(1)
+    except EmptyPage:
+        products_page = paginator.page(paginator.num_pages)
+    
+    context = {
+        'products': products_page,
+        'sort_type': sort_type,
+        'sort_value': sort_value,
+        'sort_options': sort_options,
+        'report_title': report_title,
+        'categories': sorted(categories),
+        'authors': sorted(authors),
+        'publishers': sorted(publishers),
+        'suppliers': sorted(suppliers),
+        'total_products': len(products),
+    }
+    return render(request, 'sort_report.html', context)
+
+
+def download_sort_report_excel(request):
+    """
+    Download sort report as Excel file
+    """
+    from openpyxl import Workbook
+    from django.http import HttpResponse
+    from io import BytesIO
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    
+    sort_type = request.GET.get('sort_type', '')
+    sort_value = request.GET.get('sort_value', '')
+    
+    if not sort_type or not sort_value:
+        from django.contrib import messages
+        messages.error(request, _('Please select both sort type and value.'))
+        return redirect('sort_report')
+    
+    # Filter products based on sort type and value
+    if sort_type == 'category':
+        products = Product.objects.filter(category=sort_value).order_by('product_name')
+    elif sort_type == 'author':
+        products = Product.objects.filter(author=sort_value).order_by('product_name')
+    elif sort_type == 'publisher':
+        products = Product.objects.filter(publisher=sort_value).order_by('product_name')
+    elif sort_type == 'supplier':
+        products = Product.objects.filter(supplier=sort_value).order_by('product_name')
+    else:
+        products = Product.objects.none()
+    
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = _('Sort Report')
+    
+    # Define styles
+    header_fill = PatternFill(start_color='1F4E78', end_color='1F4E78', fill_type='solid')
+    header_font = Font(color='FFFFFF', bold=True, size=12)
+    border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    
+    # Add title
+    # ws['A1'] = _('Sort Report')
+    # ws['A1'].font = Font(bold=True, size=14)
+    # ws['A2'] = f"{_('Filter')}: {sort_type.upper()} = {sort_value}"
+    # ws['A2'].font = Font(bold=True, size=11)
+    # ws['A3'] = f"{_('Total Products')}: {products.count()}"
+    # ws['A3'].font = Font(bold=True, size=11)
+    
+    # Add headers
+    headers = [_('#'), _('ISBN'), _('Product Name'), _('Sale Price'), _('Author'), _('Publisher'), _('Year of Publication'), _('Category')]
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col)
+        cell.value = header
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.border = border
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+    
+    # Add data rows
+    for idx, product in enumerate(products, 1):
+        row = idx + 1
+        cells_data = [
+            idx,
+            product.isbn or '',
+            product.product_name,
+            float(product.sale_price) if product.sale_price else 0,
+            product.author or '',
+            product.publisher or '',
+            product.production_date.year if product.production_date else '',
+            product.category or ''
+        ]
+        
+        for col, value in enumerate(cells_data, 1):
+            cell = ws.cell(row=row, column=col)
+            cell.value = value
+            cell.border = border
+            if col == 4:  # Sale Price column
+                cell.number_format = '0.00'
+                cell.alignment = Alignment(horizontal='right')
+            else:
+                cell.alignment = Alignment(horizontal='left')
+    
+    # Adjust column widths
+    ws.column_dimensions['A'].width = 5
+    ws.column_dimensions['B'].width = 18
+    ws.column_dimensions['C'].width = 30
+    ws.column_dimensions['D'].width = 12
+    ws.column_dimensions['E'].width = 20
+    ws.column_dimensions['F'].width = 20
+    ws.column_dimensions['G'].width = 18
+    ws.column_dimensions['H'].width = 15
+    
+    # Generate Excel file
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    # Return file as download
+    response = HttpResponse(
+        output.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="Sort_Report_{sort_type}_{sort_value}.xlsx"'
+    return response
+
+
 def download_sales_products_report_excel(request):
     """
     Generate and download Excel file for sales products report

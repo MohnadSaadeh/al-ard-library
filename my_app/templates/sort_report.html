@@ -1,0 +1,203 @@
+{% extends 'layouts/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Sort Report" %}{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">{% trans "Sort Report" %}</h4>
+        </div>
+        <div class="card-body">
+            <!-- Sort Type Selection -->
+            <form method="post" class="mb-4">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="sort_type" class="form-label">{% trans "Sort Type" %}</label>
+                        <select name="sort_type" id="sort_type" class="form-control" onchange="updateSortOptions()">
+                            <option value="">-- {% trans "Choose Sort Type" %} --</option>
+                            <option value="category" {% if sort_type == 'category' %}selected{% endif %}>{% trans "Category" %}</option>
+                            <option value="author" {% if sort_type == 'author' %}selected{% endif %}>{% trans "Author" %}</option>
+                            <option value="publisher" {% if sort_type == 'publisher' %}selected{% endif %}>{% trans "Publisher" %}</option>
+                            <option value="supplier" {% if sort_type == 'supplier' %}selected{% endif %}>{% trans "Supplier" %}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="sort_value" class="form-label">{% trans "Sort Value" %}</label>
+                        <select name="sort_value" id="sort_value" class="form-control">
+                            <option value="">-- {% trans "Choose Value" %} --</option>
+                            {% for option in sort_options %}
+                                <option value="{{ option }}" {% if option == sort_value %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> {% trans "Generate Report" %}
+                </button>
+                <a href="{% url 'employee_reports' %}" class="btn btn-secondary">{% trans "Back" %}</a>
+            </form>
+
+            <!-- Results -->
+            {% if sort_type and sort_value and products %}
+                <div class="alert alert-info report-header">
+                    <strong>{{ report_type }}:</strong> {{ sort_value }}
+                    <span class="float-end">{% trans "Total Products" %}: <strong>{{ total_products }}</strong></span>
+                </div>
+
+                <!-- Results Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>{% trans "ISBN" %}</th>
+                                <th>{% trans "Product Name" %}</th>
+                                <th>{% trans "Sale Price" %}</th>
+                                <th>{% trans "Author" %}</th>
+                                {% comment %} <th>{% trans "Quantity" %}</th> {% endcomment %}
+                                <th>{% trans "Publisher" %}</th>
+                                <th>{% trans "Year of Publication" %}</th>
+                                <th>{% trans "Category" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ product.isbn|default:"" }}</td>  
+                                <td><strong>{{ product.product_name }}</strong></td>
+                                <td>{{ product.sale_price|default:"" }}</td>
+                                <td>{{ product.author|default:"" }}</td>
+                                {% comment %} <td>{{ product.quantity|default:"" }}</td> {% endcomment %}
+                                <td>{{ product.publisher|default:"" }}</td>
+                                <td>{{ product.year_of_publication|default:"" }}</td>
+                                <td>{{ product.category|default:"" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if products.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?sort_type={{ sort_type }}&sort_value={{ sort_value }}&page=1">{% trans "First" %}</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?sort_type={{ sort_type }}&sort_value={{ sort_value }}&page={{ products.previous_page_number }}">{% trans "Previous" %}</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">{% trans "Page" %} {{ products.number }} {% trans "of" %} {{ products.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if products.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?sort_type={{ sort_type }}&sort_value={{ sort_value }}&page={{ products.next_page_number }}">{% trans "Next" %}</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?sort_type={{ sort_type }}&sort_value={{ sort_value }}&page={{ products.paginator.num_pages }}">{% trans "Last" %}</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+
+                <!-- Print & Export -->
+                <div class="mt-4">
+                    {% comment %} <button onclick="window.print()" class="btn btn-secondary">
+                        <i class="fas fa-print"></i> {% trans "Print" %}
+                    </button> {% endcomment %}
+                    <a href="?sort_type={{ sort_type }}&sort_value={{ sort_value }}&download=excel" class="btn btn-success" onclick="downloadExcel(event, '{{ sort_type }}', '{{ sort_value }}')">
+                        <i class="fas fa-file-excel"></i> {% trans "Download Excel" %}
+                    </a>
+                </div>
+
+            {% elif sort_type and sort_value %}
+                <div class="alert alert-warning">
+                    {% trans "No products found for the selected criteria." %}
+                </div>
+            {% comment %} {% else %}
+                <div class="alert alert-secondary">
+                    {% trans "Please select a sort type and value to generate the report." %}
+                </div> {% endcomment %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+{% comment %} // Print function
+function printReport() {
+    window.print();
+} {% endcomment %}
+
+// Download Excel function
+function downloadExcel(event, sortType, sortValue) {
+    event.preventDefault();
+    const downloadUrl = `{% url 'download_sort_report_excel' %}?sort_type=${sortType}&sort_value=${sortValue}`;
+    window.location.href = downloadUrl;
+}
+
+// Data from Python context - all available options
+const optionsData = {
+    'category': {{ categories|safe }},
+    'author': {{ authors|safe }},
+    'publisher': {{ publishers|safe }},
+    'supplier': {{ suppliers|safe }}
+};
+
+// Convert Python lists to JavaScript
+Object.keys(optionsData).forEach(key => {
+    if (typeof optionsData[key] === 'string') {
+        try {
+            optionsData[key] = JSON.parse(optionsData[key]);
+        } catch (e) {
+            optionsData[key] = [];
+        }
+    }
+});
+
+function updateSortOptions() {
+    const sortType = document.getElementById('sort_type').value;
+    const sortValueSelect = document.getElementById('sort_value');
+    
+    if (!sortType) {
+        sortValueSelect.innerHTML = '<option value="">-- {% trans "Choose Value" %} --</option>';
+        sortValueSelect.disabled = true;
+        return;
+    }
+    
+    // Get options for selected sort type
+    const options = optionsData[sortType] || [];
+    
+    // Build HTML for options
+    let html = '<option value="">-- {% trans "Choose Value" %} --</option>';
+    options.forEach(option => {
+        html += `<option value="${option}">${option}</option>`;
+    });
+    
+    sortValueSelect.innerHTML = html;
+    sortValueSelect.disabled = false;
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const sortTypeSelect = document.getElementById('sort_type');
+    
+    // Add change event listener
+    sortTypeSelect.addEventListener('change', updateSortOptions);
+    
+    // If sort_type is already selected, update the options
+    if (sortTypeSelect.value) {
+        updateSortOptions();
+    }
+});
+</script>
+{% endblock %}

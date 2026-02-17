@@ -41,7 +41,7 @@ urlpatterns = [
     
     path('submet_sale_order', views.submet_sale_order),
     path('submet_purchase_order', views.submet_purchase_order),
-    path('employee_reports', views.display_employee_reports),
+    path('employee_reports', views.display_employee_reports, name='employee_reports'),
     
     path('view_sale_order/<int:id>', views.view_sale_order),#--------------------------------------------Mai
     path('edit_product/<int:id>',views.display_edit_form),
@@ -79,6 +79,8 @@ urlpatterns = [
     path('stock_products_report/', views.stock_products_report, name='stock_products_report'),
     path('empty_products_report/', views.empty_products_report, name='empty_products_report'),
     path('sales_products_report/', views.sales_products_report, name='sales_products_report'),
+    path('sort_report/', views.sort_report, name='sort_report'),
+    path('sort_report/download/', views.download_sort_report_excel, name='download_sort_report_excel'),
     # Suppliers
     path('suppliers', views.display_suppliers, name='suppliers_list'),
     path('suppliers/create', views.add_supplier, name='suppliers_create'),

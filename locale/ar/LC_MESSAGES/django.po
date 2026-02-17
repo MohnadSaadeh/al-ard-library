@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-15 13:47+0200\n"
+"POT-Creation-Date: 2026-02-17 13:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,10 +26,11 @@ msgstr ""
 #: .\my_app\templates\purchase_invoices.html:30
 #: .\my_app\templates\purchases\import_excel.html:18
 #: .\my_app\templates\sale_orders.html:25
+#: .\my_app\templates\sort_report.html:58
 #: .\my_app\templates\stock_Out_Voucher.html:26
 #: .\my_app\templates\stock_products_report.html:20 .\my_app\views.py:2619
 #: .\my_app\views.py:2674 .\my_app\views.py:2726 .\my_app\views.py:2997
-#: .\my_app\views.py:3157
+#: .\my_app\views.py:3222 .\my_app\views.py:3331
 msgid "Product Name"
 msgstr "اسم الكتاب"
 
@@ -42,12 +43,14 @@ msgstr "اسم الكتاب"
 #: .\my_app\templates\products\product_list.html:42
 #: .\my_app\templates\purchase_invoices.html:47
 #: .\my_app\templates\sale_orders.html:42
+#: .\my_app\templates\sort_report.html:57
 #: .\my_app\templates\stock_Out_Voucher.html:43
 #: .\my_app\templates\stock_out_voucher_detail.html:22
 #: .\my_app\templates\view_purchase_invoice.html:71
 #: .\my_app\templates\view_return_invoice.html:58
 #: .\my_app\templates\view_return_sale.html:51
 #: .\my_app\templates\view_sale_order.html:80 .\my_app\views.py:2619
+#: .\my_app\views.py:3222
 msgid "ISBN"
 msgstr "ISBN"
 
@@ -83,9 +86,11 @@ msgstr "سعر الشراء"
 #: .\my_app\templates\products\product_list.html:41
 #: .\my_app\templates\sale_orders.html:98
 #: .\my_app\templates\sales_products_report.html:41
+#: .\my_app\templates\sort_report.html:59
 #: .\my_app\templates\stock_Out_Voucher.html:120
 #: .\my_app\templates\stock_products_report.html:25 .\my_app\views.py:2619
-#: .\my_app\views.py:2674 .\my_app\views.py:2726 .\my_app\views.py:3157
+#: .\my_app\views.py:2674 .\my_app\views.py:2726 .\my_app\views.py:3222
+#: .\my_app\views.py:3331
 msgid "Sale Price"
 msgstr "سعر البيع"
 
@@ -99,18 +104,21 @@ msgstr "سعر البيع"
 #: .\my_app\templates\purchase_invoices.html:66
 #: .\my_app\templates\purchase_invoices.html:190
 #: .\my_app\templates\sales_products_report.html:40
+#: .\my_app\templates\sort_report.html:25
 #: .\my_app\templates\supplier_detail.html:4
 #: .\my_app\templates\view_purchase_invoice.html:38
 #: .\my_app\templates\view_purchase_invoice.html:40 .\my_app\views.py:2619
-#: .\my_app\views.py:2674 .\my_app\views.py:3157
+#: .\my_app\views.py:2674 .\my_app\views.py:3331
 msgid "Supplier"
 msgstr "المورد"
 
 #: .\my_app\forms.py:31 .\my_app\templates\empty_products_report.html:25
 #: .\my_app\templates\products\import_excel.html:26
 #: .\my_app\templates\products\product_list.html:43
+#: .\my_app\templates\sort_report.html:24
+#: .\my_app\templates\sort_report.html:63
 #: .\my_app\templates\stock_products_report.html:26 .\my_app\views.py:2619
-#: .\my_app\views.py:2674 .\my_app\views.py:2726
+#: .\my_app\views.py:2674 .\my_app\views.py:2726 .\my_app\views.py:3222
 msgid "Publisher"
 msgstr "الناشر"
 
@@ -119,14 +127,16 @@ msgstr "الناشر"
 #: .\my_app\templates\products\product_list.html:44
 #: .\my_app\templates\sales_products_report.html:42
 #: .\my_app\templates\stock_products_report.html:27 .\my_app\views.py:2619
-#: .\my_app\views.py:2674 .\my_app\views.py:2726 .\my_app\views.py:3158
+#: .\my_app\views.py:2674 .\my_app\views.py:2726 .\my_app\views.py:3332
 msgid "Production Date"
 msgstr "تاريخ النشر"
 
 #: .\my_app\forms.py:33 .\my_app\templates\products\import_excel.html:22
 #: .\my_app\templates\products\product_list.html:45
+#: .\my_app\templates\sort_report.html:22
+#: .\my_app\templates\sort_report.html:65
 #: .\my_app\templates\stock_products_report.html:24 .\my_app\views.py:2619
-#: .\my_app\views.py:2726
+#: .\my_app\views.py:2726 .\my_app\views.py:3222
 msgid "Category"
 msgstr "التصنيف"
 
@@ -134,8 +144,11 @@ msgstr "التصنيف"
 #: .\my_app\templates\products\import_excel.html:28
 #: .\my_app\templates\products\product_list.html:46
 #: .\my_app\templates\sales_products_report.html:39
+#: .\my_app\templates\sort_report.html:23
+#: .\my_app\templates\sort_report.html:60
 #: .\my_app\templates\stock_products_report.html:21 .\my_app\views.py:2619
-#: .\my_app\views.py:2674 .\my_app\views.py:2726 .\my_app\views.py:3157
+#: .\my_app\views.py:2674 .\my_app\views.py:2726 .\my_app\views.py:3222
+#: .\my_app\views.py:3331
 msgid "Author"
 msgstr "المؤلف"
 
@@ -704,11 +717,14 @@ msgid "Sales Report"
 msgstr "تقرير المبيعات"
 
 #: .\my_app\templates\employee_reports.html:39
+#: .\my_app\templates\sort_report.html:4 .\my_app\templates\sort_report.html:11
+#: .\my_app\views.py:3201
 msgid "Sort Report"
 msgstr "تقرير تصنيفات"
 
 #: .\my_app\templates\empty_products_report.html:10
 #: .\my_app\templates\sales_products_report.html:23
+#: .\my_app\templates\sort_report.html:121
 #: .\my_app\templates\stock_products_report.html:13
 msgid "Download Excel"
 msgstr "تحميل ملف إكسل"
@@ -1147,7 +1163,7 @@ msgstr "لا توجد منتجات لهذا الإرجاع."
 #: .\my_app\templates\view_purchase_invoice.html:101
 #: .\my_app\templates\view_return_invoice.html:86
 #: .\my_app\templates\view_return_sale.html:77
-#: .\my_app\templates\view_sale_order.html:108 .\my_app\views.py:3185
+#: .\my_app\templates\view_sale_order.html:108 .\my_app\views.py:3359
 msgid "Grand Total"
 msgstr "الإجمالي الكلي"
 
@@ -1680,7 +1696,7 @@ msgid "Allowed to Return"
 msgstr "المسموح بإرجاعه"
 
 #: .\my_app\templates\purchases\purchase_return_form.html:43
-#: .\my_app\templates\sales\sale_return_form.html:43 .\my_app\views.py:3158
+#: .\my_app\templates\sales\sale_return_form.html:43 .\my_app\views.py:3332
 msgid "Return Quantity"
 msgstr "كمية الإرجاع"
 
@@ -1752,7 +1768,7 @@ msgid "Return for Sale"
 msgstr "إرجاع عن عملية بيع"
 
 #: .\my_app\templates\sales\sale_return_form.html:41
-#: .\my_app\templates\sales_products_report.html:43 .\my_app\views.py:3158
+#: .\my_app\templates\sales_products_report.html:43 .\my_app\views.py:3332
 msgid "Sold Quantity"
 msgstr "الكمية المباعة"
 
@@ -1765,6 +1781,7 @@ msgid "To Date"
 msgstr "الى تاريخ"
 
 #: .\my_app\templates\sales_products_report.html:20
+#: .\my_app\templates\sort_report.html:39
 msgid "Generate Report"
 msgstr "انشاء التقرير"
 
@@ -1813,6 +1830,67 @@ msgstr "هل نسيت كلمة السر؟"
 msgid "Register with"
 msgstr "سجل بواسطة"
 
+#: .\my_app\templates\sort_report.html:19
+msgid "Sort Type"
+msgstr "نوع الفرز"
+
+#: .\my_app\templates\sort_report.html:21
+msgid "Choose Sort Type"
+msgstr "اختر قيمة الفرز"
+
+#: .\my_app\templates\sort_report.html:29
+msgid "Sort Value"
+msgstr "قيمة الفرز"
+
+#: .\my_app\templates\sort_report.html:31
+#: .\my_app\templates\sort_report.html:177
+#: .\my_app\templates\sort_report.html:186
+msgid "Choose Value"
+msgstr "اختر قيمة"
+
+#: .\my_app\templates\sort_report.html:41
+#: .\my_app\templates\stock_out_voucher_detail.html:59
+msgid "Back"
+msgstr "رجوع"
+
+#: .\my_app\templates\sort_report.html:48
+msgid "Total Products"
+msgstr "مجمل الكتب"
+
+#: .\my_app\templates\sort_report.html:64 .\my_app\views.py:3222
+msgid "Year of Publication"
+msgstr "سنة النشر"
+
+# Removed malformed duplicate block
+msgid "First"
+msgstr "الأول"
+
+#: .\my_app\templates\sort_report.html:95
+msgid "Previous"
+msgstr "السابق"
+
+#: .\my_app\templates\sort_report.html:100
+
+msgid "Page"
+msgstr "صفحة"
+
+#: .\my_app\templates\sort_report.html:100
+msgid "of"
+msgstr "من"
+
+#: .\my_app\templates\sort_report.html:105
+msgid "Next"
+msgstr "اتالي"
+
+#: .\my_app\templates\sort_report.html:108
+
+msgid "Last"
+msgstr "الاخير"
+
+#: .\my_app\templates\sort_report.html:127
+msgid "No products found for the selected criteria."
+msgstr "لا توجد منتجات."
+
 #: .\my_app\templates\stock_Out_Voucher.html:5
 #: .\my_app\templates\stock_Out_Voucher.html:11
 #: .\my_app\templates\stock_Out_Voucher.html:18
@@ -1843,10 +1921,6 @@ msgstr "تحويل إلى مبيعات"
 #: .\my_app\templates\stock_Out_Voucher.html:276
 msgid "Stock Out"
 msgstr "مخرجات"
-
-#: .\my_app\templates\stock_out_voucher_detail.html:59
-msgid "Back"
-msgstr "رجوع"
 
 #: .\my_app\templates\stock_out_voucher_detail.html:61
 msgid "Print"
@@ -2080,8 +2154,8 @@ msgid "No ISBN provided"
 msgstr "No ISBN"
 
 #: .\my_app\views.py:47 .\my_app\views.py:209 .\my_app\views.py:869
-#: .\my_app\views.py:1188 .\my_app\views.py:1457 .\my_app\views.py:3306
-#: .\my_app\views.py:3411
+#: .\my_app\views.py:1188 .\my_app\views.py:1457 .\my_app\views.py:3480
+#: .\my_app\views.py:3585
 msgid "Product not found"
 msgstr "الكتاب غير موجود"
 
@@ -2098,22 +2172,22 @@ msgid "Cannot sell more than available stock for \"%(product)s\"."
 msgstr "لا يمكن بيع أكثر من المخزون المتاح\"%(product)s\"."
 
 #: .\my_app\views.py:172 .\my_app\views.py:853 .\my_app\views.py:1149
-#: .\my_app\views.py:1441 .\my_app\views.py:3268 .\my_app\views.py:3382
-#: .\my_app\views.py:3710
+#: .\my_app\views.py:1441 .\my_app\views.py:3442 .\my_app\views.py:3556
+#: .\my_app\views.py:3884
 msgid "Invalid payload"
 msgstr "Invalid payload!"
 
-#: .\my_app\views.py:183 .\my_app\views.py:1161 .\my_app\views.py:3280
-#: .\my_app\views.py:3721
+#: .\my_app\views.py:183 .\my_app\views.py:1161 .\my_app\views.py:3454
+#: .\my_app\views.py:3895
 msgid "No items provided"
 msgstr "لا عناصر معطاه"
 
-#: .\my_app\views.py:193 .\my_app\views.py:1171 .\my_app\views.py:3290
+#: .\my_app\views.py:193 .\my_app\views.py:1171 .\my_app\views.py:3464
 msgid "Invalid product_id"
 msgstr "معرف الكتاب مفقود"
 
-#: .\my_app\views.py:204 .\my_app\views.py:1182 .\my_app\views.py:3301
-#: .\my_app\views.py:3743
+#: .\my_app\views.py:204 .\my_app\views.py:1182 .\my_app\views.py:3475
+#: .\my_app\views.py:3917
 msgid "Quantity must be positive"
 msgstr "الكمية يجب ان تكون موجبة"
 
@@ -2264,9 +2338,9 @@ msgstr "ادخل كتاب واحد على الاقل للبيع"
 
 #: .\my_app\views.py:1008
 msgid "Please select a currency before submitting the sale!"
-msgstr ""
+msgstr "!الرجاء اختيار العملة قبل تثبيت عملية البيع"
 
-#: .\my_app\views.py:1050 .\my_app\views.py:1598 .\my_app\views.py:3523
+#: .\my_app\views.py:1050 .\my_app\views.py:1598 .\my_app\views.py:3697
 #, python-format
 msgid "Could not set exchange rate: %(err)s"
 msgstr "تعذّر تعيين سعر الصرف: %(err)s"
@@ -2379,8 +2453,8 @@ msgstr "ادخل كتاب للارجاع"
 msgid "Return Recorded Successfully!"
 msgstr "تم لارجاع بنجاح"
 
-#: .\my_app\views.py:1990 .\my_app\views.py:3563 .\my_app\views.py:3579
-#: .\my_app\views.py:3598 .\my_app\views.py:3799
+#: .\my_app\views.py:1990 .\my_app\views.py:3737 .\my_app\views.py:3753
+#: .\my_app\views.py:3772 .\my_app\views.py:3973
 msgid "Voucher not found."
 msgstr "سند غير موجود"
 
@@ -2591,107 +2665,128 @@ msgid ""
 "Successfully imported %(invoices)d purchase invoices with %(items)d items."
 msgstr "تم استيراد %(invoices)d فواتير شراء بنجاح، بإجمالي %(items)d عناصر."
 
-#: .\my_app\views.py:3159
+#: .\my_app\views.py:3124
+msgid "Report by Category"
+msgstr "التصنيف"
+
+#: .\my_app\views.py:3129
+msgid "Report by Author"
+msgstr "تقرير خسب المؤلف"
+
+#: .\my_app\views.py:3134
+msgid "Report by Publisher"
+msgstr "تقرير حسب الناشر"
+
+#: .\my_app\views.py:3139
+
+msgid "Report by Supplier"
+msgstr "تقرير خسب المورد"
+
+#: .\my_app\views.py:3183
+msgid "Please select both sort type and value."
+msgstr "الرجاء اختيار نوع الفرز وقيمته"
+
+#: .\my_app\views.py:3222
+msgid "#"
+msgstr ""
+
+#: .\my_app\views.py:3333
 msgid "Remaining Quantity"
 msgstr "كمية المتبقية"
 
-#: .\my_app\views.py:3159
+#: .\my_app\views.py:3333
 msgid "Money Should Received"
 msgstr "الاموال المستلمة"
 
-#: .\my_app\views.py:3314 .\my_app\views.py:3431 .\my_app\views.py:3618
-#: .\my_app\views.py:3756
+#: .\my_app\views.py:3488 .\my_app\views.py:3605 .\my_app\views.py:3792
+#: .\my_app\views.py:3930
 #, python-format
 msgid "Product \"%(prod)s\" is out of stock."
 msgstr "لا يمكن بيع \"%(prod)s\": فارغ من المخزون."
 
-#: .\my_app\views.py:3317 .\my_app\views.py:3440 .\my_app\views.py:3627
-#: .\my_app\views.py:3759
+#: .\my_app\views.py:3491 .\my_app\views.py:3614 .\my_app\views.py:3801
+#: .\my_app\views.py:3933
 #, python-format
 msgid "Not enough stock for product \"%(prod)s\". Available: %(avail)d"
 msgstr "لا يوجد مخزون كافٍ للكتاب \"%(prod)s\". المتاح: %(avail)d"
 
-#: .\my_app\views.py:3390
-#, fuzzy
-#| msgid "Quantity must be positive"
+#: .\my_app\views.py:3564
 msgid "Quantity must be positive."
 msgstr "الكمية يجب ان تكون موجبة"
 
-#: .\my_app\views.py:3405
-#, fuzzy
-#| msgid "Customer name is required."
+#: .\my_app\views.py:3579
 msgid "Product name or ISBN is required."
-msgstr "اسم العميل مطلوب"
+msgstr "اسم الكتاب او رفم ISBN مطلوب"
 
-#: .\my_app\views.py:3485
+#: .\my_app\views.py:3659
 msgid "Please add at least one product to stock-out voucher!"
 msgstr "ادخل كتاب على الاقل للشراء"
 
-#: .\my_app\views.py:3492
+#: .\my_app\views.py:3666
 msgid "Please select a customer for the stock-out voucher!"
 msgstr "يرجى تحديد عميل قبل إنشاء سند المخرجات!"
 
-#: .\my_app\views.py:3500
+#: .\my_app\views.py:3674
 msgid "You must be signed in as an employee."
 msgstr "يجب أن تكون مسجّل الدخول كموظف."
 
-#: .\my_app\views.py:3555
+#: .\my_app\views.py:3729
 msgid "Stock-Out Voucher Created Successfully!"
 msgstr "تم إنشاء سند مخرجات بنجاح!"
 
-#: .\my_app\views.py:3605
+#: .\my_app\views.py:3779
 msgid "Product and positive quantity are required."
 msgstr "الكتاب والكمية مطلوبان !"
 
-#: .\my_app\views.py:3610
+#: .\my_app\views.py:3784
 msgid "Product not found."
 msgstr "الكتاب غير موجود"
 
-#: .\my_app\views.py:3641
+#: .\my_app\views.py:3815
 msgid "Item quantity updated."
 msgstr "تم تحديث الكمية"
 
-#: .\my_app\views.py:3654
+#: .\my_app\views.py:3828
 msgid "Item added."
 msgstr "تمت اضافة العنصر"
 
-#: .\my_app\views.py:3674
+#: .\my_app\views.py:3848
 msgid "Item not found."
 msgstr "العنصر غير موجود"
 
-#: .\my_app\views.py:3685
+#: .\my_app\views.py:3859
 msgid "Item deleted."
 msgstr "تم حذف"
 
-#: .\my_app\views.py:3700
+#: .\my_app\views.py:3874
 msgid "Voucher not found"
 msgstr "سند غير موجود"
 
-#: .\my_app\views.py:3732
+#: .\my_app\views.py:3906
 msgid "Invalid item_id"
 msgstr "معرف العنصر غير صالح"
 
-#: .\my_app\views.py:3748
+#: .\my_app\views.py:3922
 msgid "Item not found"
 msgstr "لم يتم العثور على العنصر"
 
-#: .\my_app\views.py:3811
+#: .\my_app\views.py:3985
 msgid "Cannot convert an empty voucher. Please add items first."
 msgstr "لا يمكن تحويل قسيمة فارغة. يرجى إضافة الكتب أولاً."
 
-#: .\my_app\views.py:3824
+#: .\my_app\views.py:3998
 #, python-format
 msgid "Item \"%(prod)s\" has non-positive quantity."
 msgstr "العنصر \"%(prod)s\" يحتوي على كمية غير صحيحة (يجب أن تكون موجبة)."
 
-#: .\my_app\views.py:3836
+#: .\my_app\views.py:4010
 #, python-format
 msgid ""
 "Not enough stock for \"%(prod)s\". Available: %(avail)d, required: %(req)d"
 msgstr ""
 "لا يوجد مخزون كافٍ للمنتج \"%(prod)s\". المتاح: %(avail)d، المطلوب: %(req)d"
 
-#: .\my_app\views.py:3886
+#: .\my_app\views.py:4060
 msgid "Converted to sale invoice successfully."
 msgstr "تم تحويل المستند إلى فاتورة مبيعات بنجاح."
 
