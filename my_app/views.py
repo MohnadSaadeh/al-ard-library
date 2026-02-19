@@ -2627,8 +2627,8 @@ def download_sample_excel(request):
     for col in range(1, len(headers) + 1):
         ws.column_dimensions[chr(64 + col)].width = 15
     sample_data = [
-        ['Sample Book 1', 10, 15.50, 25.00, 'Fiction', '9781234567890', 'ABC Publishers', '2024-01-15', 'John Doe', 'ABC Publishers'],
-        ['Sample Book 2', 5, 12.75, 20.00, 'Non-Fiction', '9780987654321', 'XYZ Books', '2024-01-15', 'Jane Smith', 'XYZ Books'],
+        ['Sample Book 1', 10, 15.50, 25.00, 'Fiction', '9781234567890', 'ABC Publishers', '2024', 'John Doe', 'ABC Publishers'],
+        ['Sample Book 2', 5, 12.75, 20.00, 'Non-Fiction', '9780987654321', 'XYZ Books', '2024', 'Jane Smith', 'XYZ Books'],
         ['Sample Magazine', 20, 5.00, 8.50, 'Magazine', '9781122334455', 'News Corp', '2024-03-01', '', 'News Corp']
     ]
 
